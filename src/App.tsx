@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Nutrition from "./pages/Nutrition";
 import Mindset from "./pages/Mindset";
+import CarnivoreDiet from "./pages/CarnivoreDiet";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/nutricao" element={<Nutrition />} />
           <Route path="/mentalidade" element={<Mindset />} />
+          <Route path="/dieta-carnivora" element={<CarnivoreDiet />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
