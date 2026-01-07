@@ -51,7 +51,7 @@ const DashboardCard = ({
       onClick={onClick}
       className={`
         relative overflow-hidden cursor-pointer
-        glass-card rounded-2xl p-6
+        glass-card rounded-2xl p-4
         border ${variantStyles[variant]}
         transition-all duration-300
         ${glowStyles[variant]}
@@ -62,36 +62,39 @@ const DashboardCard = ({
         <div className={`absolute inset-0 bg-gradient-to-br from-${variant === 'default' ? 'primary' : variant}/5 to-transparent`} />
       </div>
 
-      <div className="relative z-10 flex items-start justify-between">
-        <div className="flex-1">
-          <div className={`inline-flex p-3 rounded-xl bg-muted/50 mb-4 ${iconColors[variant]}`}>
-            <Icon size={24} />
+      <div className="relative z-10">
+        <div className="flex items-start justify-between gap-2">
+          <div className={`inline-flex p-2.5 rounded-xl bg-muted/50 ${iconColors[variant]}`}>
+            <Icon size={20} />
           </div>
-          <h3 className="font-display text-lg font-semibold text-foreground mb-1">
+          {progress !== undefined && (
+            <span className={`text-lg font-display font-bold ${iconColors[variant]}`}>
+              {progress}%
+            </span>
+          )}
+        </div>
+        
+        <div className="mt-3">
+          <h3 className="font-display text-base font-semibold text-foreground leading-tight">
             {title}
           </h3>
           {subtitle && (
-            <p className="text-sm text-muted-foreground">{subtitle}</p>
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">{subtitle}</p>
           )}
         </div>
 
         {progress !== undefined && (
-          <div className="flex flex-col items-end">
-            <span className={`text-2xl font-display font-bold ${iconColors[variant]}`}>
-              {progress}%
-            </span>
-            <div className="w-16 h-1.5 rounded-full bg-muted/50 mt-2 overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 1, delay: delay + 0.3, ease: "easeOut" }}
-                className={`h-full rounded-full ${
-                  variant === "coral" ? "gradient-coral" :
-                  variant === "gold" ? "gradient-gold" :
-                  variant === "mint" ? "bg-mint" : "bg-primary"
-                }`}
-              />
-            </div>
+          <div className="w-full h-1.5 rounded-full bg-muted/50 mt-3 overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 1, delay: delay + 0.3, ease: "easeOut" }}
+              className={`h-full rounded-full ${
+                variant === "coral" ? "gradient-coral" :
+                variant === "gold" ? "gradient-gold" :
+                variant === "mint" ? "bg-mint" : "bg-primary"
+              }`}
+            />
           </div>
         )}
       </div>
