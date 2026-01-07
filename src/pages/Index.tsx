@@ -16,6 +16,8 @@ const Index = () => {
   const handleCardClick = (id: string) => {
     if (id === "nutricao") {
       navigate("/nutricao");
+    } else if (id === "mentalidade") {
+      navigate("/mentalidade");
     }
   };
 
@@ -26,15 +28,15 @@ const Index = () => {
       subtitle: "PNL & Reprogramação",
       icon: Brain,
       variant: "gold" as const,
-      progress: 45,
+      progress: 0,
     },
     {
       id: "nutricao",
       title: "Nutrição",
-      subtitle: "Plano Low Carb",
+      subtitle: "Plano Alimentar",
       icon: Apple,
       variant: "mint" as const,
-      progress: 62,
+      progress: 0,
     },
     {
       id: "treino",
@@ -42,7 +44,7 @@ const Index = () => {
       subtitle: "HIIT em Casa",
       icon: Dumbbell,
       variant: "coral" as const,
-      progress: 33,
+      progress: 0,
     },
     {
       id: "progresso",
@@ -50,7 +52,7 @@ const Index = () => {
       subtitle: "Sua evolução",
       icon: BarChart3,
       variant: "gold" as const,
-      progress: 48,
+      progress: 0,
     },
   ];
 
