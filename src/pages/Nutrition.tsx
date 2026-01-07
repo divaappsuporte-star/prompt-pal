@@ -27,6 +27,13 @@ export interface Meal {
 }
 
 const dietPlans = {
+  carnivora: {
+    name: "Dieta Carnívora",
+    description: "Baseada em carnes, gorduras e proteínas animais",
+    isSpecialPage: true,
+    route: "/dieta-carnivora",
+    meals: [] as Meal[],
+  },
   ancestral: {
     name: "Dieta Ancestral",
     description: "Baseada em alimentos naturais e não processados",
@@ -190,7 +197,7 @@ const dietPlans = {
 
 const Nutrition = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("ancestral");
+  const [activeTab, setActiveTab] = useState("carnivora");
   const [showFilters, setShowFilters] = useState(false);
   const [medicalConditions, setMedicalConditions] = useState<MedicalCondition[]>([
     { id: "diabetes", label: "Diabetes", active: false },
@@ -306,8 +313,25 @@ const Nutrition = () => {
 
       {/* Diet Tabs */}
       <div className="px-6 py-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full bg-card/50 p-1 rounded-xl grid grid-cols-4 gap-1">
+        <Tabs 
+          value={activeTab} 
+          onValueChange={(value) => {
+            const plan = dietPlans[value as keyof typeof dietPlans];
+            if (plan && 'isSpecialPage' in plan && plan.isSpecialPage) {
+              navigate(plan.route);
+            } else {
+              setActiveTab(value);
+            }
+          }} 
+          className="w-full"
+        >
+          <TabsList className="w-full bg-card/50 p-1 rounded-xl grid grid-cols-5 gap-1">
+            <TabsTrigger
+              value="carnivora"
+              className="rounded-lg data-[state=active]:bg-coral data-[state=active]:text-primary-foreground text-xs font-medium"
+            >
+              Carnívora
+            </TabsTrigger>
             <TabsTrigger
               value="ancestral"
               className="rounded-lg data-[state=active]:bg-coral data-[state=active]:text-primary-foreground text-xs font-medium"
@@ -334,49 +358,82 @@ const Nutrition = () => {
             </TabsTrigger>
           </TabsList>
 
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="mt-6"
-          >
-            <div className="mb-4">
-              <h2 className="font-display text-lg font-bold text-foreground">
-                {currentPlan.name}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {currentPlan.description}
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              {filteredMeals.map((meal, index) => (
-                <MealCard key={meal.id} meal={meal} delay={index * 0.1} />
-              ))}
-            </div>
-
-            {filteredMeals.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-12"
+          {/* Special page card for Carnivora */}
+          {activeTab === "carnivora" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6"
+            >
+              <div 
+                onClick={() => navigate("/dieta-carnivora")}
+                className="glass-card rounded-2xl p-6 border border-coral/30 cursor-pointer hover:border-coral/50 transition-all"
               >
-                <p className="text-muted-foreground">
-                  Nenhuma refeição disponível com os filtros selecionados.
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-xl bg-coral/20 flex items-center justify-center">
+                    <span className="text-3xl">🥩</span>
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="font-display text-lg font-bold text-foreground">
+                      Dieta Carnívora
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      20 capítulos + 30 receitas completas
+                    </p>
+                    <p className="text-xs text-coral mt-1">
+                      Toque para acessar o conteúdo completo →
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab !== "carnivora" && (
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="mt-6"
+            >
+              <div className="mb-4">
+                <h2 className="font-display text-lg font-bold text-foreground">
+                  {currentPlan.name}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {currentPlan.description}
                 </p>
-                <button
-                  onClick={() =>
-                    setMedicalConditions((prev) =>
-                      prev.map((c) => ({ ...c, active: false }))
-                    )
-                  }
-                  className="mt-4 text-coral underline"
+              </div>
+
+              <div className="space-y-4">
+                {filteredMeals.map((meal, index) => (
+                  <MealCard key={meal.id} meal={meal} delay={index * 0.1} />
+                ))}
+              </div>
+
+              {filteredMeals.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-12"
                 >
-                  Limpar filtros
-                </button>
-              </motion.div>
-            )}
-          </motion.div>
+                  <p className="text-muted-foreground">
+                    Nenhuma refeição disponível com os filtros selecionados.
+                  </p>
+                  <button
+                    onClick={() =>
+                      setMedicalConditions((prev) =>
+                        prev.map((c) => ({ ...c, active: false }))
+                      )
+                    }
+                    className="mt-4 text-coral underline"
+                  >
+                    Limpar filtros
+                  </button>
+                </motion.div>
+              )}
+            </motion.div>
+          )}
         </Tabs>
       </div>
     </div>
