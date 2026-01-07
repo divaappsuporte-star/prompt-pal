@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
 import ProgressRing from "./ui/ProgressRing";
-import { Flame, Footprints, Moon, Activity } from "lucide-react";
+import { Flame, Droplets, Moon, Activity } from "lucide-react";
 
 const QuickStats = () => {
   const stats = [
     { icon: Flame, label: "Calorias", value: "1,850", unit: "kcal", progress: 72, variant: "coral" as const },
-    { icon: Footprints, label: "Passos", value: "8,234", unit: "passos", progress: 82, variant: "gold" as const },
+    { icon: Droplets, label: "Hidratação", value: "1.8", unit: "litros", progress: 75, variant: "gold" as const },
     { icon: Moon, label: "Sono", value: "7h 20m", unit: "", progress: 91, variant: "mint" as const },
     { icon: Activity, label: "Ativo", value: "45", unit: "min", progress: 60, variant: "coral" as const },
   ];
