@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { Brain, Apple, Dumbbell, BarChart3 } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import DashboardCard from "@/components/DashboardCard";
@@ -8,8 +9,15 @@ import WorkoutCarousel from "@/components/WorkoutCarousel";
 import QuickStats from "@/components/QuickStats";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("home");
   const currentDay = 7;
+
+  const handleCardClick = (id: string) => {
+    if (id === "nutricao") {
+      navigate("/nutricao");
+    }
+  };
 
   const dashboardCards = [
     {
@@ -92,6 +100,7 @@ const Index = () => {
               variant={card.variant}
               progress={card.progress}
               delay={0.1 + index * 0.1}
+              onClick={() => handleCardClick(card.id)}
             />
           ))}
         </div>
