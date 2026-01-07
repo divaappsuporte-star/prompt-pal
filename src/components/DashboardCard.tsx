@@ -1,0 +1,102 @@
+import { motion } from "framer-motion";
+import { LucideIcon } from "lucide-react";
+
+interface DashboardCardProps {
+  title: string;
+  subtitle?: string;
+  icon: LucideIcon;
+  variant?: "default" | "coral" | "gold" | "mint";
+  progress?: number;
+  onClick?: () => void;
+  delay?: number;
+}
+
+const DashboardCard = ({
+  title,
+  subtitle,
+  icon: Icon,
+  variant = "default",
+  progress,
+  onClick,
+  delay = 0,
+}: DashboardCardProps) => {
+  const variantStyles = {
+    default: "border-border/50",
+    coral: "border-coral/30 hover:border-coral/60",
+    gold: "border-gold/30 hover:border-gold/60",
+    mint: "border-mint/30 hover:border-mint/60",
+  };
+
+  const iconColors = {
+    default: "text-foreground",
+    coral: "text-coral",
+    gold: "text-gold",
+    mint: "text-mint",
+  };
+
+  const glowStyles = {
+    default: "",
+    coral: "hover:shadow-glow-coral",
+    gold: "hover:shadow-glow-gold",
+    mint: "",
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay }}
+      whileHover={{ scale: 1.02, y: -4 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      className={`
+        relative overflow-hidden cursor-pointer
+        glass-card rounded-2xl p-6
+        border ${variantStyles[variant]}
+        transition-all duration-300
+        ${glowStyles[variant]}
+      `}
+    >
+      {/* Background gradient effect */}
+      <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-500">
+        <div className={`absolute inset-0 bg-gradient-to-br from-${variant === 'default' ? 'primary' : variant}/5 to-transparent`} />
+      </div>
+
+      <div className="relative z-10 flex items-start justify-between">
+        <div className="flex-1">
+          <div className={`inline-flex p-3 rounded-xl bg-muted/50 mb-4 ${iconColors[variant]}`}>
+            <Icon size={24} />
+          </div>
+          <h3 className="font-display text-lg font-semibold text-foreground mb-1">
+            {title}
+          </h3>
+          {subtitle && (
+            <p className="text-sm text-muted-foreground">{subtitle}</p>
+          )}
+        </div>
+
+        {progress !== undefined && (
+          <div className="flex flex-col items-end">
+            <span className={`text-2xl font-display font-bold ${iconColors[variant]}`}>
+              {progress}%
+            </span>
+            <div className="w-16 h-1.5 rounded-full bg-muted/50 mt-2 overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 1, delay: delay + 0.3, ease: "easeOut" }}
+                className={`h-full rounded-full ${
+                  variant === "coral" ? "gradient-coral" :
+                  variant === "gold" ? "gradient-gold" :
+                  variant === "mint" ? "bg-mint" : "bg-primary"
+                }`}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
+export default DashboardCard;
