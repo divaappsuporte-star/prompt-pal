@@ -30,16 +30,16 @@ interface Chapter {
     exercise?: string;
     quote?: string;
   };
-  completed: boolean;
-  unlocked: boolean;
 }
 
 const Mindset = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("home");
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
+  const [completedChapters, setCompletedChapters] = useState<number[]>([]);
+  const [unlockedChapters, setUnlockedChapters] = useState<number[]>([1]);
 
-  const chapters: Chapter[] = [
+  const chaptersData = [
     {
       id: 1,
       title: "A Mente Obesa",
@@ -50,8 +50,6 @@ const Mindset = () => {
         science: "Estudos de Stice et al., 2018 (Nature Neuroscience) mostram que a dopamina liberada por alimentos gordurosos ou açucarados é semelhante à de drogas leves. O cérebro então aprende a buscar comida não por necessidade, mas por alívio emocional.",
         exercise: "Identifique quais gatilhos emocionais disparam seus impulsos (solidão, ansiedade, cansaço). Substitua o ato automático de 'comer' por uma microação consciente (respiração, escrever, caminhar). Cada interrupção movimenta o cérebro da compulsão para o controle.",
       },
-      completed: false,
-      unlocked: true,
     },
     {
       id: 2,
@@ -64,8 +62,6 @@ const Mindset = () => {
         exercise: "Repita visualizações e frases que substituem 'eu preciso emagrecer' por 'estou reaprendendo a cuidar do meu corpo'. A mente trabalha por imagens e emoções. Quando você muda o tom emocional da frase, o cérebro troca dor por prazer.",
         quote: "O corpo segue a frequência mental. Mude a frequência e o corpo obedece.",
       },
-      completed: false,
-      unlocked: true,
     },
     {
       id: 3,
@@ -78,8 +74,6 @@ const Mindset = () => {
         exercise: "Comando antigo: 'Eu sou ansioso.' → Comando novo: 'Eu estou aprendendo a responder com calma.' Em neurociência, isso é chamado de ressignificação semântica.",
         quote: "O que você fala é o código que o cérebro executa.",
       },
-      completed: false,
-      unlocked: true,
     },
     {
       id: 4,
@@ -91,8 +85,6 @@ const Mindset = () => {
         science: "Estudo (Harvard, Mind-Body Medicine, 2020): o cortisol elevado aumenta a sensação de apetite, mesmo sem déficit calórico.",
         exercise: "1. Reconheça a emoção ('estou irritado, não com fome'). 2. Nomear reduz o poder da emoção → (name it to tame it, UCLA Neuroscience). 3. Substitua por ritual físico: respiração, alongamento, escrever. Em pouco tempo, o cérebro fará essa nova associação de forma automática.",
       },
-      completed: false,
-      unlocked: false,
     },
     {
       id: 5,
@@ -104,8 +96,6 @@ const Mindset = () => {
         science: "Experimento (Boston University, 2019): pacientes que visualizavam o corpo saudável diariamente em sessões curtas apresentaram maior adesão e consistência alimentar.",
         exercise: "Técnica da 'Identidade Visualizada' (PNL): 1. Feche os olhos; imagine a versão saudável de si. 2. Observe como se veste, fala e se move. 3. Traga essa sensação para o agora. 4. Fixe a imagem com uma palavra-âncora (ex: leveza). Repita por 21 dias.",
       },
-      completed: false,
-      unlocked: false,
     },
     {
       id: 6,
@@ -117,8 +107,6 @@ const Mindset = () => {
         science: "Daniel Kahneman, Thinking Fast and Slow (2011): adiar impulsos > 7 segundos muda o circuito pré-frontal que decide recompensas.",
         exercise: "Ao sentir vontade de comer algo fora do plano, respire 3 vezes, conte 7 segundos. A nova sinapse que se forma ali é a raiz do autocontrole.",
       },
-      completed: false,
-      unlocked: false,
     },
     {
       id: 7,
@@ -131,8 +119,6 @@ const Mindset = () => {
         exercise: "1. Reconheça a emoção diariamente ('sinto raiva/tristeza'). 2. Expresse fisicamente (escrever, falar, chorar). O corpo 'limpa' o excesso hormonal quando há expressão emocional correta.",
         quote: "Emagrecer sem curar emoções é trocar de cárcere — do corpo para a mente.",
       },
-      completed: false,
-      unlocked: false,
     },
     {
       id: 8,
@@ -143,8 +129,6 @@ const Mindset = () => {
         intro: "Todo comportamento segue o ciclo gatilho → rotina → recompensa (Charles Duhigg, The Power of Habit, 2013). Quebrar hábitos ruins não é eliminar o gatilho, mas dar outra recompensa à rotina.",
         exercise: "Exemplo: Gatilho → estresse. Rotina → comer biscoito. Recompensa → alívio rápido. Crie uma substituição: Nova rotina → andar, ouvir música relaxante. Recompensa → sensação de controle e autodomínio. O cérebro ganha o mesmo alívio com um novo comportamento.",
       },
-      completed: false,
-      unlocked: false,
     },
     {
       id: 9,
@@ -157,8 +141,6 @@ const Mindset = () => {
         exercise: "Escreva seu motivo principal. Transforme-o em imagem (ex: brincar com filhos com mais energia). Ver-se nesse cenário gera dopamina motivacional intrínseca.",
         quote: "Propósito é combustível que não depende da balança.",
       },
-      completed: false,
-      unlocked: false,
     },
     {
       id: 10,
@@ -171,13 +153,24 @@ const Mindset = () => {
         exercise: "Checklist diário de constância: [ ] Fale com respeito consigo. [ ] Escolha com intenção, não impulso. [ ] Movimente-se 20 minutos. [ ] Durma bem. [ ] Reconheça pequenas vitórias.",
         quote: "A constância não nasce da força, mas da compreensão de que você domina o processo.",
       },
-      completed: false,
-      unlocked: false,
     },
   ];
 
-  const completedCount = chapters.filter(c => c.completed).length;
-  const progress = Math.round((completedCount / chapters.length) * 100);
+  const isChapterLocked = (chapterId: number) => !unlockedChapters.includes(chapterId);
+  const isChapterCompleted = (chapterId: number) => completedChapters.includes(chapterId);
+
+  const handleCompleteChapter = (chapterId: number) => {
+    if (!completedChapters.includes(chapterId)) {
+      setCompletedChapters([...completedChapters, chapterId]);
+      if (chapterId < 10 && !unlockedChapters.includes(chapterId + 1)) {
+        setUnlockedChapters([...unlockedChapters, chapterId + 1]);
+      }
+    }
+    setSelectedChapter(null);
+  };
+
+  const completedCount = completedChapters.length;
+  const progress = Math.round((completedCount / chaptersData.length) * 100);
 
   return (
     <div className="min-h-screen pb-24">
@@ -221,7 +214,7 @@ const Mindset = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Seu progresso</p>
                 <p className="font-display text-lg font-bold text-foreground">
-                  {completedCount} de {chapters.length} capítulos
+                  {completedCount} de {chaptersData.length} capítulos
                 </p>
               </div>
             </div>
@@ -272,66 +265,71 @@ const Mindset = () => {
           Capítulos
         </h2>
         <div className="space-y-3">
-          {chapters.map((chapter, index) => (
-            <motion.div
-              key={chapter.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 + index * 0.05 }}
-              whileHover={{ scale: chapter.unlocked ? 1.02 : 1 }}
-              whileTap={{ scale: chapter.unlocked ? 0.98 : 1 }}
-              onClick={() => chapter.unlocked && setSelectedChapter(chapter)}
-              className={`
-                glass-card rounded-xl p-4 cursor-pointer
-                border transition-all duration-300
-                ${chapter.unlocked 
-                  ? "border-gold/20 hover:border-gold/40" 
-                  : "border-border/30 opacity-60"
-                }
-                ${chapter.completed ? "bg-gold/5" : ""}
-              `}
-            >
-              <div className="flex items-center gap-4">
-                <div className={`
-                  w-12 h-12 rounded-xl flex items-center justify-center
-                  ${chapter.completed 
-                    ? "bg-gold/30" 
-                    : chapter.unlocked 
-                      ? "bg-muted/50" 
-                      : "bg-muted/30"
+          {chaptersData.map((chapter, index) => {
+            const locked = isChapterLocked(chapter.id);
+            const completed = isChapterCompleted(chapter.id);
+            
+            return (
+              <motion.div
+                key={chapter.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 + index * 0.05 }}
+                whileHover={{ scale: !locked ? 1.02 : 1 }}
+                whileTap={{ scale: !locked ? 0.98 : 1 }}
+                onClick={() => !locked && setSelectedChapter(chapter)}
+                className={`
+                  glass-card rounded-xl p-4 cursor-pointer
+                  border transition-all duration-300
+                  ${!locked 
+                    ? "border-gold/20 hover:border-gold/40" 
+                    : "border-border/30 opacity-60"
                   }
-                `}>
-                  {chapter.unlocked ? (
-                    <chapter.icon 
-                      size={22} 
-                      className={chapter.completed ? "text-gold" : "text-foreground/70"} 
-                    />
-                  ) : (
-                    <Lock size={18} className="text-muted-foreground" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gold font-medium">
-                      Capítulo {chapter.id}
-                    </span>
-                    {chapter.completed && (
-                      <CheckCircle2 size={14} className="text-gold" />
+                  ${completed ? "bg-gold/5" : ""}
+                `}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`
+                    w-12 h-12 rounded-xl flex items-center justify-center
+                    ${completed 
+                      ? "bg-gold/30" 
+                      : !locked 
+                        ? "bg-muted/50" 
+                        : "bg-muted/30"
+                    }
+                  `}>
+                    {locked ? (
+                      <Lock size={18} className="text-muted-foreground" />
+                    ) : (
+                      <chapter.icon 
+                        size={22} 
+                        className={completed ? "text-gold" : "text-foreground/70"} 
+                      />
                     )}
                   </div>
-                  <h3 className="font-display font-semibold text-foreground">
-                    {chapter.title}
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    {chapter.subtitle}
-                  </p>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gold font-medium">
+                        Capítulo {chapter.id}
+                      </span>
+                      {completed && (
+                        <CheckCircle2 size={14} className="text-gold" />
+                      )}
+                    </div>
+                    <h3 className="font-display font-semibold text-foreground">
+                      {chapter.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {chapter.subtitle}
+                    </p>
+                  </div>
+                  {!locked && (
+                    <ChevronRight size={20} className="text-muted-foreground" />
+                  )}
                 </div>
-                {chapter.unlocked && (
-                  <ChevronRight size={20} className="text-muted-foreground" />
-                )}
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       </div>
 
@@ -429,9 +427,17 @@ const Mindset = () => {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full py-4 rounded-xl gradient-gold text-background font-display font-semibold"
+                  onClick={() => handleCompleteChapter(selectedChapter.id)}
+                  disabled={isChapterCompleted(selectedChapter.id)}
+                  className={`w-full py-4 rounded-xl font-display font-semibold transition-all ${
+                    isChapterCompleted(selectedChapter.id)
+                      ? "bg-muted text-muted-foreground"
+                      : "gradient-gold text-background"
+                  }`}
                 >
-                  Marcar como Concluído
+                  {isChapterCompleted(selectedChapter.id) 
+                    ? "Capítulo Concluído ✓" 
+                    : "Concluir e Desbloquear Próximo"}
                 </motion.button>
               </div>
             </motion.div>
