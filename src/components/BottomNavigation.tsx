@@ -23,7 +23,7 @@ const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationProps) => 
       className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4"
     >
       <div className="glass-card rounded-2xl shadow-elevated mx-auto max-w-md">
-        <div className="flex items-center justify-around py-2">
+        <div className="flex items-center justify-between py-2 px-2">
           {navItems.map((item) => {
             const isActive = activeTab === item.id;
             const Icon = item.icon;
@@ -35,7 +35,7 @@ const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationProps) => 
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => onTabChange(item.id)}
-                  className="relative -mt-8"
+                  className="relative -mt-8 flex-1 flex justify-center"
                 >
                   <div className="gradient-coral p-4 rounded-full shadow-glow-coral animate-glow">
                     <Icon size={24} className="text-primary-foreground" />
@@ -50,7 +50,7 @@ const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationProps) => 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onTabChange(item.id)}
-                className="flex flex-col items-center py-2 px-4"
+                className="flex flex-col items-center py-2 flex-1"
               >
                 <Icon
                   size={22}
