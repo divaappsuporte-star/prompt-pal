@@ -88,7 +88,7 @@ const Index = () => {
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="px-6 pt-12 pb-2"
+        className="px-6 pt-14 pb-6"
       >
         <div className="flex items-center justify-center">
           <Logo size="md" />
