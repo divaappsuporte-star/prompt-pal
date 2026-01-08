@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Heart, AlertCircle } from "lucide-react";
+import { Heart, AlertTriangle } from "lucide-react";
 import type { MedicalCondition } from "@/pages/Nutrition";
 
 interface MedicalFiltersProps {
@@ -16,6 +16,8 @@ const conditionIcons: Record<string, string> = {
 };
 
 const MedicalFilters = ({ conditions, onToggle }: MedicalFiltersProps) => {
+  const hasActiveConditions = conditions.some(c => c.active);
+
   return (
     <motion.div
       initial={{ opacity: 0, height: 0 }}
@@ -24,6 +26,15 @@ const MedicalFilters = ({ conditions, onToggle }: MedicalFiltersProps) => {
       className="px-6 mb-4 overflow-hidden"
     >
       <div className="glass-card rounded-2xl p-4">
+        {/* Warning Banner */}
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-coral/10 border border-coral/30 mb-4">
+          <AlertTriangle size={18} className="text-coral flex-shrink-0" />
+          <p className="text-xs text-coral font-medium">
+            <strong>Obrigatório:</strong> Selecione suas condições de saúde para receitas seguras. 
+            Dietas incompatíveis serão ocultadas.
+          </p>
+        </div>
+
         <div className="flex items-center gap-2 mb-3">
           <Heart size={16} className="text-coral" />
           <h3 className="font-display font-semibold text-foreground text-sm">
@@ -31,7 +42,7 @@ const MedicalFilters = ({ conditions, onToggle }: MedicalFiltersProps) => {
           </h3>
         </div>
         <p className="text-xs text-muted-foreground mb-4">
-          Selecione suas condições para adaptar automaticamente as refeições
+          Selecione suas condições para adaptar automaticamente as receitas e dietas disponíveis
         </p>
         <div className="flex flex-wrap gap-2">
           {conditions.map((condition) => (
@@ -51,6 +62,12 @@ const MedicalFilters = ({ conditions, onToggle }: MedicalFiltersProps) => {
             </motion.button>
           ))}
         </div>
+
+        {!hasActiveConditions && (
+          <p className="text-xs text-muted-foreground mt-3 text-center italic">
+            Nenhuma condição selecionada - todas as dietas estão disponíveis
+          </p>
+        )}
       </div>
     </motion.div>
   );

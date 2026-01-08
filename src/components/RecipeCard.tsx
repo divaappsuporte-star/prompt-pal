@@ -27,7 +27,7 @@ const RecipeCard = ({ recipe, index, delay = 0, diet, accentColor = "text-coral"
   const handleMarkComplete = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!isCompleted) {
-      markRecipeCompleted(diet, recipe.name, recipe.calories);
+      markRecipeCompleted(diet, recipe.name, recipe.calories, recipe.protein, recipe.fat, recipe.carbs || 0);
     }
   };
 

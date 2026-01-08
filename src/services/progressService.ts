@@ -7,9 +7,19 @@ export interface WorkoutSession {
   dayCompleted: number;
 }
 
+export interface RecipeDetail {
+  name: string;
+  date: string;
+  calories: number;
+  protein: number;
+  fat: number;
+  carbs?: number;
+}
+
 export interface DietProgress {
   completedChapters: number[];
   completedRecipes: string[];
+  completedRecipesDetails?: RecipeDetail[];
 }
 
 export interface DailyHydration {
@@ -146,12 +156,42 @@ export const completeNutritionChapter = (diet: DietType, chapterId: number): Pro
   return data;
 };
 
-export const markRecipeCompleted = (diet: DietType, recipeName: string, calories: number): ProgressData => {
+export interface RecipeCompletion {
+  name: string;
+  date: string;
+  calories: number;
+  protein: number;
+  fat: number;
+  carbs?: number;
+}
+
+export const markRecipeCompleted = (diet: DietType, recipeName: string, calories: number, protein: number = 0, fat: number = 0, carbs: number = 0): ProgressData => {
   const data = loadProgress();
   const key = `${recipeName}_${getTodayString()}`;
   if (!data.nutrition[diet].completedRecipes.includes(key)) {
     data.nutrition[diet].completedRecipes.push(key);
   }
+  
+  // Store detailed macro info
+  if (!data.nutrition[diet].completedRecipesDetails) {
+    data.nutrition[diet].completedRecipesDetails = [];
+  }
+  
+  const existingIndex = data.nutrition[diet].completedRecipesDetails.findIndex(
+    r => r.name === recipeName && r.date === getTodayString()
+  );
+  
+  if (existingIndex === -1) {
+    data.nutrition[diet].completedRecipesDetails.push({
+      name: recipeName,
+      date: getTodayString(),
+      calories,
+      protein,
+      fat,
+      carbs
+    });
+  }
+  
   saveProgress(data);
   return data;
 };
@@ -255,23 +295,39 @@ export const getTodayCaloriesBurned = (): number => {
     .reduce((acc, s) => acc + s.caloriesBurned, 0);
 };
 
-// Get today's recipes completed (for calorie tracking)
-export const getTodayMealsCalories = (): number => {
+// Get today's macros from completed recipes
+export interface TodayMacros {
+  calories: number;
+  protein: number;
+  fat: number;
+  carbs: number;
+}
+
+export const getTodayMacros = (): TodayMacros => {
   const data = loadProgress();
   const today = getTodayString();
-  let calories = 0;
   const diets: DietType[] = ["carnivore", "lowcarb", "keto", "fasting", "detox"];
   
+  let macros: TodayMacros = { calories: 0, protein: 0, fat: 0, carbs: 0 };
+  
   diets.forEach((diet) => {
-    data.nutrition[diet].completedRecipes.forEach((recipe) => {
-      if (recipe.endsWith(`_${today}`)) {
-        // Estimate 300 kcal per meal (simplified)
-        calories += 300;
-      }
-    });
+    const details = data.nutrition[diet].completedRecipesDetails || [];
+    details
+      .filter(r => r.date === today)
+      .forEach(r => {
+        macros.calories += r.calories || 0;
+        macros.protein += r.protein || 0;
+        macros.fat += r.fat || 0;
+        macros.carbs += r.carbs || 0;
+      });
   });
   
-  return calories;
+  return macros;
+};
+
+// Legacy function for compatibility
+export const getTodayMealsCalories = (): number => {
+  return getTodayMacros().calories;
 };
 
 // Health analysis

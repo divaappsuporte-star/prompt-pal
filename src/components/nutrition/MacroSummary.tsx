@@ -1,41 +1,43 @@
 import { motion } from "framer-motion";
 import { Flame, Dumbbell, Wheat, Droplets } from "lucide-react";
+import { useProgress } from "@/hooks/useProgress";
+import { useEffect, useState } from "react";
 
-interface MacroSummaryProps {
-  macros: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-  };
-}
+const MacroSummary = () => {
+  const { todayMacros, refreshData } = useProgress();
+  
+  // Listen for progress updates
+  useEffect(() => {
+    const handleUpdate = () => refreshData();
+    window.addEventListener("progressUpdate", handleUpdate);
+    return () => window.removeEventListener("progressUpdate", handleUpdate);
+  }, [refreshData]);
 
-const MacroSummary = ({ macros }: MacroSummaryProps) => {
   const items = [
     {
       label: "Calorias",
-      value: macros.calories,
+      value: todayMacros.calories,
       unit: "kcal",
       icon: Flame,
       color: "coral",
     },
     {
       label: "Proteína",
-      value: macros.protein,
+      value: todayMacros.protein,
       unit: "g",
       icon: Dumbbell,
       color: "coral",
     },
     {
       label: "Carbs",
-      value: macros.carbs,
+      value: todayMacros.carbs,
       unit: "g",
       icon: Wheat,
       color: "gold",
     },
     {
       label: "Gordura",
-      value: macros.fat,
+      value: todayMacros.fat,
       unit: "g",
       icon: Droplets,
       color: "mint",
@@ -51,7 +53,7 @@ const MacroSummary = ({ macros }: MacroSummaryProps) => {
     >
       <div className="glass-card rounded-2xl p-4">
         <h3 className="font-display font-semibold text-foreground text-sm mb-3">
-          Resumo do Dia
+          Consumo do Dia
         </h3>
         <div className="grid grid-cols-4 gap-3">
           {items.map((item, index) => {
