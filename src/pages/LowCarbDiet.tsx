@@ -1,437 +1,609 @@
 import { useState } from "react";
-import { ArrowLeft, Lock, CheckCircle2, ChevronDown, ChevronUp, BookOpen, Utensils, FlameKindling, Brain, Heart, Zap } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { 
+  ArrowLeft, 
+  Salad, 
+  Brain, 
+  Flame, 
+  Heart, 
+  Zap, 
+  Clock, 
+  Target, 
+  CheckCircle2,
+  BookOpen,
+  ChevronRight,
+  Lock,
+  Activity,
+  Droplets,
+  Scale,
+  Moon,
+  Dumbbell,
+  Leaf,
+  Calendar,
+  Coffee,
+  Sun,
+  UtensilsCrossed,
+  Unlock
+} from "lucide-react";
+import BottomNavigation from "@/components/BottomNavigation";
 
 interface Chapter {
   id: number;
   title: string;
-  icon: React.ReactNode;
-  concept: string;
-  science: string;
-  benefits: string[];
-  tips: string[];
+  subtitle: string;
+  icon: React.ElementType;
+  content: {
+    intro: string;
+    science?: string;
+    benefits?: string[];
+    tips?: string[];
+    quote?: string;
+  };
 }
 
 interface Recipe {
   name: string;
   calories: number;
-  protein: string;
-  fat: string;
-  carbs: string;
-  preparation: string;
+  protein: number;
+  fat: number;
+  carbs: number;
+  instructions: string;
 }
-
-const chapters: Chapter[] = [
-  {
-    id: 1,
-    title: "A Mente Glicemizada",
-    icon: <Brain className="w-5 h-5" />,
-    concept: "Quando você come pão, arroz ou açúcar refinado, ocorre uma explosão de glicose no sangue. O pâncreas libera insulina e armazena glicose extra em forma de gordura. Logo após a subida, vem a queda — e o cérebro interpreta esse declínio como 'fome urgente'. Esse ciclo cria dependência química.",
-    science: "Nature Neuroscience (2018): carboidratos simples ativam as mesmas vias dopaminérgicas de drogas leves. A Dieta Low Carb quebra esse ciclo, estabilizando o humor e resetando o comando da fome.",
-    benefits: ["Quebra do ciclo de dependência de açúcar", "Estabilização do humor", "Controle natural da fome"],
-    tips: ["Elimine açúcar refinado gradualmente", "Substitua pão por ovos no café da manhã", "Observe seus gatilhos de 'fome urgente'"]
-  },
-  {
-    id: 2,
-    title: "Mecanismo Metabólico",
-    icon: <FlameKindling className="w-5 h-5" />,
-    concept: "A Low Carb ensina o corpo a usar gordura como combustível. Ao reduzir carboidratos, há queda de insulina — o hormônio que impede queimar gordura — e aumento da lipólise (uso de gordura corporal).",
-    science: "Journal of Metabolic Research (2021): 60% dos indivíduos em Low Carb mostraram aumento de 38% na oxidação de gordura após 10 dias.",
-    benefits: ["Queima de gordura corporal acelerada", "Insulina controlada", "Energia mais estável"],
-    tips: ["Reduza carboidratos para 60-100g/dia", "Aumente gorduras boas gradualmente", "Mantenha proteína alta"]
-  },
-  {
-    id: 3,
-    title: "Equilíbrio dos Macronutrientes",
-    icon: <Zap className="w-5 h-5" />,
-    concept: "Distribuição ideal: 20–25% carboidratos (60–100g/dia), 40% proteína, 35–40% gordura boa. Carboidratos vêm principalmente de verduras, legumes cozidos e uma fruta de baixo índice glicêmico por dia.",
-    science: "Rotina que o corpo entende, digestão leve, energia constante. Harvard School of Public Health (2023) demonstrou que adultos em regime Low Carb reduziram 34% dos triglicerídeos.",
-    benefits: ["Digestão leve", "Energia constante", "Redução de triglicerídeos"],
-    tips: ["Priorize verduras e legumes cozidos", "Limite frutas a 1 porção/dia", "Escolha frutas de baixo IG: morango, maçã verde"]
-  },
-  {
-    id: 4,
-    title: "Efeito Hormonal Benéfico",
-    icon: <Heart className="w-5 h-5" />,
-    concept: "A Low Carb diminui a insulina e estabiliza leptina, o que reduz fome e compulsão. Também aumenta o GH (hormônio do crescimento) e a testosterona natural.",
-    science: "Endocrine Reviews (2020): em 4 semanas de Low Carb, o GH sobe em média 27%, melhorando recuperação e tônus muscular.",
-    benefits: ["Redução da fome e compulsão", "Aumento do GH em 27%", "Melhora do tônus muscular"],
-    tips: ["Mantenha jejum noturno de 12h", "Priorize proteína no café", "Evite lanches entre refeições"]
-  },
-  {
-    id: 5,
-    title: "O Mito do Carboidrato Essencial",
-    icon: <BookOpen className="w-5 h-5" />,
-    concept: "O corpo não precisa de glicose externa: o fígado fabrica o que for necessário através da gliconeogênese. A falta de carboidrato não causa fadiga se há gordura e proteína suficientes.",
-    science: "Seu corpo não sente falta de pão; sente falta de equilíbrio hormonal. Frontiers in Nutrition (2021) comprova a eficiência metabólica sem carboidratos externos.",
-    benefits: ["Autonomia metabólica", "Fim da dependência de carboidratos", "Energia sustentável"],
-    tips: ["Confie no processo de adaptação", "Aumente gorduras boas se sentir fraqueza", "O fígado produz a glicose necessária"]
-  },
-  {
-    id: 6,
-    title: "Fase de Adaptação (14 Dias)",
-    icon: <Zap className="w-5 h-5" />,
-    concept: "Durante a adaptação, o corpo reduz glicogênio e aumenta queima de gordura. Podem ocorrer dor de cabeça ou fraqueza leve — resolvidas com sal e água.",
-    science: "Após dez dias, surge uma energia estável e duradoura. O corpo completa a transição metabólica.",
-    benefits: ["Transição para queima de gordura", "Energia estável após adaptação", "Redução de retenção de líquidos"],
-    tips: ["Aumente sal (½ colher chá/dia)", "Hidratação = 2 a 3 litros de água/dia", "Inclua ovos extras ou abacate"]
-  },
-  {
-    id: 7,
-    title: "Alimentos Base para Brasileiros",
-    icon: <Utensils className="w-5 h-5" />,
-    concept: "Priorize o que cabe no bolso: Proteínas (patinho, coxão mole, frango, pernil, ovos, sardinha), Gorduras (manteiga, banha, azeite, abacate), Carbos bons (abobrinha, berinjela, pepino, alface, couve).",
-    science: "Nada de exotismos ou importados. Alimentos simples e acessíveis garantem adesão à dieta.",
-    benefits: ["Economia no supermercado", "Facilidade de encontrar", "Nutrição completa"],
-    tips: ["Compre cortes populares", "Use banha e manteiga para cozinhar", "Verduras cozidas são mais digestíveis"]
-  },
-  {
-    id: 8,
-    title: "Hidratação como Terapia",
-    icon: <Heart className="w-5 h-5" />,
-    concept: "A água ajuda a reduzir retenção, melhora rim e fígado e regula a leptina. Adicione uma pitada de sal rosa e suco de limão na água da manhã.",
-    science: "Hidratação adequada é fundamental para o metabolismo de gorduras e eliminação de toxinas.",
-    benefits: ["Redução de retenção", "Melhora renal e hepática", "Regulação da leptina"],
-    tips: ["Beba 2-3 litros/dia", "Adicione sal rosa à água", "Limão na água da manhã"]
-  },
-  {
-    id: 9,
-    title: "Impacto Cardiosaúde",
-    icon: <Heart className="w-5 h-5" />,
-    concept: "Low Carb reduz triglicerídeos e LDL oxidado, melhora HDL e glicemia. É uma estratégia comprovada para saúde cardiovascular.",
-    science: "BMJ 2021: pacientes diabéticos em Low Carb diminuíram remédios em 35% sem prejuízo ao colesterol.",
-    benefits: ["Redução de triglicerídeos", "Melhora do HDL", "Glicemia controlada"],
-    tips: ["Evite óleos vegetais refinados", "Priorize gorduras naturais", "Monitore seus exames"]
-  },
-  {
-    id: 10,
-    title: "Clareza Mental Cetônica",
-    icon: <Brain className="w-5 h-5" />,
-    concept: "Quando o cérebro usa corpos cetônicos (vindos da gordura), há menos oscilação de dopamina. Logo: menor vontade de doce e mais foco.",
-    science: "Nature Metabolism (2020): cetonas geradas pela Low Carb aumentam produção de BDNF, proteína de memória.",
-    benefits: ["Foco mental aumentado", "Menor vontade de doce", "Melhora da memória"],
-    tips: ["Mantenha a dieta por 21 dias", "Observe a clareza mental", "Anote suas melhorias cognitivas"]
-  },
-  {
-    id: 11,
-    title: "Low Carb e Treinos",
-    icon: <Zap className="w-5 h-5" />,
-    concept: "Carboidrato baixo não enche o músculo de água, mas mantém força constante. Use fruta antes do treino se precisar de impulso.",
-    science: "Pós-treino: bife magro + ovo garantem recuperação completa sem picos de insulina.",
-    benefits: ["Força constante", "Recuperação eficiente", "Sem retenção muscular"],
-    tips: ["Fruta antes do treino se necessário", "Proteína + gordura pós-treino", "Mantenha hidratação"]
-  },
-  {
-    id: 12,
-    title: "Vitaminas e Minerais Essenciais",
-    icon: <FlameKindling className="w-5 h-5" />,
-    concept: "Zinco (do ovo e carne); magnésio (do legume verde); selênio (sardinha). Esses minerais são cofatores de enzimas metabólicas.",
-    science: "Cofatores enzimáticos mantêm hormônios ativos e metabolismo funcionando.",
-    benefits: ["Hormônios equilibrados", "Metabolismo ativo", "Imunidade fortalecida"],
-    tips: ["Inclua sardinha 2x/semana", "Coma folhas verdes diariamente", "Ovos são fonte de zinco"]
-  },
-  {
-    id: 13,
-    title: "Desapego Emocional da Comida",
-    icon: <Brain className="w-5 h-5" />,
-    concept: "Sem alterações bruscas de glicose, o cérebro se liberta do reforço emocional do açúcar. Dormir melhor, pensar melhor e se relacionar melhor com a comida.",
-    science: "Quando a mente entende que fome não é emoção, nasce a disciplina leve. Efeito neuroquímico comprovado.",
-    benefits: ["Sono melhorado", "Relação saudável com comida", "Disciplina natural"],
-    tips: ["Identifique fome física vs emocional", "Não coma por tédio ou estresse", "Pratique alimentação consciente"]
-  },
-  {
-    id: 14,
-    title: "Saída do Platô",
-    icon: <FlameKindling className="w-5 h-5" />,
-    concept: "Mesmo sem contar calorias, o corpo pode 'travar'. Alterne dias com carboidratos bons (1 porção de mandioquinha) a cada 7 dias para reativar o metabolismo.",
-    science: "Ciclagem de carboidratos reativa enzimas metabólicas e evita adaptação excessiva.",
-    benefits: ["Quebra de platô", "Reativação metabólica", "Flexibilidade alimentar"],
-    tips: ["1 dia de carb bom a cada 7 dias", "Mandioquinha ou batata doce", "Observe a resposta do corpo"]
-  },
-  {
-    id: 15,
-    title: "Plano Alimentar de 21 Dias",
-    icon: <BookOpen className="w-5 h-5" />,
-    concept: "Fase 1 (1-7): Cortar açúcar e pães, incluir proteína e legumes. Fase 2 (8-14): Inserir fruta baixa IG e variação de carne. Fase 3 (15-21): Ciclar carboidratos bons 1x/semana.",
-    science: "Progressão estruturada garante adaptação suave e resultados duradouros.",
-    benefits: ["Redução de inchaço (fase 1)", "Equilíbrio de energia (fase 2)", "Estabilização de peso (fase 3)"],
-    tips: ["Siga as fases na ordem", "Não pule etapas", "Anote seu progresso diário"]
-  },
-  {
-    id: 16,
-    title: "Quebrar o Jejum Corretamente",
-    icon: <Utensils className="w-5 h-5" />,
-    concept: "Evite sair comendo carboidrato. Prefira proteína + gordura: ovo, abacate, carne magra. Assim a insulina permanece baixa.",
-    science: "Manter insulina baixa ao quebrar jejum prolonga os benefícios do estado de queima de gordura.",
-    benefits: ["Insulina controlada", "Energia mantida", "Foco preservado"],
-    tips: ["Quebre jejum com ovos", "Adicione abacate ou azeite", "Evite frutas logo ao acordar"]
-  },
-  {
-    id: 17,
-    title: "Digestão Eficiente",
-    icon: <Heart className="w-5 h-5" />,
-    concept: "Coma devagar, mastigue bem. Não exagere em fibra crua no início — hortaliças cozidas melhoram absorção. Higienize com vinagre ou limão.",
-    science: "Mastigação adequada ativa enzimas digestivas e melhora absorção de nutrientes.",
-    benefits: ["Melhor absorção", "Menos desconforto digestivo", "Saciedade prolongada"],
-    tips: ["Mastigue 20-30 vezes", "Prefira verduras cozidas", "Higienize com vinagre"]
-  },
-  {
-    id: 18,
-    title: "Mitos Comuns Desvendados",
-    icon: <BookOpen className="w-5 h-5" />,
-    concept: "'Vou perder músculo' - Falso, proteína conserva. 'Vou sentir fraqueza' - Apenas na adaptação. 'Não posso viver sem arroz' - Depois de 21 dias nem vai querer.",
-    science: "Evidências científicas desmentem os principais medos sobre redução de carboidratos.",
-    benefits: ["Confiança no processo", "Eliminação de medos", "Clareza sobre a dieta"],
-    tips: ["Confie na ciência", "Dê tempo ao corpo", "Os desejos diminuem naturalmente"]
-  },
-  {
-    id: 19,
-    title: "O Papel dos Hábitos",
-    icon: <Brain className="w-5 h-5" />,
-    concept: "Anotar refeições ajuda o cérebro a padronizar rotina. Use checklist de 21 dias para refeições e sono regular.",
-    science: "Behavioral Psychology (2020): perder peso sem anotar é 50% menos efetivo.",
-    benefits: ["Rotina estabelecida", "Consciência alimentar", "Resultados 50% melhores"],
-    tips: ["Anote todas as refeições", "Mantenha horários fixos", "Use checklist diário"]
-  },
-  {
-    id: 20,
-    title: "Constância: O Cérebro em 21 Dias",
-    icon: <Zap className="w-5 h-5" />,
-    concept: "21 dias é tempo médio para criar rotina. Repita as refeições, não a culpa. A mente aprende consistência na simplicidade.",
-    science: "Não é sobre perder peso, é sobre nunca mais voltar ao caos alimentar. Neuroplasticidade consolida novos hábitos.",
-    benefits: ["Hábito consolidado", "Fim do ciclo de culpa", "Autonomia alimentar"],
-    tips: ["Complete os 21 dias", "Simplicidade é chave", "Celebre pequenas vitórias"]
-  }
-];
-
-const breakfastRecipes: Recipe[] = [
-  { name: "Omelete de ovos com queijo", calories: 250, protein: "14g", fat: "20g", carbs: "1g", preparation: "Bater ovos, assar na frigideira com queijo." },
-  { name: "Ovos mexidos com abacate", calories: 320, protein: "13g", fat: "26g", carbs: "3g", preparation: "Misture ovos e fatias de abacate." },
-  { name: "Café + ovo + queijo coalho", calories: 220, protein: "12g", fat: "16g", carbs: "1g", preparation: "Rápido e energético." },
-  { name: "Panqueca de ovo com linhaça", calories: 290, protein: "15g", fat: "22g", carbs: "4g", preparation: "Bata tudo e asse 2 min cada lado." },
-  { name: "Omelete de carne moída 100g", calories: 350, protein: "28g", fat: "23g", carbs: "2g", preparation: "Refogue carne, misture ao ovo." },
-  { name: "Ovo cozido + frango desfiado", calories: 260, protein: "22g", fat: "19g", carbs: "1g", preparation: "Sirva morno com azeite." },
-  { name: "Ovo frito no ghee + tomate", calories: 240, protein: "13g", fat: "21g", carbs: "2g", preparation: "Refogue tomate antes do ovo." },
-  { name: "Omelete duplo frango e ovo", calories: 330, protein: "25g", fat: "25g", carbs: "2g", preparation: "Dourar 4 min." },
-  { name: "Músculo desfiado + ovo cozido", calories: 280, protein: "27g", fat: "18g", carbs: "1g", preparation: "Reaproveite carne da noite anterior." },
-  { name: "Abacate com colágeno e chia", calories: 210, protein: "6g", fat: "18g", carbs: "5g", preparation: "Misture tudo e consuma frio." }
-];
-
-const lunchRecipes: Recipe[] = [
-  { name: "Bife de alcatra com salada verde", calories: 380, protein: "30g", fat: "25g", carbs: "6g", preparation: "Grelhar bife, acompanhar folhas e azeite." },
-  { name: "Carne moída com abobrinha", calories: 360, protein: "27g", fat: "24g", carbs: "5g", preparation: "Refogar carne + abobrinha ralada." },
-  { name: "Frango grelhado + purê de couve-flor", calories: 390, protein: "32g", fat: "20g", carbs: "8g", preparation: "Cozinhar couve-flor e bater com manteiga." },
-  { name: "Bisteca suína + salada de repolho", calories: 420, protein: "30g", fat: "30g", carbs: "4g", preparation: "Fritar em banha, repolho cru com azeite." },
-  { name: "Coxão mole ensopado com legume", calories: 400, protein: "35g", fat: "25g", carbs: "7g", preparation: "Cozinhe carne + cenoura em cubos." },
-  { name: "Omelete de 3 ovos + folhas cozidas", calories: 290, protein: "18g", fat: "21g", carbs: "4g", preparation: "Misture espinafre ou couve." },
-  { name: "Pernil suíno grelhado + pepino", calories: 410, protein: "29g", fat: "28g", carbs: "3g", preparation: "Grelhar 8 min + sirva com pepino." },
-  { name: "Sardinha na frigideira + limão", calories: 280, protein: "26g", fat: "18g", carbs: "1g", preparation: "15 min em fogo baixo." },
-  { name: "Caldo rico de músculo + ovo", calories: 330, protein: "27g", fat: "22g", carbs: "2g", preparation: "Cozinhar com ossos e adicionar ovo." },
-  { name: "Patinho moído com berinjela", calories: 350, protein: "30g", fat: "20g", carbs: "6g", preparation: "Refogar tudo junto, azeite." }
-];
-
-const dinnerRecipes: Recipe[] = [
-  { name: "Frango ensopado simples", calories: 340, protein: "28g", fat: "22g", carbs: "3g", preparation: "Cozinhar 15 min com sal." },
-  { name: "Carne moída + ovo cozido", calories: 310, protein: "26g", fat: "21g", carbs: "2g", preparation: "Misturar em frigideira." },
-  { name: "Alcatra em tiras + salada fria", calories: 360, protein: "30g", fat: "24g", carbs: "4g", preparation: "Cozinha rápida e refrescante." },
-  { name: "Pernil suíno + legumes cozidos", calories: 410, protein: "32g", fat: "28g", carbs: "6g", preparation: "15 min de panela de pressão." },
-  { name: "Ovos recheados com carne moída", calories: 340, protein: "28g", fat: "23g", carbs: "2g", preparation: "Abrir ovos cozidos e rechear." },
-  { name: "Hambúrguer caseiro duplo", calories: 420, protein: "34g", fat: "29g", carbs: "3g", preparation: "Dois discos de carne, grelha rápida." },
-  { name: "Frango assado na manteiga", calories: 350, protein: "30g", fat: "25g", carbs: "2g", preparation: "Forno 180°C / 40 min." },
-  { name: "Coxão mole cozido com alho", calories: 380, protein: "31g", fat: "26g", carbs: "3g", preparation: "Pressão 35 min." },
-  { name: "Caldo de osso + ovo mexido", calories: 260, protein: "24g", fat: "17g", carbs: "1g", preparation: "Misturar ovo ao caldo." },
-  { name: "Músculo desfiado na banha", calories: 390, protein: "32g", fat: "28g", carbs: "0g", preparation: "Refogar até dourar." }
-];
 
 const LowCarbDiet = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("chapters");
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
-  const [expandedRecipe, setExpandedRecipe] = useState<string | null>(null);
   const [completedChapters, setCompletedChapters] = useState<number[]>([]);
   const [unlockedChapters, setUnlockedChapters] = useState<number[]>([1, 2, 3]);
 
+  const chapters: Chapter[] = [
+    {
+      id: 1,
+      title: "A Mente Glicemizada",
+      subtitle: "Como os picos de açúcar alteram seu cérebro",
+      icon: Brain,
+      content: {
+        intro: "Quando você come pão, arroz ou açúcar refinado, ocorre uma explosão de glicose no sangue. O pâncreas libera insulina e armazena glicose extra em forma de gordura. Logo após a subida, vem a queda — e o cérebro interpreta esse declínio como 'fome urgente'. Esse ciclo cria dependência química.",
+        science: "Nature Neuroscience (2018): carboidratos simples ativam as mesmas vias dopaminérgicas de drogas leves. A Dieta Low Carb quebra esse ciclo, estabilizando o humor e resetando o comando da fome.",
+        benefits: ["Quebra do ciclo de dependência de açúcar", "Estabilização do humor", "Controle natural da fome"],
+        tips: ["Elimine açúcar refinado gradualmente", "Substitua pão por ovos no café da manhã", "Observe seus gatilhos de 'fome urgente'"],
+      },
+    },
+    {
+      id: 2,
+      title: "Mecanismo Metabólico",
+      subtitle: "Mudando a fonte de energia",
+      icon: Flame,
+      content: {
+        intro: "A Low Carb ensina o corpo a usar gordura como combustível. Ao reduzir carboidratos, há queda de insulina — o hormônio que impede queimar gordura — e aumento da lipólise (uso de gordura corporal).",
+        science: "Journal of Metabolic Research (2021): 60% dos indivíduos em Low Carb mostraram aumento de 38% na oxidação de gordura após 10 dias.",
+        benefits: ["Aumento de 38% na oxidação de gordura", "Queda da insulina", "Lipólise acelerada"],
+      },
+    },
+    {
+      id: 3,
+      title: "Equilíbrio dos Macronutrientes",
+      subtitle: "A distribuição ideal",
+      icon: Scale,
+      content: {
+        intro: "Distribuição ideal: 20–25% carboidratos (60–100g/dia), 40% proteína, 35–40% gordura boa. Carboidratos vêm principalmente de verduras, legumes cozidos e uma fruta de baixo índice glicêmico por dia.",
+        science: "Harvard School of Public Health (2023) demonstrou que adultos em regime Low Carb reduziram 34% dos triglicerídeos e 12% da gordura visceral em 8 semanas.",
+        tips: ["60-100g de carboidratos por dia", "Priorize verduras e legumes cozidos", "Uma fruta de baixo IG por dia"],
+        quote: "Rotina que o corpo entende, digestão leve, energia constante.",
+      },
+    },
+    {
+      id: 4,
+      title: "Efeito Hormonal Benéfico",
+      subtitle: "Hormônios trabalhando a seu favor",
+      icon: Heart,
+      content: {
+        intro: "A Low Carb diminui a insulina e estabiliza leptina, o que reduz fome e compulsão. Também aumenta o GH (hormônio do crescimento) e a testosterona natural.",
+        science: "Endocrine Reviews (2020): em 4 semanas de Low Carb, o GH sobe em média 27%, melhorando recuperação e tônus muscular.",
+        benefits: ["Insulina reduzida", "Leptina estabilizada", "GH aumentado em 27%", "Testosterona natural elevada"],
+      },
+    },
+    {
+      id: 5,
+      title: "O Mito do Carboidrato Essencial",
+      subtitle: "A verdade sobre a glicose",
+      icon: BookOpen,
+      content: {
+        intro: "O corpo não precisa de glicose externa: o fígado fabrica o que for necessário através da gliconeogênese. A falta de carboidrato não causa fadiga se há gordura e proteína suficientes.",
+        science: "Frontiers in Nutrition (2021) comprova a eficiência metabólica sem carboidratos externos.",
+        quote: "Seu corpo não sente falta de pão; sente falta de equilíbrio hormonal.",
+      },
+    },
+    {
+      id: 6,
+      title: "Fase de Adaptação (14 Dias)",
+      subtitle: "Os primeiros passos",
+      icon: Calendar,
+      content: {
+        intro: "Durante a adaptação, o corpo reduz glicogênio e aumenta queima de gordura. Podem ocorrer dor de cabeça ou fraqueza leve — resolvidas com sal e água.",
+        science: "Após dez dias, surge uma energia estável e duradoura. O corpo completa a transição metabólica.",
+        tips: [
+          "Aumente sal (½ colher chá/dia)",
+          "Hidratação = 2 a 3 litros de água/dia",
+          "Inclua ovos extras ou abacate com gordura boa"
+        ],
+      },
+    },
+    {
+      id: 7,
+      title: "Alimentos Base Brasileiros",
+      subtitle: "O que cabe no bolso",
+      icon: UtensilsCrossed,
+      content: {
+        intro: "Priorize o que existe em qualquer mercado: Proteínas (patinho, coxão mole, peito de frango, pernil, lombo, ovos, sardinha). Gorduras (manteiga, banha de porco, azeite de oliva, abacate). Carbos bons (abobrinha, berinjela, pepino, alface, couve, morango ou maçã verde).",
+        tips: [
+          "Proteínas: patinho, coxão mole, frango, pernil, ovos, sardinha",
+          "Gorduras: manteiga, banha, azeite, abacate",
+          "Carbos: abobrinha, berinjela, pepino, alface, couve"
+        ],
+        quote: "Nada de exotismos ou importados.",
+      },
+    },
+    {
+      id: 8,
+      title: "Hidratação como Terapia",
+      subtitle: "Água é remédio hormonal",
+      icon: Droplets,
+      content: {
+        intro: "A água ajuda a reduzir retenção, melhora rim e fígado e regula a leptina. Adicione uma pitada de sal rosa e suco de limão na água da manhã para recuperar eletrólitos.",
+        benefits: ["Reduz retenção de líquidos", "Melhora função renal e hepática", "Regula a leptina"],
+        tips: ["2-3 litros de água por dia", "Sal rosa na água da manhã", "Limão para eletrólitos"],
+      },
+    },
+    {
+      id: 9,
+      title: "Impacto Cardiosaúde",
+      subtitle: "Coração protegido",
+      icon: Heart,
+      content: {
+        intro: "Low Carb reduz triglicerídeos e LDL oxidado, melhora HDL e glicemia. É uma das estratégias mais eficazes para saúde cardiovascular.",
+        science: "BMJ 2021: pacientes diabéticos em Low Carb diminuíram remédios em 35% sem prejuízo ao colesterol.",
+        benefits: ["Triglicerídeos reduzidos", "HDL melhorado", "Glicemia controlada", "Menos remédios para diabéticos"],
+      },
+    },
+    {
+      id: 10,
+      title: "Clareza Mental Cetônica",
+      subtitle: "A energia do cérebro",
+      icon: Brain,
+      content: {
+        intro: "Quando o cérebro usa corpos cetônicos (vindos da gordura), há menos oscilação de dopamina. Logo: menor vontade de doce e mais foco.",
+        science: "Nature Metabolism (2020): cetonas geradas pela Low Carb aumentam produção de BDNF, proteína de memória.",
+        benefits: ["Menos vontade de doce", "Foco mental aumentado", "BDNF elevado (proteína de memória)"],
+      },
+    },
+    {
+      id: 11,
+      title: "Low Carb e Treinos",
+      subtitle: "Performance mantida",
+      icon: Dumbbell,
+      content: {
+        intro: "Carboidrato baixo não enche o músculo de água, mas mantém força constante. Use fruta antes do treino se precisar de impulso.",
+        tips: [
+          "Fruta de baixo IG antes do treino (se necessário)",
+          "Pós-treino: bife magro + ovo",
+          "Recuperação completa sem picos de insulina"
+        ],
+      },
+    },
+    {
+      id: 12,
+      title: "Vitaminas e Minerais",
+      subtitle: "Os cofatores essenciais",
+      icon: Leaf,
+      content: {
+        intro: "Zinco (do ovo e carne); magnésio (do legume verde); selênio (sardinha). Esses minerais são cofatores de enzimas metabólicas e mantêm hormônios ativos.",
+        benefits: ["Zinco: ovos e carne", "Magnésio: legumes verdes", "Selênio: sardinha"],
+        tips: ["Inclua sardinha 2x por semana", "Coma folhas verdes diariamente", "Ovos são fonte completa"],
+      },
+    },
+    {
+      id: 13,
+      title: "Desapego Emocional",
+      subtitle: "Mente e comida em paz",
+      icon: Brain,
+      content: {
+        intro: "Sem alterações bruscas de glicose, o cérebro se liberta do reforço emocional do açúcar. Dormir melhor, pensar melhor e se relacionar melhor com a comida é efeito neuroquímico.",
+        quote: "Quando a mente entende que fome não é emoção, nasce a disciplina leve.",
+        benefits: ["Sono melhorado", "Pensamento mais claro", "Relação saudável com comida"],
+      },
+    },
+    {
+      id: 14,
+      title: "Saída do Platô",
+      subtitle: "Quando o corpo trava",
+      icon: Activity,
+      content: {
+        intro: "Mesmo sem contar calorias, o corpo pode 'travar'. Alterne dias com carboidratos bons (1 porção de mandioquinha) a cada 7 dias para reativar o metabolismo.",
+        tips: [
+          "1 dia de carb bom a cada 7 dias",
+          "Mandioquinha ou batata doce",
+          "Não exagere na quantidade",
+          "Observe a resposta do corpo"
+        ],
+      },
+    },
+    {
+      id: 15,
+      title: "Plano Alimentar 21 Dias",
+      subtitle: "Estrutura completa",
+      icon: Calendar,
+      content: {
+        intro: "Um plano estruturado para sua transformação. Fase 1 (1-7): Cortar açúcar e pães, incluir proteína e legumes. Fase 2 (8-14): Inserir fruta baixa IG e variação de carne. Fase 3 (15-21): Ciclar carboidratos bons 1x/semana.",
+        tips: [
+          "Fase 1: Cortar açúcar e pães, reduzir inchaço",
+          "Fase 2: Inserir fruta baixa IG, equilibrar energia",
+          "Fase 3: Ciclar carbs bons, estabilizar peso"
+        ],
+        benefits: ["Redução de inchaço na fase 1", "Energia equilibrada na fase 2", "Peso estabilizado na fase 3"],
+      },
+    },
+    {
+      id: 16,
+      title: "Quebrar o Jejum",
+      subtitle: "Como sair corretamente",
+      icon: Clock,
+      content: {
+        intro: "Evite sair comendo carboidrato. Prefira proteína + gordura: ovo, abacate, carne magra. Assim a insulina permanece baixa e você mantém foco e energia.",
+        tips: [
+          "Quebrar jejum com proteína + gordura",
+          "Evitar carboidrato na primeira refeição",
+          "Ovo, abacate ou carne magra são ideais"
+        ],
+      },
+    },
+    {
+      id: 17,
+      title: "Digestão Eficiente",
+      subtitle: "Absorção otimizada",
+      icon: Target,
+      content: {
+        intro: "Coma devagar, mastigue bem. Não exagere em fibra crua no início — hortaliças cozidas melhoram absorção. Higienize tudo com vinagre ou limão.",
+        tips: [
+          "Comer devagar, mastigar bem",
+          "Hortaliças cozidas no início",
+          "Higienizar com vinagre ou limão"
+        ],
+      },
+    },
+    {
+      id: 18,
+      title: "Mitos Comuns",
+      subtitle: "Verdades reveladas",
+      icon: BookOpen,
+      content: {
+        intro: "'Vou perder músculo' - Falso, proteína conserva. 'Vou sentir fraqueza' - Apenas enquanto o corpo adapta. 'Não posso viver sem arroz' - Depois de 21 dias, nem vai querer.",
+        benefits: [
+          "❌ 'Vou perder músculo' → Proteína conserva",
+          "❌ 'Vou sentir fraqueza' → Só na adaptação",
+          "❌ 'Não posso viver sem arroz' → Em 21 dias você esquece"
+        ],
+      },
+    },
+    {
+      id: 19,
+      title: "O Papel dos Hábitos",
+      subtitle: "Rotina que transforma",
+      icon: Target,
+      content: {
+        intro: "Anotar refeições ajuda o cérebro a padronizar rotina. Use checklist de 21 dias para refeições e sono regular.",
+        science: "Behavioral Psychology (2020) mostra que perder peso sem anotar é 50% menos efetivo.",
+        tips: [
+          "Anote todas as refeições",
+          "Use checklist de 21 dias",
+          "Mantenha horários regulares de sono"
+        ],
+      },
+    },
+    {
+      id: 20,
+      title: "Constância em 21 Dias",
+      subtitle: "O cérebro reprogramado",
+      icon: CheckCircle2,
+      content: {
+        intro: "21 dias é tempo médio para criar rotina. Repita as refeições, não a culpa. A mente aprende consistência na simplicidade.",
+        quote: "Não é sobre perder peso, é sobre nunca mais voltar ao caos alimentar.",
+        benefits: [
+          "⬇ Perda de 2 a 6 kg sem fome",
+          "📏 Redução de 5-9 cm de cintura",
+          "😴 Melhoria no sono e humor",
+          "🧠 Clareza mental acelerada"
+        ],
+      },
+    },
+  ];
+
+  const breakfastRecipes: Recipe[] = [
+    { name: "Omelete de ovos com queijo", calories: 250, protein: 14, fat: 20, carbs: 1, instructions: "Bater ovos, assar na frigideira com queijo." },
+    { name: "Ovos mexidos com abacate", calories: 320, protein: 13, fat: 26, carbs: 3, instructions: "Misture ovos e fatias de abacate." },
+    { name: "Café + ovo + queijo coalho", calories: 220, protein: 12, fat: 16, carbs: 1, instructions: "Rápido e energético." },
+    { name: "Panqueca de ovo com linhaça", calories: 290, protein: 15, fat: 22, carbs: 4, instructions: "Bata tudo e asse 2 min cada lado." },
+    { name: "Omelete de carne moída 100g", calories: 350, protein: 28, fat: 23, carbs: 2, instructions: "Refogue carne, misture ao ovo." },
+    { name: "Ovo cozido + frango desfiado", calories: 260, protein: 22, fat: 19, carbs: 1, instructions: "Sirva morno com azeite." },
+    { name: "Ovo frito no ghee + tomate", calories: 240, protein: 13, fat: 21, carbs: 2, instructions: "Refogue tomate antes do ovo." },
+    { name: "Omelete duplo frango e ovo", calories: 330, protein: 25, fat: 25, carbs: 2, instructions: "Dourar 4 min." },
+    { name: "Músculo desfiado + ovo cozido", calories: 280, protein: 27, fat: 18, carbs: 1, instructions: "Reaproveite carne da noite anterior." },
+    { name: "Abacate com colágeno e chia", calories: 210, protein: 6, fat: 18, carbs: 5, instructions: "Misture tudo e consuma frio." },
+  ];
+
+  const lunchRecipes: Recipe[] = [
+    { name: "Bife de alcatra com salada verde", calories: 380, protein: 30, fat: 25, carbs: 6, instructions: "Grelhar bife, acompanhar folhas e azeite." },
+    { name: "Carne moída com abobrinha", calories: 360, protein: 27, fat: 24, carbs: 5, instructions: "Refogar carne + abobrinha ralada." },
+    { name: "Frango grelhado + purê de couve-flor", calories: 390, protein: 32, fat: 20, carbs: 8, instructions: "Cozinhar couve-flor e bater com manteiga." },
+    { name: "Bisteca suína + salada de repolho", calories: 420, protein: 30, fat: 30, carbs: 4, instructions: "Fritar em banha, repolho cru com azeite." },
+    { name: "Coxão mole ensopado com legume", calories: 400, protein: 35, fat: 25, carbs: 7, instructions: "Cozinhe carne + cenoura em cubos." },
+    { name: "Omelete de 3 ovos + folhas cozidas", calories: 290, protein: 18, fat: 21, carbs: 4, instructions: "Misture espinafre ou couve." },
+    { name: "Pernil suíno grelhado + pepino", calories: 410, protein: 29, fat: 28, carbs: 3, instructions: "Grelhar 8 min + sirva com pepino." },
+    { name: "Sardinha na frigideira + limão", calories: 280, protein: 26, fat: 18, carbs: 1, instructions: "15 min em fogo baixo." },
+    { name: "Caldo rico de músculo + ovo", calories: 330, protein: 27, fat: 22, carbs: 2, instructions: "Cozinhar com ossos e adicionar ovo." },
+    { name: "Patinho moído com berinjela", calories: 350, protein: 30, fat: 20, carbs: 6, instructions: "Refogar tudo junto, azeite." },
+  ];
+
+  const dinnerRecipes: Recipe[] = [
+    { name: "Frango ensopado simples", calories: 340, protein: 28, fat: 22, carbs: 3, instructions: "Cozinhar 15 min com sal." },
+    { name: "Carne moída + ovo cozido", calories: 310, protein: 26, fat: 21, carbs: 2, instructions: "Misturar em frigideira." },
+    { name: "Alcatra em tiras + salada fria", calories: 360, protein: 30, fat: 24, carbs: 4, instructions: "Cozinha rápida e refrescante." },
+    { name: "Pernil suíno + legumes cozidos", calories: 410, protein: 32, fat: 28, carbs: 6, instructions: "15 min de panela de pressão." },
+    { name: "Ovos recheados com carne moída", calories: 340, protein: 28, fat: 23, carbs: 2, instructions: "Abrir ovos cozidos e rechear." },
+    { name: "Hambúrguer caseiro duplo", calories: 420, protein: 34, fat: 29, carbs: 3, instructions: "Dois discos de carne, grelha rápida." },
+    { name: "Frango assado na manteiga", calories: 350, protein: 30, fat: 25, carbs: 2, instructions: "Forno 180°C / 40 min." },
+    { name: "Coxão mole cozido com alho", calories: 380, protein: 31, fat: 26, carbs: 3, instructions: "Pressão 35 min." },
+    { name: "Caldo de osso + ovo mexido", calories: 260, protein: 24, fat: 17, carbs: 1, instructions: "Misturar ovo ao caldo." },
+    { name: "Músculo desfiado na banha", calories: 390, protein: 32, fat: 28, carbs: 0, instructions: "Refogar até dourar." },
+  ];
+
+  const isChapterUnlocked = (chapterId: number) => unlockedChapters.includes(chapterId);
+  const isChapterCompleted = (chapterId: number) => completedChapters.includes(chapterId);
+
   const handleCompleteChapter = (chapterId: number) => {
     if (!completedChapters.includes(chapterId)) {
-      setCompletedChapters([...completedChapters, chapterId]);
+      setCompletedChapters(prev => [...prev, chapterId]);
     }
     
     const nextChapterId = chapterId + 1;
     if (nextChapterId <= chapters.length && !unlockedChapters.includes(nextChapterId)) {
-      setUnlockedChapters([...unlockedChapters, nextChapterId]);
+      setUnlockedChapters(prev => [...prev, nextChapterId]);
     }
     
     setSelectedChapter(null);
   };
 
-  const isChapterUnlocked = (chapterId: number) => unlockedChapters.includes(chapterId);
-  const isChapterCompleted = (chapterId: number) => completedChapters.includes(chapterId);
-
-  const RecipeCard = ({ recipe, mealType }: { recipe: Recipe; mealType: string }) => {
-    const recipeKey = `${mealType}-${recipe.name}`;
-    const isExpanded = expandedRecipe === recipeKey;
-
-    return (
-      <Card 
-        className="bg-card/50 border-border/50 cursor-pointer hover:bg-card/70 transition-all"
-        onClick={() => setExpandedRecipe(isExpanded ? null : recipeKey)}
-      >
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <h4 className="font-medium text-foreground text-sm">{recipe.name}</h4>
-              <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
-                <span className="text-orange-400">{recipe.calories} kcal</span>
-                <span>P: {recipe.protein}</span>
-                <span>G: {recipe.fat}</span>
-                <span>C: {recipe.carbs}</span>
-              </div>
-            </div>
-            {isExpanded ? (
-              <ChevronUp className="w-4 h-4 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
-            )}
-          </div>
-          
-          {isExpanded && (
-            <div className="mt-3 pt-3 border-t border-border/50">
-              <p className="text-sm text-muted-foreground">
-                <span className="text-foreground font-medium">Preparo:</span> {recipe.preparation}
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    );
-  };
+  const completedCount = completedChapters.length;
+  const progress = Math.round((completedCount / chapters.length) * 100);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen pb-24">
       {/* Header */}
-      <div className="bg-gradient-to-b from-green-900/40 to-background px-4 pt-12 pb-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Button
-            variant="ghost"
-            size="icon"
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="px-6 pt-12 pb-4"
+      >
+        <div className="flex items-center gap-4">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/nutricao")}
-            className="text-foreground"
+            className="w-10 h-10 rounded-full bg-card flex items-center justify-center border border-border"
           >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
+            <ArrowLeft size={20} className="text-foreground" />
+          </motion.button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Dieta Low Carb</h1>
-            <p className="text-muted-foreground text-sm">Nutrição, Hormônios e Reprogramação</p>
+            <h1 className="font-display text-2xl font-bold text-foreground">
+              Dieta Low Carb
+            </h1>
+            <p className="text-sm text-muted-foreground">Nutrição, Hormônios e Reprogramação</p>
           </div>
         </div>
+      </motion.header>
 
-        {/* Progress */}
-        <div className="bg-card/30 rounded-xl p-4 mt-4">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-muted-foreground">Progresso do Conteúdo</span>
-            <span className="text-sm font-medium text-green-400">
-              {completedChapters.length}/{chapters.length} capítulos
-            </span>
+      {/* Progress Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="px-6 py-4"
+      >
+        <div className="glass-card rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center">
+                <Salad className="text-accent" size={24} />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Seu progresso</p>
+                <p className="font-display text-lg font-bold text-foreground">
+                  {completedCount} de {chapters.length} capítulos
+                </p>
+              </div>
+            </div>
+            <span className="text-2xl font-display font-bold text-accent">{progress}%</span>
           </div>
-          <div className="h-2 bg-muted rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-500"
-              style={{ width: `${(completedChapters.length / chapters.length) * 100}%` }}
+          <div className="w-full h-2 rounded-full bg-muted/50 overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="h-full rounded-full bg-gradient-to-r from-accent to-accent/70"
             />
           </div>
         </div>
+      </motion.div>
+
+      {/* Introduction Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="px-6 py-2"
+      >
+        <div className="glass-card rounded-2xl p-5 border border-accent/20">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center flex-shrink-0">
+              <BookOpen className="text-accent" size={20} />
+            </div>
+            <div>
+              <h3 className="font-display font-semibold text-foreground mb-2">
+                A Ciência do Menos
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Os maiores vilões da saúde moderna são o excesso de açúcar e de farinhas refinadas. 
+                A Dieta Low Carb devolve o metabolismo ao seu modo natural: pouca glicose, mais gordura boa, muita proteína.
+              </p>
+              <p className="text-sm text-accent mt-3 italic">
+                "Não é sobre cortar tudo; é sobre aprender a dar ao corpo o combustível certo."
+              </p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Tabs */}
+      <div className="px-6 py-4">
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => setActiveTab("chapters")}
+            className={`flex-1 py-3 px-4 rounded-xl font-medium text-sm transition-all ${
+              activeTab === "chapters"
+                ? "bg-accent text-accent-foreground"
+                : "bg-card text-muted-foreground border border-border"
+            }`}
+          >
+            Capítulos
+          </button>
+          <button
+            onClick={() => setActiveTab("recipes")}
+            className={`flex-1 py-3 px-4 rounded-xl font-medium text-sm transition-all ${
+              activeTab === "recipes"
+                ? "bg-accent text-accent-foreground"
+                : "bg-card text-muted-foreground border border-border"
+            }`}
+          >
+            Receitas
+          </button>
+        </div>
       </div>
 
-      {/* Content Tabs */}
-      <div className="px-4 mt-4">
-        <Tabs defaultValue="chapters" className="w-full">
-          <TabsList className="w-full bg-card/50 mb-4">
-            <TabsTrigger value="chapters" className="flex-1">
-              <BookOpen className="w-4 h-4 mr-2" />
-              Capítulos
-            </TabsTrigger>
-            <TabsTrigger value="recipes" className="flex-1">
-              <Utensils className="w-4 h-4 mr-2" />
-              Receitas
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="chapters" className="space-y-3">
-            {chapters.map((chapter) => {
-              const unlocked = isChapterUnlocked(chapter.id);
-              const completed = isChapterCompleted(chapter.id);
-
-              return (
-                <Card
-                  key={chapter.id}
-                  className={`transition-all duration-300 ${
-                    unlocked
-                      ? "bg-card/50 border-border/50 cursor-pointer hover:bg-card/70"
-                      : "bg-card/20 border-border/30 opacity-60"
-                  } ${completed ? "border-green-500/50" : ""}`}
-                  onClick={() => unlocked && setSelectedChapter(chapter)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        completed 
-                          ? "bg-green-500/20 text-green-400" 
+      {/* Content based on active tab */}
+      <AnimatePresence mode="wait">
+        {activeTab === "chapters" ? (
+          <motion.div
+            key="chapters"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="px-6"
+          >
+            <div className="space-y-3">
+              {chapters.map((chapter, index) => {
+                const unlocked = isChapterUnlocked(chapter.id);
+                const completed = isChapterCompleted(chapter.id);
+                
+                return (
+                  <motion.div
+                    key={chapter.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.05 + index * 0.03 }}
+                    whileHover={{ scale: unlocked ? 1.02 : 1 }}
+                    whileTap={{ scale: unlocked ? 0.98 : 1 }}
+                    onClick={() => unlocked && setSelectedChapter(chapter)}
+                    className={`
+                      glass-card rounded-xl p-4 cursor-pointer
+                      border transition-all duration-300
+                      ${unlocked 
+                        ? "border-accent/20 hover:border-accent/40" 
+                        : "border-border/30 opacity-60"
+                      }
+                      ${completed ? "bg-accent/5" : ""}
+                    `}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`
+                        w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
+                        ${completed 
+                          ? "bg-accent/30" 
                           : unlocked 
-                            ? "bg-primary/20 text-primary" 
-                            : "bg-muted text-muted-foreground"
-                      }`}>
-                        {completed ? (
-                          <CheckCircle2 className="w-5 h-5" />
-                        ) : unlocked ? (
-                          chapter.icon
+                            ? "bg-muted/50" 
+                            : "bg-muted/30"
+                        }
+                      `}>
+                        {unlocked ? (
+                          <chapter.icon 
+                            size={22} 
+                            className={completed ? "text-accent" : "text-foreground/70"} 
+                          />
                         ) : (
-                          <Lock className="w-4 h-4" />
+                          <Lock size={18} className="text-muted-foreground" />
                         )}
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-accent font-medium">
                             Capítulo {chapter.id}
                           </span>
                           {completed && (
-                            <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-400">
-                              Concluído
-                            </Badge>
+                            <CheckCircle2 size={14} className="text-accent" />
                           )}
                         </div>
-                        <h3 className="font-medium text-foreground">{chapter.title}</h3>
+                        <h3 className="font-display font-semibold text-foreground truncate">
+                          {chapter.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {chapter.subtitle}
+                        </p>
                       </div>
-                      {!unlocked && (
-                        <Lock className="w-4 h-4 text-muted-foreground" />
+                      {unlocked && (
+                        <ChevronRight size={20} className="text-muted-foreground flex-shrink-0" />
                       )}
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </TabsContent>
-
-          <TabsContent value="recipes" className="space-y-6">
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="recipes"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="px-6 space-y-6"
+          >
             {/* Breakfast */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-xl">☀️</span>
-                <h3 className="text-lg font-semibold text-foreground">Café da Manhã</h3>
-                <Badge variant="secondary" className="ml-auto">10 receitas</Badge>
+                <Coffee size={20} className="text-accent" />
+                <h3 className="font-display font-bold text-foreground">Café da Manhã</h3>
               </div>
               <div className="space-y-2">
                 {breakfastRecipes.map((recipe, index) => (
-                  <RecipeCard key={index} recipe={recipe} mealType="breakfast" />
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="glass-card rounded-xl p-4 border border-border/50"
+                  >
+                    <p className="text-sm font-medium text-foreground mb-2">{recipe.name}</p>
+                    <div className="flex gap-3 text-xs text-muted-foreground mb-2">
+                      <span>{recipe.calories} kcal</span>
+                      <span>•</span>
+                      <span>{recipe.protein}g prot</span>
+                      <span>•</span>
+                      <span>{recipe.fat}g gord</span>
+                      <span>•</span>
+                      <span>{recipe.carbs}g carb</span>
+                    </div>
+                    <p className="text-xs text-accent">{recipe.instructions}</p>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -439,13 +611,30 @@ const LowCarbDiet = () => {
             {/* Lunch */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-xl">🌞</span>
-                <h3 className="text-lg font-semibold text-foreground">Almoço</h3>
-                <Badge variant="secondary" className="ml-auto">10 receitas</Badge>
+                <Sun size={20} className="text-accent" />
+                <h3 className="font-display font-bold text-foreground">Almoço</h3>
               </div>
               <div className="space-y-2">
                 {lunchRecipes.map((recipe, index) => (
-                  <RecipeCard key={index} recipe={recipe} mealType="lunch" />
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 + index * 0.05 }}
+                    className="glass-card rounded-xl p-4 border border-border/50"
+                  >
+                    <p className="text-sm font-medium text-foreground mb-2">{recipe.name}</p>
+                    <div className="flex gap-3 text-xs text-muted-foreground mb-2">
+                      <span>{recipe.calories} kcal</span>
+                      <span>•</span>
+                      <span>{recipe.protein}g prot</span>
+                      <span>•</span>
+                      <span>{recipe.fat}g gord</span>
+                      <span>•</span>
+                      <span>{recipe.carbs}g carb</span>
+                    </div>
+                    <p className="text-xs text-accent">{recipe.instructions}</p>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -453,124 +642,184 @@ const LowCarbDiet = () => {
             {/* Dinner */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-xl">🌙</span>
-                <h3 className="text-lg font-semibold text-foreground">Jantar</h3>
-                <Badge variant="secondary" className="ml-auto">10 receitas</Badge>
+                <Moon size={20} className="text-accent" />
+                <h3 className="font-display font-bold text-foreground">Jantar</h3>
               </div>
               <div className="space-y-2">
                 {dinnerRecipes.map((recipe, index) => (
-                  <RecipeCard key={index} recipe={recipe} mealType="dinner" />
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1 + index * 0.05 }}
+                    className="glass-card rounded-xl p-4 border border-border/50"
+                  >
+                    <p className="text-sm font-medium text-foreground mb-2">{recipe.name}</p>
+                    <div className="flex gap-3 text-xs text-muted-foreground mb-2">
+                      <span>{recipe.calories} kcal</span>
+                      <span>•</span>
+                      <span>{recipe.protein}g prot</span>
+                      <span>•</span>
+                      <span>{recipe.fat}g gord</span>
+                      <span>•</span>
+                      <span>{recipe.carbs}g carb</span>
+                    </div>
+                    <p className="text-xs text-accent">{recipe.instructions}</p>
+                  </motion.div>
                 ))}
               </div>
             </div>
-
-            {/* Results Section */}
-            <Card className="bg-gradient-to-br from-green-900/30 to-emerald-900/20 border-green-500/30">
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-foreground mb-3">📈 Resultados em 30 Dias</h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>⬇️ Perda de 2 a 6 kg sem fome</li>
-                  <li>📏 Redução de 5-9 cm na cintura</li>
-                  <li>😌 Melhoria no sono e humor</li>
-                  <li>🩸 Glicemia e triglicerídeos mais baixos</li>
-                </ul>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Chapter Detail Modal */}
-      <Dialog open={!!selectedChapter} onOpenChange={() => setSelectedChapter(null)}>
-        <DialogContent className="max-w-lg max-h-[85vh] bg-card border-border">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-foreground">
-              <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-                {selectedChapter?.icon}
-              </span>
-              Capítulo {selectedChapter?.id}: {selectedChapter?.title}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <ScrollArea className="max-h-[60vh] pr-4">
-            <div className="space-y-4">
-              {/* Concept */}
-              <div className="bg-muted/30 rounded-lg p-4">
-                <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-primary" />
-                  Conceito
-                </h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {selectedChapter?.concept}
-                </p>
-              </div>
-
-              {/* Science */}
-              <div className="bg-green-900/20 rounded-lg p-4 border border-green-500/20">
-                <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-                  <FlameKindling className="w-4 h-4 text-green-400" />
-                  Base Científica
-                </h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {selectedChapter?.science}
-                </p>
-              </div>
-
-              {/* Benefits */}
-              <div className="bg-muted/30 rounded-lg p-4">
-                <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-                  <Heart className="w-4 h-4 text-red-400" />
-                  Benefícios
-                </h4>
-                <ul className="space-y-1">
-                  {selectedChapter?.benefits.map((benefit, index) => (
-                    <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-                      {benefit}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Tips */}
-              <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
-                <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-primary" />
-                  Dicas Práticas
-                </h4>
-                <ul className="space-y-1">
-                  {selectedChapter?.tips.map((tip, index) => (
-                    <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                      <span className="text-primary">•</span>
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </ScrollArea>
-
-          {/* Complete Button */}
-          <div className="pt-4 border-t border-border">
-            <Button 
-              className="w-full bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600"
-              onClick={() => selectedChapter && handleCompleteChapter(selectedChapter.id)}
+      <AnimatePresence>
+        {selectedChapter && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-background/95 z-50 overflow-y-auto"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              className="min-h-screen pb-24"
             >
-              {isChapterCompleted(selectedChapter?.id || 0) ? (
-                <>
-                  <CheckCircle2 className="w-4 h-4 mr-2" />
-                  Capítulo Concluído
-                </>
-              ) : (
-                <>
-                  Concluir e Desbloquear Próximo
-                  <ChevronDown className="w-4 h-4 ml-2" />
-                </>
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+              {/* Modal Header */}
+              <div className="px-6 pt-12 pb-4">
+                <div className="flex items-center gap-4">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setSelectedChapter(null)}
+                    className="w-10 h-10 rounded-full bg-card flex items-center justify-center border border-border"
+                  >
+                    <ArrowLeft size={20} className="text-foreground" />
+                  </motion.button>
+                  <div>
+                    <p className="text-sm text-accent">Capítulo {selectedChapter.id}</p>
+                    <h1 className="font-display text-xl font-bold text-foreground">
+                      {selectedChapter.title}
+                    </h1>
+                  </div>
+                </div>
+              </div>
+
+              {/* Chapter Content */}
+              <div className="px-6 space-y-4">
+                {/* Icon Header */}
+                <div className="flex justify-center py-4">
+                  <div className="w-20 h-20 rounded-2xl bg-accent/20 flex items-center justify-center">
+                    <selectedChapter.icon size={40} className="text-accent" />
+                  </div>
+                </div>
+
+                {/* Intro */}
+                <div className="glass-card rounded-xl p-5">
+                  <h3 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <BookOpen size={18} className="text-accent" />
+                    Conceito
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {selectedChapter.content.intro}
+                  </p>
+                </div>
+
+                {/* Science */}
+                {selectedChapter.content.science && (
+                  <div className="glass-card rounded-xl p-5 border border-accent/20">
+                    <h3 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
+                      <Brain size={18} className="text-accent" />
+                      Base Científica
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {selectedChapter.content.science}
+                    </p>
+                  </div>
+                )}
+
+                {/* Benefits */}
+                {selectedChapter.content.benefits && selectedChapter.content.benefits.length > 0 && (
+                  <div className="glass-card rounded-xl p-5">
+                    <h3 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
+                      <CheckCircle2 size={18} className="text-accent" />
+                      Benefícios
+                    </h3>
+                    <ul className="space-y-2">
+                      {selectedChapter.content.benefits.map((benefit, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <Zap size={14} className="text-accent mt-1 flex-shrink-0" />
+                          <span className="text-sm text-muted-foreground">{benefit}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Tips */}
+                {selectedChapter.content.tips && selectedChapter.content.tips.length > 0 && (
+                  <div className="glass-card rounded-xl p-5">
+                    <h3 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
+                      <Target size={18} className="text-accent" />
+                      Dicas Práticas
+                    </h3>
+                    <ul className="space-y-2">
+                      {selectedChapter.content.tips.map((tip, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <ChevronRight size={14} className="text-accent mt-1 flex-shrink-0" />
+                          <span className="text-sm text-muted-foreground">{tip}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Quote */}
+                {selectedChapter.content.quote && (
+                  <div className="glass-card rounded-xl p-5 bg-accent/5 border border-accent/20">
+                    <p className="text-center text-accent italic font-medium">
+                      "{selectedChapter.content.quote}"
+                    </p>
+                  </div>
+                )}
+
+                {/* Complete Button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleCompleteChapter(selectedChapter.id)}
+                  className={`
+                    w-full py-4 rounded-xl font-medium text-accent-foreground
+                    flex items-center justify-center gap-2
+                    ${isChapterCompleted(selectedChapter.id)
+                      ? "bg-accent/50 cursor-default"
+                      : "bg-accent hover:bg-accent/90"
+                    }
+                  `}
+                  disabled={isChapterCompleted(selectedChapter.id)}
+                >
+                  {isChapterCompleted(selectedChapter.id) ? (
+                    <>
+                      <CheckCircle2 size={20} />
+                      Capítulo Concluído
+                    </>
+                  ) : (
+                    <>
+                      <Unlock size={20} />
+                      Concluir e Desbloquear Próximo
+                    </>
+                  )}
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <BottomNavigation activeTab="nutrition" onTabChange={() => {}} />
     </div>
   );
 };
