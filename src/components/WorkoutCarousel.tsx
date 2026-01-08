@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Clock, Flame, X, Timer, Pause, SkipForward, Check } from "lucide-react";
 import { useState, useEffect, useCallback, useRef } from "react";
+import ExerciseImage from "./ExerciseImage";
 
 interface Exercise {
   name: string;
@@ -832,65 +833,78 @@ const WorkoutCarousel = () => {
                   <div className="space-y-2">
                     {selectedWorkout.exercises.map((exercise, idx) => {
                       const status = getExerciseStatus(idx);
+                      const isActive = status === "active";
                       
                       return (
                         <motion.div
                           key={idx}
+                          layout
                           animate={status === "next" ? { 
                             opacity: [0.5, 1, 0.5],
-                            scale: [1, 1.02, 1]
+                            scale: [1, 1.01, 1]
                           } : {}}
                           transition={status === "next" ? { 
                             repeat: Infinity, 
                             duration: 1 
-                          } : {}}
+                          } : { layout: { duration: 0.3 } }}
                           className={`
-                            rounded-xl p-4 border flex items-center gap-3 transition-all duration-300
+                            rounded-xl border transition-all duration-300 overflow-hidden
                             ${status === "completed" ? "bg-white/5 border-white/10 opacity-50" : ""}
-                            ${status === "active" ? "bg-mint/20 border-mint/50 shadow-lg shadow-mint/20" : ""}
+                            ${status === "active" ? "bg-mint/15 border-mint/50 shadow-lg shadow-mint/20" : ""}
                             ${status === "next" ? "bg-gold/10 border-gold/30" : ""}
                             ${status === "pending" ? "bg-white/5 border-white/10" : ""}
                           `}
                         >
-                          <div className={`
-                            w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm
-                            ${status === "completed" ? "bg-mint/20 text-mint" : ""}
-                            ${status === "active" ? "bg-mint text-black" : ""}
-                            ${status === "next" ? "bg-gold/20 text-gold" : ""}
-                            ${status === "pending" ? "bg-white/10 text-white/50" : ""}
-                          `}>
-                            {status === "completed" ? (
-                              <Check className="w-5 h-5" />
-                            ) : (
-                              idx + 1
-                            )}
+                          {/* Main exercise row */}
+                          <div className="p-4 flex items-center gap-3">
+                            <div className={`
+                              w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0
+                              ${status === "completed" ? "bg-mint/20 text-mint" : ""}
+                              ${status === "active" ? "bg-mint text-black" : ""}
+                              ${status === "next" ? "bg-gold/20 text-gold" : ""}
+                              ${status === "pending" ? "bg-white/10 text-white/50" : ""}
+                            `}>
+                              {status === "completed" ? (
+                                <Check className="w-5 h-5" />
+                              ) : (
+                                idx + 1
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={`font-medium truncate ${status === "active" ? "text-mint text-lg" : status === "completed" ? "text-white/50" : "text-white"}`}>
+                                {exercise.name}
+                              </p>
+                              {status === "active" && (
+                                <p className="text-mint/70 text-sm">Em execução</p>
+                              )}
+                              {status === "next" && (
+                                <p className="text-gold/70 text-sm">Próximo</p>
+                              )}
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              {status === "active" ? (
+                                <motion.span 
+                                  key={exerciseTimer}
+                                  initial={{ scale: 1.1 }}
+                                  animate={{ scale: 1 }}
+                                  className="text-2xl font-bold text-mint font-mono"
+                                >
+                                  {formatTime(exerciseTimer)}
+                                </motion.span>
+                              ) : (
+                                <span className={`text-sm font-semibold ${status === "completed" ? "text-white/30" : "text-gold"}`}>
+                                  {formatTimeShort(exercise.duration)}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex-1">
-                            <p className={`font-medium ${status === "active" ? "text-mint text-lg" : status === "completed" ? "text-white/50" : "text-white"}`}>
-                              {exercise.name}
-                            </p>
-                            {status === "active" && (
-                              <p className="text-mint/70 text-sm">Em execução</p>
-                            )}
-                            {status === "next" && (
-                              <p className="text-gold/70 text-sm">Próximo</p>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            {status === "active" ? (
-                              <motion.span 
-                                key={exerciseTimer}
-                                initial={{ scale: 1.1 }}
-                                animate={{ scale: 1 }}
-                                className="text-2xl font-bold text-mint font-mono"
-                              >
-                                {formatTime(exerciseTimer)}
-                              </motion.span>
-                            ) : (
-                              <span className={`text-sm font-semibold ${status === "completed" ? "text-white/30" : "text-gold"}`}>
-                                {formatTimeShort(exercise.duration)}
-                              </span>
-                            )}
+                          
+                          {/* Expandable image and instructions section */}
+                          <div className="px-4">
+                            <ExerciseImage 
+                              exerciseName={exercise.name}
+                              isExpanded={isActive}
+                            />
                           </div>
                         </motion.div>
                       );
