@@ -5,7 +5,6 @@ import { Brain, Apple, Dumbbell, BarChart3 } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import DashboardCard from "@/components/DashboardCard";
 import HeroBanner from "@/components/HeroBanner";
-import WorkoutCarousel from "@/components/WorkoutCarousel";
 import QuickStats from "@/components/QuickStats";
 
 const Index = () => {
@@ -17,6 +16,19 @@ const Index = () => {
     if (id === "nutricao") {
       navigate("/nutricao");
     } else if (id === "mentalidade") {
+      navigate("/mentalidade");
+    } else if (id === "treino") {
+      navigate("/treino");
+    }
+  };
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    if (tab === "treino") {
+      navigate("/treino");
+    } else if (tab === "nutricao") {
+      navigate("/nutricao");
+    } else if (tab === "mente") {
       navigate("/mentalidade");
     }
   };
@@ -108,9 +120,6 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Workout Carousel */}
-      <WorkoutCarousel />
-
       {/* Motivational Quote */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -127,7 +136,7 @@ const Index = () => {
       </motion.div>
 
       {/* Bottom Navigation */}
-      <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
   );
 };
