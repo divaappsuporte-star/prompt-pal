@@ -240,7 +240,7 @@ const FoodEducation = () => {
               onClick={(e) => e.stopPropagation()}
               className="w-full max-h-[85vh] bg-card rounded-t-3xl overflow-hidden"
             >
-              <div className="p-6 overflow-y-auto max-h-[85vh]">
+              <div className="p-6 pb-20 overflow-y-auto max-h-[85vh]">
                 {/* Header */}
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex items-center gap-4">
