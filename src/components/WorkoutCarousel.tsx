@@ -688,7 +688,8 @@ const WorkoutCarousel = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] bg-[#0A0A0A] flex flex-col"
+            className="fixed inset-0 z-[60] flex flex-col"
+            style={{ background: 'var(--gradient-dark)' }}
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/10">
