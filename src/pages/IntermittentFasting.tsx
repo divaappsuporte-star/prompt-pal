@@ -269,7 +269,7 @@ const IntermittentFasting = () => {
       <div className="sticky top-0 z-40 bg-[#0C0C0C]/95 backdrop-blur-sm border-b border-white/10">
         <div className="flex items-center gap-4 p-4">
           <button 
-            onClick={() => navigate("/nutricao")}
+            onClick={() => navigate("/")}
             className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />

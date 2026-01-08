@@ -1,11 +1,21 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Target, AlertTriangle, Scale, Flame, Calendar } from "lucide-react";
+import { X, Target, AlertTriangle, Scale, Flame, Calendar, Beef, Salad, Leaf, GlassWater, Clock, LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useAuth } from "@/contexts/AuthContext";
-import { DietInfo } from "@/types/diet";
+import { DietInfo, DietType } from "@/types/diet";
 import { cn } from "@/lib/utils";
+
+// Icon mapping for each diet type
+const DIET_ICONS: Record<DietType, LucideIcon> = {
+  carnivore: Beef,
+  keto: Salad,
+  lowcarb: Leaf,
+  metabolic: Flame,
+  detox: GlassWater,
+  fasting: Clock,
+};
 
 interface GoalSelectionModalProps {
   isOpen: boolean;
@@ -110,7 +120,24 @@ const GoalSelectionModal = ({
             {/* Header */}
             <div className="sticky top-0 flex items-center justify-between p-4 border-b border-border bg-card/80 backdrop-blur-md rounded-t-3xl">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">{diet.emoji}</span>
+                {(() => {
+                  const IconComponent = DIET_ICONS[diet.key];
+                  return (
+                    <div className={cn(
+                      "w-10 h-10 rounded-xl flex items-center justify-center",
+                      diet.color === 'coral' && "bg-coral/20",
+                      diet.color === 'mint' && "bg-mint/20",
+                      diet.color === 'gold' && "bg-gold/20"
+                    )}>
+                      <IconComponent className={cn(
+                        "w-5 h-5",
+                        diet.color === 'coral' && "text-coral",
+                        diet.color === 'mint' && "text-mint",
+                        diet.color === 'gold' && "text-gold"
+                      )} />
+                    </div>
+                  );
+                })()}
                 <h2 className="text-lg font-display font-bold">
                   Defina Sua Meta
                 </h2>
