@@ -18,6 +18,7 @@ import {
   Lock
 } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
+import QuickLogModal from "@/components/modals/QuickLogModal";
 import { useProgress } from "@/hooks/useProgress";
 import { loadProgress } from "@/services/progressService";
 
@@ -37,13 +38,35 @@ interface Chapter {
 const Mindset = () => {
   const navigate = useNavigate();
   const { completeMindset } = useProgress();
-  const [activeTab, setActiveTab] = useState("home");
+  const [activeTab, setActiveTab] = useState("mente");
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
+  const [showQuickLog, setShowQuickLog] = useState(false);
   
   // Load from localStorage
   const savedProgress = loadProgress();
   const [completedChapters, setCompletedChapters] = useState<number[]>(savedProgress.mindset.completedChapters);
   const [unlockedChapters, setUnlockedChapters] = useState<number[]>(savedProgress.mindset.unlockedChapters);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    switch (tab) {
+      case "home":
+        navigate("/");
+        break;
+      case "treino":
+        navigate("/treino");
+        break;
+      case "nutricao":
+        navigate("/nutricao");
+        break;
+      case "mente":
+        navigate("/mentalidade");
+        break;
+      case "add":
+        setShowQuickLog(true);
+        break;
+    }
+  };
 
   const chaptersData = [
     {
@@ -452,7 +475,8 @@ const Mindset = () => {
         )}
       </AnimatePresence>
 
-      <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+      <QuickLogModal isOpen={showQuickLog} onClose={() => setShowQuickLog(false)} />
     </div>
   );
 };

@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MedicalFilters from "@/components/nutrition/MedicalFilters";
 import MacroSummary from "@/components/nutrition/MacroSummary";
+import BottomNavigation from "@/components/BottomNavigation";
+import QuickLogModal from "@/components/modals/QuickLogModal";
 
 export interface MedicalCondition {
   id: string;
@@ -52,8 +54,9 @@ const dietPlans = {
 
 const Nutrition = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("carnivora");
+  const [activeTab, setActiveTab] = useState("nutricao");
   const [showFilters, setShowFilters] = useState(false);
+  const [showQuickLog, setShowQuickLog] = useState(false);
   const [medicalConditions, setMedicalConditions] = useState<MedicalCondition[]>([
     { id: "diabetes", label: "Diabetes", active: false },
     { id: "gastrite", label: "Gastrite", active: false },
@@ -62,7 +65,29 @@ const Nutrition = () => {
     { id: "celiaquia", label: "Celíaco", active: false },
   ]);
 
-  const currentPlan = dietPlans[activeTab as keyof typeof dietPlans];
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    switch (tab) {
+      case "home":
+        navigate("/");
+        break;
+      case "treino":
+        navigate("/treino");
+        break;
+      case "nutricao":
+        navigate("/nutricao");
+        break;
+      case "mente":
+        navigate("/mentalidade");
+        break;
+      case "add":
+        setShowQuickLog(true);
+        break;
+    }
+  };
+
+  const [dietActiveTab, setDietActiveTab] = useState("carnivora");
+  const currentPlan = dietPlans[dietActiveTab as keyof typeof dietPlans];
   const activeConditions = medicalConditions.filter((c) => c.active).map((c) => c.id);
 
   const toggleCondition = (id: string) => {
@@ -194,8 +219,8 @@ const Nutrition = () => {
       {/* Diet Tabs */}
       <div className="px-6 py-4">
         <Tabs 
-          value={activeTab} 
-          onValueChange={setActiveTab} 
+          value={dietActiveTab} 
+          onValueChange={setDietActiveTab} 
           className="w-full"
         >
           <TabsList className="w-full bg-card/50 p-1 rounded-xl grid grid-cols-5 gap-1">
@@ -233,7 +258,7 @@ const Nutrition = () => {
 
           {/* Diet Card */}
           <motion.div
-            key={activeTab}
+            key={dietActiveTab}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mt-6"
@@ -262,6 +287,9 @@ const Nutrition = () => {
           </motion.div>
         </Tabs>
       </div>
+      {/* Bottom Navigation */}
+      <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+      <QuickLogModal isOpen={showQuickLog} onClose={() => setShowQuickLog(false)} />
     </div>
   );
 };

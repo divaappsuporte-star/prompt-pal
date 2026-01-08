@@ -1,13 +1,39 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import WorkoutCarousel from "@/components/WorkoutCarousel";
+import BottomNavigation from "@/components/BottomNavigation";
+import QuickLogModal from "@/components/modals/QuickLogModal";
 
 const Treino = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("treino");
+  const [showQuickLog, setShowQuickLog] = useState(false);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    switch (tab) {
+      case "home":
+        navigate("/");
+        break;
+      case "treino":
+        navigate("/treino");
+        break;
+      case "nutricao":
+        navigate("/nutricao");
+        break;
+      case "mente":
+        navigate("/mentalidade");
+        break;
+      case "add":
+        setShowQuickLog(true);
+        break;
+    }
+  };
 
   return (
-    <div className="min-h-screen pb-8">
+    <div className="min-h-screen pb-24">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
@@ -36,6 +62,10 @@ const Treino = () => {
 
       {/* Workout Content */}
       <WorkoutCarousel />
+
+      {/* Bottom Navigation */}
+      <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+      <QuickLogModal isOpen={showQuickLog} onClose={() => setShowQuickLog(false)} />
     </div>
   );
 };
