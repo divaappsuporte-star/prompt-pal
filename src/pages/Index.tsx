@@ -14,7 +14,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("home");
   const [showQuickLog, setShowQuickLog] = useState(false);
-  const currentDay = 7;
+  const currentDay = 1;
 
   const handleCardClick = (id: string) => {
     if (id === "nutricao") {

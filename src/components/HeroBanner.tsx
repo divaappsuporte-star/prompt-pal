@@ -1,21 +1,69 @@
 import { motion } from "framer-motion";
 import NeuralNetwork from "./NeuralNetwork";
 import { useProgress } from "@/hooks/useProgress";
+import { useMemo } from "react";
 
 interface HeroBannerProps {
   userName?: string;
   currentDay: number;
 }
 
+type DailyStatus = 'critical' | 'emerging' | 'elite';
+
 const HeroBanner = ({ userName = "Atleta", currentDay }: HeroBannerProps) => {
-  const { overallProgress } = useProgress();
+  const { overallProgress, todayHydration, todaySleep, todayCalories, progress } = useProgress();
+
+  // Calculate daily tasks completion
+  const dailyTasks = useMemo(() => {
+    const today = new Date().toISOString().split("T")[0];
+    const diets = ["carnivore", "lowcarb", "keto", "fasting", "detox"] as const;
+    
+    const hasNutrition = diets.some(diet => 
+      progress.nutrition[diet].completedRecipes.some(r => r.endsWith(`_${today}`))
+    );
+    
+    return {
+      workout: todayCalories > 0,
+      nutrition: hasNutrition,
+      hydration: todayHydration >= 2000,
+      sleep: todaySleep >= 7,
+      mindset: progress.mindset.completedChapters.length > 0
+    };
+  }, [todayCalories, todayHydration, todaySleep, progress]);
+
+  const completedCount = Object.values(dailyTasks).filter(Boolean).length;
+  
+  const dailyStatus: DailyStatus = useMemo(() => {
+    if (completedCount === 5) return 'elite';
+    if (completedCount >= 1) return 'emerging';
+    return 'critical';
+  }, [completedCount]);
+
+  // Dynamic message based on status
+  const statusMessage = useMemo(() => {
+    switch (dailyStatus) {
+      case 'elite':
+        return { text: "Parabéns! Continue assim! 🏆", color: "text-emerald-400" };
+      case 'emerging':
+        return { text: "Você está no ritmo certo!", color: "text-amber-400" };
+      case 'critical':
+        return { text: "Comece suas tarefas hoje!", color: "text-red-400" };
+    }
+  }, [dailyStatus]);
+
+  // Streak calculation (simplified - days with at least 1 task)
+  const streak = useMemo(() => {
+    if (completedCount === 0) return 0;
+    // For now, return currentDay if there's any progress today
+    return currentDay;
+  }, [completedCount, currentDay]);
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
-      className="relative h-72 overflow-hidden"
+      className="relative h-44 overflow-hidden"
     >
       {/* Neural Network Background */}
       <NeuralNetwork 
@@ -37,9 +85,12 @@ const HeroBanner = ({ userName = "Atleta", currentDay }: HeroBannerProps) => {
           <h1 className="font-display text-2xl font-bold text-foreground mb-2">
             Dia <span className="text-gradient-coral">{currentDay}</span> de 21
           </h1>
-          <p className="text-sm text-gold flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-gold animate-pulse-soft" />
-            Você está no ritmo certo!
+          <p className={`text-sm ${statusMessage.color} flex items-center gap-2`}>
+            <span className={`inline-block w-2 h-2 rounded-full animate-pulse-soft ${
+              dailyStatus === 'elite' ? 'bg-emerald-400' :
+              dailyStatus === 'emerging' ? 'bg-amber-400' : 'bg-red-400'
+            }`} />
+            {statusMessage.text}
           </p>
         </motion.div>
 
@@ -57,16 +108,22 @@ const HeroBanner = ({ userName = "Atleta", currentDay }: HeroBannerProps) => {
         </motion.div>
       </div>
 
-      {/* Decorative Elements */}
+      {/* Decorative Streak Card */}
       <div className="absolute top-4 right-4 pointer-events-none">
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.6, type: "spring" }}
-          className="glass-card px-3 py-1.5 rounded-full"
+          className={`glass-card px-3 py-1.5 rounded-full border ${
+            dailyStatus === 'elite' ? 'border-emerald-400/40' :
+            dailyStatus === 'emerging' ? 'border-amber-400/40' : 'border-red-400/40'
+          }`}
         >
-          <span className="text-xs font-medium text-foreground">
-            🔥 {currentDay} dias seguidos
+          <span className={`text-xs font-medium ${
+            dailyStatus === 'elite' ? 'text-emerald-400' :
+            dailyStatus === 'emerging' ? 'text-amber-400' : 'text-red-400'
+          }`}>
+            {streak > 0 ? `🔥 ${streak} dias seguidos` : '⚠️ Comece agora'}
           </span>
         </motion.div>
       </div>
