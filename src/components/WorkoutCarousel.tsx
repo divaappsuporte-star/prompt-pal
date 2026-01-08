@@ -635,8 +635,8 @@ const WorkoutCarousel = () => {
               onClick={() => setExpandedDay(workout.day)}
               className={`
                 relative min-w-[140px] rounded-2xl overflow-hidden cursor-pointer
-                transition-all duration-300 border border-border/50
-                ${isCompleted ? "opacity-70 bg-mint/5" : "bg-card"}
+                transition-all duration-300 glass-card
+                ${isCompleted ? "opacity-70 border-mint/30" : "border-coral/30 hover:border-coral/50"}
               `}
             >
               <div className="p-3">
