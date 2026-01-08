@@ -65,13 +65,14 @@ const RankingCard = ({ node, position, onClose }: RankingCardProps) => {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, scale: 0.8, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.8, y: 10 }}
-        className={`absolute z-50 glass-card rounded-xl p-4 min-w-[200px] shadow-elevated border ${getStatusColor(node.dailyStatus)}`}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+        className={`fixed z-50 glass-card rounded-xl p-4 w-[280px] shadow-elevated border ${getStatusColor(node.dailyStatus)}`}
         style={{
-          left: Math.min(position.x, window.innerWidth - 240),
-          top: position.y + 20,
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
         }}
       >
         <button
