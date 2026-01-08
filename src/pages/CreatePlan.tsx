@@ -1,24 +1,57 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Target, Scale, Ruler, User2 } from "lucide-react";
+import { 
+  ArrowLeft, 
+  Target, 
+  Scale, 
+  Ruler, 
+  User2, 
+  Heart, 
+  Check,
+  Droplets,
+  AlertTriangle
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePersonalPlan } from "@/hooks/usePersonalPlan";
-import { DietType, DIET_INFO } from "@/types/diet";
+import { useDietAccess } from "@/hooks/useDietAccess";
+import { DietType, DIET_INFO, HealthCondition, HEALTH_CONDITION_LABELS } from "@/types/diet";
 import DietSelector from "@/components/plan/DietSelector";
 import DietLoadingOverlay from "@/components/diet/DietLoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
+
+type Step = 'health' | 'diet' | 'extras' | 'goal';
+
+const HEALTH_CONDITIONS: HealthCondition[] = [
+  'diabetes',
+  'gastrite', 
+  'hipertensao',
+  'intolerancia_lactose',
+  'celiaquia'
+];
 
 const CreatePlan = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { createPlan, hasPlan, isLoading } = usePersonalPlan();
+  const { hasDietAccess, unlockedDiets } = useDietAccess();
   
-  const [step, setStep] = useState<'diet' | 'goal'>('diet');
+  const [step, setStep] = useState<Step>('health');
+  const [selectedConditions, setSelectedConditions] = useState<HealthCondition[]>([]);
+  const [noConditions, setNoConditions] = useState(false);
   const [selectedDiet, setSelectedDiet] = useState<DietType | null>(null);
+  const [includeDetox, setIncludeDetox] = useState(false);
   const [targetKgLoss, setTargetKgLoss] = useState(5);
   const [showLoading, setShowLoading] = useState(false);
+
+  const hasDetoxAccess = hasDietAccess('detox');
+  
+  // Check if user has multiple diet options (excluding detox which is an add-on)
+  const mainDiets: DietType[] = ['carnivore', 'keto', 'lowcarb', 'metabolic', 'fasting'];
+  const unlockedMainDiets = mainDiets.filter(d => hasDietAccess(d));
+  const hasMultipleDiets = unlockedMainDiets.length > 1;
 
   // Redirect if user already has a plan
   useEffect(() => {
@@ -45,14 +78,42 @@ const CreatePlan = () => {
   const height = profile?.height_cm || 170;
   const targetWeight = currentWeight - targetKgLoss;
 
+  const handleConditionToggle = (condition: HealthCondition) => {
+    setNoConditions(false);
+    setSelectedConditions(prev => 
+      prev.includes(condition) 
+        ? prev.filter(c => c !== condition)
+        : [...prev, condition]
+    );
+  };
+
+  const handleNoConditions = () => {
+    setNoConditions(true);
+    setSelectedConditions([]);
+  };
+
+  const handleHealthContinue = () => {
+    // TODO: Save health conditions to database
+    setStep('diet');
+  };
+
   const handleDietSelect = (diet: DietType) => {
     setSelectedDiet(diet);
   };
 
-  const handleContinue = () => {
+  const handleDietContinue = () => {
     if (selectedDiet) {
-      setStep('goal');
+      // If user has detox access, show extras step
+      if (hasDetoxAccess) {
+        setStep('extras');
+      } else {
+        setStep('goal');
+      }
     }
+  };
+
+  const handleExtrasContinue = () => {
+    setStep('goal');
   };
 
   const handleCreatePlan = () => {
@@ -67,6 +128,7 @@ const CreatePlan = () => {
         await createPlan.mutateAsync({
           dietType: selectedDiet,
           targetWeightLoss: targetKgLoss,
+          includeDetox,
         });
         setShowLoading(false);
         navigate("/meu-plano");
@@ -75,6 +137,47 @@ const CreatePlan = () => {
         setShowLoading(false);
       }
     }
+  };
+
+  const handleBack = () => {
+    switch (step) {
+      case 'health':
+        navigate(-1);
+        break;
+      case 'diet':
+        setStep('health');
+        break;
+      case 'extras':
+        setStep('diet');
+        break;
+      case 'goal':
+        if (hasDetoxAccess) {
+          setStep('extras');
+        } else {
+          setStep('diet');
+        }
+        break;
+    }
+  };
+
+  const getStepTitle = () => {
+    switch (step) {
+      case 'health': return 'Sua Saúde';
+      case 'diet': return 'Escolha seu Protocolo';
+      case 'extras': return 'Extras do Plano';
+      case 'goal': return 'Defina sua Meta';
+    }
+  };
+
+  const getStepNumber = () => {
+    const steps = ['health', 'diet'];
+    if (hasDetoxAccess) steps.push('extras');
+    steps.push('goal');
+    return steps.indexOf(step) + 1;
+  };
+
+  const getTotalSteps = () => {
+    return hasDetoxAccess ? 4 : 3;
   };
 
   return (
@@ -87,29 +190,120 @@ const CreatePlan = () => {
       >
         <div className="flex items-center gap-4">
           <button
-            onClick={() => step === 'goal' ? setStep('diet') : navigate(-1)}
+            onClick={handleBack}
             className="w-10 h-10 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div>
+          <div className="flex-1">
             <h1 className="font-display text-xl font-bold text-foreground">
               Criar Plano Personalizado
             </h1>
             <p className="text-sm text-muted-foreground">
-              {step === 'diet' ? 'Escolha seu protocolo' : 'Defina sua meta'}
+              Etapa {getStepNumber()} de {getTotalSteps()} • {getStepTitle()}
             </p>
           </div>
+        </div>
+        
+        {/* Progress bar */}
+        <div className="mt-4 h-1.5 bg-muted rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-primary rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${(getStepNumber() / getTotalSteps()) * 100}%` }}
+            transition={{ duration: 0.3 }}
+          />
         </div>
       </motion.header>
 
       <AnimatePresence mode="wait">
-        {step === 'diet' ? (
+        {/* Step 1: Health Conditions */}
+        {step === 'health' && (
           <motion.div
-            key="diet-step"
+            key="health-step"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
+            className="px-4"
+          >
+            <div className="glass-card rounded-2xl p-5 mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <Heart className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="font-display font-bold text-foreground">
+                    Condições de Saúde
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Para personalizar seu plano com segurança
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-sm text-muted-foreground mb-4">
+                Selecione as condições que se aplicam a você. Isso nos ajuda a adaptar receitas e evitar alimentos que possam prejudicá-lo.
+              </p>
+
+              <div className="space-y-3 mb-4">
+                {HEALTH_CONDITIONS.map((condition) => (
+                  <motion.button
+                    key={condition}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleConditionToggle(condition)}
+                    className={`w-full p-4 rounded-xl border transition-all flex items-center justify-between ${
+                      selectedConditions.includes(condition)
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border bg-muted/30'
+                    }`}
+                  >
+                    <span className="text-foreground font-medium">
+                      {HEALTH_CONDITION_LABELS[condition]}
+                    </span>
+                    {selectedConditions.includes(condition) && (
+                      <Check className="w-5 h-5 text-primary" />
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+
+              <div className="border-t border-border pt-4">
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleNoConditions}
+                  className={`w-full p-4 rounded-xl border transition-all flex items-center justify-between ${
+                    noConditions
+                      ? 'border-mint bg-mint/10'
+                      : 'border-border bg-muted/30'
+                  }`}
+                >
+                  <span className="text-foreground font-medium">
+                    Não possuo nenhuma condição
+                  </span>
+                  {noConditions && (
+                    <Check className="w-5 h-5 text-mint" />
+                  )}
+                </motion.button>
+              </div>
+            </div>
+
+            <Button
+              onClick={handleHealthContinue}
+              disabled={selectedConditions.length === 0 && !noConditions}
+              className="w-full h-14 text-lg font-display"
+            >
+              Continuar
+            </Button>
+          </motion.div>
+        )}
+
+        {/* Step 2: Diet Selection */}
+        {step === 'diet' && (
+          <motion.div
+            key="diet-step"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
             className="px-4"
           >
             {/* User Stats Summary */}
@@ -145,29 +339,109 @@ const CreatePlan = () => {
 
             {/* Diet Selection */}
             <div className="mb-6">
-              <h2 className="font-display text-lg font-bold text-foreground mb-3">
-                Escolha seu Protocolo
+              <h2 className="font-display text-lg font-bold text-foreground mb-2">
+                Escolha seu Protocolo Principal
               </h2>
               <p className="text-sm text-muted-foreground mb-4">
-                Selecione a dieta que será a base do seu plano de 21 dias
+                {hasMultipleDiets 
+                  ? "Você tem acesso a múltiplos protocolos! Escolha o principal para o seu plano de 21 dias."
+                  : "Selecione a dieta base do seu plano de 21 dias."
+                }
               </p>
               
               <DietSelector 
                 selectedDiet={selectedDiet}
                 onSelect={handleDietSelect}
+                excludeDetox={true}
               />
             </div>
 
-            {/* Continue Button */}
             <Button
-              onClick={handleContinue}
+              onClick={handleDietContinue}
               disabled={!selectedDiet}
               className="w-full h-14 text-lg font-display"
             >
               Continuar
             </Button>
           </motion.div>
-        ) : (
+        )}
+
+        {/* Step 3: Extras (Detox) */}
+        {step === 'extras' && (
+          <motion.div
+            key="extras-step"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="px-4"
+          >
+            <div className="glass-card rounded-2xl p-5 mb-6 border border-mint/30">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-mint/20 flex items-center justify-center">
+                  <Droplets className="w-6 h-6 text-mint" />
+                </div>
+                <div>
+                  <h2 className="font-display font-bold text-foreground">
+                    Sucos Detox Desbloqueados!
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Potencialize seus resultados
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-sm text-muted-foreground mb-4">
+                Você tem acesso aos Sucos Detox! Deseja incluir um suco verde diário ao seu plano para acelerar a desintoxicação e potencializar a queima de gordura?
+              </p>
+
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setIncludeDetox(!includeDetox)}
+                className={`w-full p-4 rounded-xl border transition-all flex items-center gap-4 ${
+                  includeDetox
+                    ? 'border-mint bg-mint/10'
+                    : 'border-border bg-muted/30'
+                }`}
+              >
+                <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${
+                  includeDetox ? 'border-mint bg-mint' : 'border-muted-foreground'
+                }`}>
+                  {includeDetox && <Check className="w-4 h-4 text-background" />}
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-medium text-foreground">
+                    Incluir 1 Suco Detox por dia
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Receita diária integrada ao seu plano
+                  </p>
+                </div>
+              </motion.button>
+
+              {includeDetox && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="mt-4 p-3 rounded-xl bg-mint/5 border border-mint/20"
+                >
+                  <p className="text-xs text-mint">
+                    ✓ Um suco detox será adicionado às suas missões diárias
+                  </p>
+                </motion.div>
+              )}
+            </div>
+
+            <Button
+              onClick={handleExtrasContinue}
+              className="w-full h-14 text-lg font-display"
+            >
+              Continuar
+            </Button>
+          </motion.div>
+        )}
+
+        {/* Step 4: Goal Setting */}
+        {step === 'goal' && (
           <motion.div
             key="goal-step"
             initial={{ opacity: 0, x: 20 }}
@@ -178,7 +452,7 @@ const CreatePlan = () => {
             {/* Selected Diet Card */}
             {selectedDiet && (
               <div 
-                className="glass-card rounded-2xl p-4 mb-6 border"
+                className="glass-card rounded-2xl p-4 mb-4 border"
                 style={{ borderColor: `${DIET_INFO[selectedDiet].color}30` }}
               >
                 <div className="flex items-center gap-3">
@@ -188,14 +462,19 @@ const CreatePlan = () => {
                   >
                     <Target className="w-6 h-6" style={{ color: DIET_INFO[selectedDiet].color }} />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <p className="font-display font-bold text-foreground">
                       {DIET_INFO[selectedDiet].name}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {DIET_INFO[selectedDiet].description}
+                      Protocolo principal
                     </p>
                   </div>
+                  {includeDetox && (
+                    <div className="px-2 py-1 rounded-full bg-mint/20 text-mint text-xs font-medium">
+                      + Detox
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -249,10 +528,11 @@ const CreatePlan = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3"
+                  className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-start gap-2"
                 >
+                  <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
                   <p className="text-xs text-amber-500">
-                    ⚠️ Meta agressiva. Recomendamos acompanhamento profissional.
+                    Meta agressiva. Recomendamos acompanhamento profissional para perdas acima de 7kg em 21 dias.
                   </p>
                 </motion.div>
               )}
@@ -264,7 +544,7 @@ const CreatePlan = () => {
               disabled={createPlan.isPending}
               className="w-full h-14 text-lg font-display"
             >
-              {createPlan.isPending ? "Criando..." : "Criar Meu Plano"}
+              {createPlan.isPending ? "Criando..." : "Criar Meu Plano de 21 Dias"}
             </Button>
           </motion.div>
         )}
