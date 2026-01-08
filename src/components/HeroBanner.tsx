@@ -108,25 +108,6 @@ const HeroBanner = ({ userName = "Atleta", currentDay }: HeroBannerProps) => {
         </motion.div>
       </div>
 
-      {/* Decorative Streak Card */}
-      <div className="absolute top-4 right-4 pointer-events-none">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.6, type: "spring" }}
-          className={`glass-card px-3 py-1.5 rounded-full border ${
-            dailyStatus === 'elite' ? 'border-emerald-400/40' :
-            dailyStatus === 'emerging' ? 'border-amber-400/40' : 'border-red-400/40'
-          }`}
-        >
-          <span className={`text-xs font-medium ${
-            dailyStatus === 'elite' ? 'text-emerald-400' :
-            dailyStatus === 'emerging' ? 'text-amber-400' : 'text-red-400'
-          }`}>
-            {streak > 0 ? `🔥 ${streak} dias seguidos` : '⚠️ Comece agora'}
-          </span>
-        </motion.div>
-      </div>
     </motion.div>
   );
 };
