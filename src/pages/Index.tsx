@@ -8,10 +8,12 @@ import HeroBanner from "@/components/HeroBanner";
 import QuickStats from "@/components/QuickStats";
 import HealthMonitor from "@/components/HealthMonitor";
 import Logo from "@/components/Logo";
+import QuickLogModal from "@/components/modals/QuickLogModal";
 
 const Index = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("home");
+  const [showQuickLog, setShowQuickLog] = useState(false);
   const currentDay = 7;
 
   const handleCardClick = (id: string) => {
@@ -26,12 +28,22 @@ const Index = () => {
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
-    if (tab === "treino") {
-      navigate("/treino");
-    } else if (tab === "nutricao") {
-      navigate("/nutricao");
-    } else if (tab === "mente") {
-      navigate("/mentalidade");
+    switch (tab) {
+      case "home":
+        navigate("/");
+        break;
+      case "treino":
+        navigate("/treino");
+        break;
+      case "nutricao":
+        navigate("/nutricao");
+        break;
+      case "mente":
+        navigate("/mentalidade");
+        break;
+      case "add":
+        setShowQuickLog(true);
+        break;
     }
   };
 
@@ -137,6 +149,9 @@ const Index = () => {
 
       {/* Bottom Navigation */}
       <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+
+      {/* Quick Log Modal */}
+      <QuickLogModal isOpen={showQuickLog} onClose={() => setShowQuickLog(false)} />
     </div>
   );
 };
