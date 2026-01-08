@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Brain, Dumbbell, User, ChevronRight, Sparkles } from "lucide-react";
+import { Brain, Dumbbell, User, ChevronRight, Sparkles, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useDietAccess } from "@/hooks/useDietAccess";
+import { useDietAccess, useUserRole } from "@/hooks/useDietAccess";
 import { useActivePlan } from "@/hooks/useActivePlan";
 import { useAllActivePlans } from "@/hooks/useAllActivePlans";
 import { DietType, DIET_INFO } from "@/types/diet";
@@ -22,6 +22,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { hasDietAccess, isLoading: accessLoading } = useDietAccess();
+  const { isSuperAdmin } = useUserRole();
   const { hasActivePlan, getActivePlan } = useAllActivePlans();
   
   const [activeTab, setActiveTab] = useState("home");
@@ -131,7 +132,17 @@ const Index = () => {
         className="px-6 pt-14 pb-6"
       >
         <div className="flex items-center justify-between">
-          <div className="w-10" />
+          {/* Admin link - only visible for super admins */}
+          {isSuperAdmin ? (
+            <button
+              onClick={() => navigate("/admin")}
+              className="w-10 h-10 rounded-full bg-coral/20 flex items-center justify-center hover:bg-coral/30 transition-colors"
+            >
+              <Shield className="w-5 h-5 text-coral" />
+            </button>
+          ) : (
+            <div className="w-10" />
+          )}
           <Logo size="md" />
           <button
             onClick={() => setShowProfile(true)}
