@@ -606,6 +606,7 @@ const CarnivoreDiet = () => {
                     recipe={recipe}
                     index={index}
                     diet="carnivore"
+                    mealType="breakfast"
                     accentColor="text-coral"
                   />
                 ))}
@@ -626,6 +627,7 @@ const CarnivoreDiet = () => {
                     index={index}
                     delay={0.5}
                     diet="carnivore"
+                    mealType="lunch"
                     accentColor="text-coral"
                   />
                 ))}
@@ -646,6 +648,7 @@ const CarnivoreDiet = () => {
                     index={index}
                     delay={1}
                     diet="carnivore"
+                    mealType="dinner"
                     accentColor="text-coral"
                   />
                 ))}

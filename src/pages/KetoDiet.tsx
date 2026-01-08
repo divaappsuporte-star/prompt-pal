@@ -611,6 +611,7 @@ const KetoDiet = () => {
                     recipe={recipe}
                     index={index}
                     diet="keto"
+                    mealType="breakfast"
                     accentColor="text-primary"
                   />
                 ))}
@@ -631,6 +632,7 @@ const KetoDiet = () => {
                     index={index}
                     delay={0.5}
                     diet="keto"
+                    mealType="lunch"
                     accentColor="text-primary"
                   />
                 ))}
@@ -651,6 +653,7 @@ const KetoDiet = () => {
                     index={index}
                     delay={1}
                     diet="keto"
+                    mealType="dinner"
                     accentColor="text-primary"
                   />
                 ))}

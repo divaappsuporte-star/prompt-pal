@@ -15,8 +15,14 @@ import {
   completeNutritionChapter,
   completeWorkoutSession,
   markRecipeCompleted as markRecipe,
+  markMealCompleted as markMeal,
   isRecipeCompletedToday,
+  isMealTypeCompletedToday,
+  getTodayMealsWithFeedbacks,
   DietType,
+  MealType,
+  MealFeedbackData,
+  CompletedMealWithFeedback,
   HealthAnalysis,
   TodayMacros,
 } from "@/services/progressService";
@@ -29,6 +35,7 @@ export const useProgress = () => {
   const [todayCalories, setTodayCalories] = useState(getTodayCaloriesBurned);
   const [todayMacros, setTodayMacros] = useState<TodayMacros>(getTodayMacros);
   const [healthAnalysis, setHealthAnalysis] = useState<HealthAnalysis>(analyzeHealth);
+  const [todayMeals, setTodayMeals] = useState<CompletedMealWithFeedback[]>(getTodayMealsWithFeedbacks);
 
   const refreshData = useCallback(() => {
     setProgress(loadProgress());
@@ -38,6 +45,7 @@ export const useProgress = () => {
     setTodayCalories(getTodayCaloriesBurned());
     setTodayMacros(getTodayMacros());
     setHealthAnalysis(analyzeHealth());
+    setTodayMeals(getTodayMealsWithFeedbacks());
   }, []);
 
   // Listen for storage changes (for cross-component updates)
@@ -87,6 +95,28 @@ export const useProgress = () => {
     window.dispatchEvent(new Event("progressUpdate"));
   }, [refreshData]);
 
+  const markMealCompleted = useCallback((
+    diet: DietType, 
+    mealType: MealType,
+    recipeName: string, 
+    calories: number, 
+    protein: number = 0, 
+    fat: number = 0, 
+    carbs: number = 0,
+    feedback: MealFeedbackData
+  ): { success: boolean; error?: string } => {
+    const result = markMeal(diet, mealType, recipeName, calories, protein, fat, carbs, feedback);
+    if (result.success) {
+      refreshData();
+      window.dispatchEvent(new Event("progressUpdate"));
+    }
+    return { success: result.success, error: result.error };
+  }, [refreshData]);
+
+  const checkMealTypeCompleted = useCallback((diet: DietType, mealType: MealType) => {
+    return isMealTypeCompletedToday(diet, mealType);
+  }, []);
+
   const checkRecipeCompleted = useCallback((diet: DietType, recipeName: string) => {
     return isRecipeCompletedToday(diet, recipeName);
   }, []);
@@ -108,6 +138,7 @@ export const useProgress = () => {
     todaySleep,
     todayCalories,
     todayMacros,
+    todayMeals,
     healthAnalysis,
     addWaterIntake,
     addSleepTime,
@@ -115,7 +146,9 @@ export const useProgress = () => {
     completeNutrition,
     completeWorkout,
     markRecipeCompleted,
+    markMealCompleted,
     checkRecipeCompleted,
+    checkMealTypeCompleted,
     refreshData,
   };
 };

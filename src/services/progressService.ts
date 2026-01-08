@@ -7,6 +7,8 @@ export interface WorkoutSession {
   dayCompleted: number;
 }
 
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+
 export interface RecipeDetail {
   name: string;
   date: string;
@@ -14,12 +16,34 @@ export interface RecipeDetail {
   protein: number;
   fat: number;
   carbs?: number;
+  mealType: MealType;
+}
+
+export interface MealFeedbackData {
+  title: string;
+  message: string;
+  bodyProcess: string;
+  timeframe: string;
+  icon: string;
+}
+
+export interface CompletedMealWithFeedback {
+  date: string;
+  mealType: MealType;
+  recipeName: string;
+  calories: number;
+  protein: number;
+  fat: number;
+  carbs: number;
+  completedAt: string;
+  feedback: MealFeedbackData;
 }
 
 export interface DietProgress {
   completedChapters: number[];
   completedRecipes: string[];
   completedRecipesDetails?: RecipeDetail[];
+  completedMeals?: CompletedMealWithFeedback[];
 }
 
 export interface DailyHydration {
@@ -163,8 +187,111 @@ export interface RecipeCompletion {
   protein: number;
   fat: number;
   carbs?: number;
+  mealType?: MealType;
 }
 
+// Check if a meal type is already completed today
+export const isMealTypeCompletedToday = (diet: DietType, mealType: MealType): boolean => {
+  const data = loadProgress();
+  const today = getTodayString();
+  const meals = data.nutrition[diet].completedMeals || [];
+  return meals.some(m => m.date === today && m.mealType === mealType);
+};
+
+// Get today's completed meals with feedbacks
+export const getTodayMealsWithFeedbacks = (): CompletedMealWithFeedback[] => {
+  const data = loadProgress();
+  const today = getTodayString();
+  const diets: DietType[] = ["carnivore", "lowcarb", "keto", "fasting", "detox"];
+  
+  const allMeals: CompletedMealWithFeedback[] = [];
+  diets.forEach(diet => {
+    const meals = data.nutrition[diet].completedMeals || [];
+    meals.filter(m => m.date === today).forEach(m => allMeals.push(m));
+  });
+  
+  return allMeals.sort((a, b) => 
+    new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
+  );
+};
+
+// Mark a meal as completed with feedback
+export const markMealCompleted = (
+  diet: DietType, 
+  mealType: MealType,
+  recipeName: string, 
+  calories: number, 
+  protein: number = 0, 
+  fat: number = 0, 
+  carbs: number = 0,
+  feedback: MealFeedbackData
+): { success: boolean; data?: ProgressData; error?: string } => {
+  const data = loadProgress();
+  const today = getTodayString();
+  
+  // Check if meal type is already completed today
+  if (!data.nutrition[diet].completedMeals) {
+    data.nutrition[diet].completedMeals = [];
+  }
+  
+  const existingMeal = data.nutrition[diet].completedMeals.find(
+    m => m.date === today && m.mealType === mealType
+  );
+  
+  if (existingMeal) {
+    return { success: false, error: `Você já marcou um ${getMealTypeName(mealType)} hoje.` };
+  }
+  
+  // Add completed meal with feedback
+  const newMeal: CompletedMealWithFeedback = {
+    date: today,
+    mealType,
+    recipeName,
+    calories,
+    protein,
+    fat,
+    carbs,
+    completedAt: new Date().toISOString(),
+    feedback,
+  };
+  
+  data.nutrition[diet].completedMeals.push(newMeal);
+  
+  // Also update legacy structures for backward compatibility
+  const key = `${recipeName}_${today}`;
+  if (!data.nutrition[diet].completedRecipes.includes(key)) {
+    data.nutrition[diet].completedRecipes.push(key);
+  }
+  
+  if (!data.nutrition[diet].completedRecipesDetails) {
+    data.nutrition[diet].completedRecipesDetails = [];
+  }
+  
+  data.nutrition[diet].completedRecipesDetails.push({
+    name: recipeName,
+    date: today,
+    calories,
+    protein,
+    fat,
+    carbs,
+    mealType,
+  });
+  
+  saveProgress(data);
+  return { success: true, data };
+};
+
+const getMealTypeName = (mealType: MealType): string => {
+  const names: Record<MealType, string> = {
+    breakfast: 'café da manhã',
+    lunch: 'almoço',
+    dinner: 'jantar',
+    snack: 'lanche',
+  };
+  return names[mealType];
+};
+
+// Legacy function - kept for backward compatibility
 export const markRecipeCompleted = (diet: DietType, recipeName: string, calories: number, protein: number = 0, fat: number = 0, carbs: number = 0): ProgressData => {
   const data = loadProgress();
   const key = `${recipeName}_${getTodayString()}`;
@@ -172,7 +299,6 @@ export const markRecipeCompleted = (diet: DietType, recipeName: string, calories
     data.nutrition[diet].completedRecipes.push(key);
   }
   
-  // Store detailed macro info
   if (!data.nutrition[diet].completedRecipesDetails) {
     data.nutrition[diet].completedRecipesDetails = [];
   }
@@ -188,7 +314,8 @@ export const markRecipeCompleted = (diet: DietType, recipeName: string, calories
       calories,
       protein,
       fat,
-      carbs
+      carbs,
+      mealType: 'lunch' as MealType, // Default to lunch for legacy
     });
   }
   
