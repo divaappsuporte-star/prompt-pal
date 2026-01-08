@@ -8,7 +8,7 @@ import DashboardCard from "@/components/DashboardCard";
 import HeroBanner from "@/components/HeroBanner";
 import HealthMonitor from "@/components/HealthMonitor";
 import Logo from "@/components/Logo";
-import ThemeToggle from "@/components/ThemeToggle";
+
 import QuickLogModal from "@/components/modals/QuickLogModal";
 import ProfileModal from "@/components/modals/ProfileModal";
 
@@ -119,7 +119,7 @@ const Index = () => {
         className="px-6 pt-14 pb-6"
       >
         <div className="flex items-center justify-between">
-          <ThemeToggle />
+          <div className="w-10" /> {/* Spacer */}
           <Logo size="md" />
           <button
             onClick={() => setShowProfile(true)}
