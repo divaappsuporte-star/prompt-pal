@@ -100,7 +100,10 @@ const Auth = () => {
             toast.error(error.message);
           }
         } else {
-          toast.success("Conta criada com sucesso!");
+          toast.success("Conta criada! Faça login para continuar.");
+          // Switch to login mode after successful signup
+          setIsLogin(true);
+          setFormData({ email: formData.email, password: "", fullName: "" });
         }
       }
     } catch (error) {

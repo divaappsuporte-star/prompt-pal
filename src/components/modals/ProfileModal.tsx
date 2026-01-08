@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, User, Ruler, Scale, Target, Droplets, Moon, LogOut, Save, Check } from "lucide-react";
+import { X, User, Ruler, Scale, Target, Droplets, Moon, LogOut, Save } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,9 +17,10 @@ import { toast } from "sonner";
 interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
+  isOnboarding?: boolean;
 }
 
-const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
+const ProfileModal = ({ isOpen, onClose, isOnboarding = false }: ProfileModalProps) => {
   const { user, profile, updateProfile, signOut } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -60,6 +61,14 @@ const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
   };
 
   const handleSave = async () => {
+    // Validation for onboarding - require essential fields
+    if (isOnboarding) {
+      if (!formData.full_name || !formData.height_cm || !formData.weight_kg || !formData.goal_weight_kg) {
+        toast.error("Preencha nome, altura, peso atual e peso meta");
+        return;
+      }
+    }
+
     setIsSaving(true);
 
     const updateData: Record<string, unknown> = {
@@ -81,7 +90,7 @@ const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
     if (error) {
       toast.error("Erro ao salvar perfil");
     } else {
-      toast.success("Perfil atualizado!");
+      toast.success(isOnboarding ? "Perfil configurado! Bem-vindo!" : "Perfil atualizado!");
       onClose();
     }
 
@@ -103,7 +112,7 @@ const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={isOnboarding ? undefined : onClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
           />
 
@@ -117,13 +126,17 @@ const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
           >
             {/* Header */}
             <div className="sticky top-0 flex items-center justify-between p-4 border-b border-border bg-card/80 backdrop-blur-md rounded-t-3xl">
-              <h2 className="text-lg font-display font-bold">Meu Perfil</h2>
-              <button
-                onClick={onClose}
-                className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <h2 className="text-lg font-display font-bold">
+                {isOnboarding ? "Complete seu Perfil" : "Meu Perfil"}
+              </h2>
+              {!isOnboarding && (
+                <button
+                  onClick={onClose}
+                  className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
             </div>
 
             <div className="p-4 space-y-6 pb-8">
