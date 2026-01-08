@@ -90,19 +90,12 @@ const Index = () => {
         animate={{ opacity: 1, y: 0 }}
         className="px-6 pt-12 pb-2"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-center">
           <Logo size="md" />
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="w-10 h-10 rounded-full bg-card flex items-center justify-center border border-border"
-          >
-            <span className="text-lg">👤</span>
-          </motion.div>
         </div>
       </motion.header>
 
-      {/* Hero Banner */}
+      {/* Hero Banner - Full Width */}
       <HeroBanner userName="Atleta" currentDay={currentDay} />
 
       {/* Quick Stats */}

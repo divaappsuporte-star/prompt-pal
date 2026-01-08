@@ -15,7 +15,7 @@ const HeroBanner = ({ userName = "Atleta", currentDay }: HeroBannerProps) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
-      className="relative h-64 rounded-3xl overflow-hidden mx-4 mt-4 shadow-elevated"
+      className="relative h-72 overflow-hidden"
     >
       {/* Neural Network Background */}
       <NeuralNetwork 
