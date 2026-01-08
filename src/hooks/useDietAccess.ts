@@ -1,17 +1,21 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { DietType, DietAccess } from "@/types/diet";
 
+// Flag para ativar/desativar monetização
+// Quando TRUE: verifica acesso no banco de dados
+// Quando FALSE: todas as dietas ficam liberadas
+const MONETIZATION_ENABLED = false;
+
 export function useDietAccess() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
 
   // Fetch user's diet access
   const { data: dietAccess, isLoading } = useQuery({
     queryKey: ['diet-access', user?.id],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user || !MONETIZATION_ENABLED) return [];
       
       const { data, error } = await supabase
         .from('user_diet_access')
@@ -21,11 +25,14 @@ export function useDietAccess() {
       if (error) throw error;
       return (data || []) as DietAccess[];
     },
-    enabled: !!user,
+    enabled: !!user && MONETIZATION_ENABLED,
   });
 
   // Check if user has access to a specific diet
   const hasDietAccess = (dietType: DietType): boolean => {
+    // Se monetização desativada, todas as dietas são liberadas
+    if (!MONETIZATION_ENABLED) return true;
+    
     if (!dietAccess) return false;
     
     const access = dietAccess.find(a => a.diet_type === dietType);
@@ -40,13 +47,16 @@ export function useDietAccess() {
   };
 
   // Get list of unlocked diets
-  const unlockedDiets = dietAccess?.map(a => a.diet_type) || [];
+  const unlockedDiets = MONETIZATION_ENABLED 
+    ? (dietAccess?.map(a => a.diet_type) || [])
+    : ['carnivore', 'keto', 'lowcarb', 'metabolic', 'detox', 'fasting'] as DietType[];
 
   return {
     dietAccess,
     isLoading,
     hasDietAccess,
     unlockedDiets,
+    monetizationEnabled: MONETIZATION_ENABLED,
   };
 }
 
