@@ -45,8 +45,8 @@ const Logo = ({ size = "md", showTagline = false }: LogoProps) => {
           </svg>
         </motion.span>
         <span className="text-foreground">et</span>
-        <span className="text-gradient-coral">fit</span>
-        <span className="text-foreground">21</span>
+        <span className="text-gradient-coral ml-1">fit</span>
+        <span className="text-foreground ml-1">21</span>
       </h1>
       {showTagline && (
         <motion.p
