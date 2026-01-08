@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Nutrition from "./pages/Nutrition";
 import Mindset from "./pages/Mindset";
+import Treino from "./pages/Treino";
 import CarnivoreDiet from "./pages/CarnivoreDiet";
 import LowCarbDiet from "./pages/LowCarbDiet";
 import KetoDiet from "./pages/KetoDiet";
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/nutricao" element={<Nutrition />} />
           <Route path="/mentalidade" element={<Mindset />} />
+          <Route path="/treino" element={<Treino />} />
           <Route path="/dieta-carnivora" element={<CarnivoreDiet />} />
           <Route path="/dieta-lowcarb" element={<LowCarbDiet />} />
           <Route path="/dieta-cetogenica" element={<KetoDiet />} />
