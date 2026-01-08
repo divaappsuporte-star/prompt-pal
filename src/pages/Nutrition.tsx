@@ -34,6 +34,13 @@ const dietPlans = {
     route: "/dieta-cetogenica",
     color: "primary",
   },
+  jejum: {
+    name: "Jejum Intermitente",
+    description: "20 capítulos + 30 receitas completas",
+    emoji: "⏰",
+    route: "/jejum-intermitente",
+    color: "purple",
+  },
 };
 
 const Nutrition = () => {
@@ -76,6 +83,12 @@ const Nutrition = () => {
           border: "border-primary/30 hover:border-primary/50",
           bg: "bg-primary/20",
           text: "text-primary",
+        };
+      case "purple":
+        return {
+          border: "border-[#9b87f5]/30 hover:border-[#9b87f5]/50",
+          bg: "bg-[#9b87f5]/20",
+          text: "text-[#9b87f5]",
         };
       default:
         return {
@@ -172,7 +185,7 @@ const Nutrition = () => {
           onValueChange={setActiveTab} 
           className="w-full"
         >
-          <TabsList className="w-full bg-card/50 p-1 rounded-xl grid grid-cols-3 gap-1">
+          <TabsList className="w-full bg-card/50 p-1 rounded-xl grid grid-cols-4 gap-1">
             <TabsTrigger
               value="carnivora"
               className="rounded-lg data-[state=active]:bg-coral data-[state=active]:text-primary-foreground text-xs font-medium"
@@ -190,6 +203,12 @@ const Nutrition = () => {
               className="rounded-lg data-[state=active]:bg-accent data-[state=active]:text-accent-foreground text-xs font-medium"
             >
               Low Carb
+            </TabsTrigger>
+            <TabsTrigger
+              value="jejum"
+              className="rounded-lg data-[state=active]:bg-[#9b87f5] data-[state=active]:text-primary-foreground text-xs font-medium"
+            >
+              Jejum
             </TabsTrigger>
           </TabsList>
 

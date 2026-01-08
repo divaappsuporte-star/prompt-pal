@@ -9,6 +9,7 @@ import Mindset from "./pages/Mindset";
 import CarnivoreDiet from "./pages/CarnivoreDiet";
 import LowCarbDiet from "./pages/LowCarbDiet";
 import KetoDiet from "./pages/KetoDiet";
+import IntermittentFasting from "./pages/IntermittentFasting";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/dieta-carnivora" element={<CarnivoreDiet />} />
           <Route path="/dieta-lowcarb" element={<LowCarbDiet />} />
           <Route path="/dieta-cetogenica" element={<KetoDiet />} />
+          <Route path="/jejum-intermitente" element={<IntermittentFasting />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
