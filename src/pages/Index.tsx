@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Brain, Apple, Dumbbell, BarChart3, User } from "lucide-react";
+import { Brain, Apple, Dumbbell, Sparkles, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomNavigation from "@/components/BottomNavigation";
 import DashboardCard from "@/components/DashboardCard";
 import HeroBanner from "@/components/HeroBanner";
-import QuickStats from "@/components/QuickStats";
 import HealthMonitor from "@/components/HealthMonitor";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -49,6 +48,8 @@ const Index = () => {
       navigate("/mentalidade");
     } else if (id === "treino") {
       navigate("/treino");
+    } else if (id === "complemento") {
+      navigate("/complemento");
     }
   };
 
@@ -100,10 +101,10 @@ const Index = () => {
       progress: 0,
     },
     {
-      id: "progresso",
-      title: "Progresso",
-      subtitle: "Sua evolução",
-      icon: BarChart3,
+      id: "complemento",
+      title: "Complemento",
+      subtitle: "Água & Sono",
+      icon: Sparkles,
       variant: "gold" as const,
       progress: 0,
     },
@@ -130,7 +131,7 @@ const Index = () => {
       </motion.header>
 
       {/* Hero Banner - Full Width */}
-      <HeroBanner userName={userName} currentDay={currentDay} />
+      <HeroBanner />
 
       {/* Dashboard Cards - Sua Jornada */}
       <div className="px-4 py-2">
@@ -152,9 +153,6 @@ const Index = () => {
           ))}
         </div>
       </div>
-
-      {/* Quick Stats */}
-      <QuickStats />
 
       {/* Health Monitor */}
       <HealthMonitor />

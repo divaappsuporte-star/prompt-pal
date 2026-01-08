@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import Nutrition from "./pages/Nutrition";
 import Mindset from "./pages/Mindset";
 import Treino from "./pages/Treino";
+import Complemento from "./pages/Complemento";
 
 import CarnivoreDiet from "./pages/CarnivoreDiet";
 import LowCarbDiet from "./pages/LowCarbDiet";
@@ -98,6 +99,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <DetoxJuices />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/complemento"
+              element={
+                <ProtectedRoute>
+                  <Complemento />
                 </ProtectedRoute>
               }
             />
