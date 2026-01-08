@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Navigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Download } from "lucide-react";
 import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
 import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
+import InstallPWAModal from "@/components/modals/InstallPWAModal";
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -23,6 +25,7 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { canInstall, isInstalled, isIOSModalOpen, promptInstall, closeIOSModal } = usePWAInstall();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -260,6 +263,20 @@ const Auth = () => {
         </form>
       </motion.div>
 
+      {/* Install PWA Button */}
+      {canInstall && !isInstalled && (
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          onClick={promptInstall}
+          className="flex items-center gap-2 mt-6 px-6 py-3 rounded-xl bg-muted/50 border border-primary/30 text-primary font-medium hover:bg-muted transition-colors"
+        >
+          <Download className="w-5 h-5" />
+          <span>Instalar App</span>
+        </motion.button>
+      )}
+
       {/* Footer */}
       <motion.p
         initial={{ opacity: 0 }}
@@ -269,6 +286,9 @@ const Auth = () => {
       >
         Ao continuar, você concorda com nossos termos de uso.
       </motion.p>
+
+      {/* iOS Install Modal */}
+      <InstallPWAModal isOpen={isIOSModalOpen} onClose={closeIOSModal} />
     </div>
   );
 };
