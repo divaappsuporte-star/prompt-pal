@@ -173,7 +173,7 @@ const Index = () => {
           Protocolos Alimentares
         </motion.h2>
         
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           {dietList.map((dietKey, index) => {
             const diet = DIET_INFO[dietKey];
             const hasAccess = hasDietAccess(dietKey);
@@ -187,7 +187,7 @@ const Index = () => {
                 progress={0}
                 onClick={() => handleDietClick(dietKey)}
                 onUnlockClick={() => handleDietClick(dietKey)}
-                delay={0.2 + index * 0.1}
+                delay={0.2 + index * 0.05}
               />
             );
           })}
