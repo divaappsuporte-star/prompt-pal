@@ -29,7 +29,7 @@ import {
 import BottomNavigation from "@/components/BottomNavigation";
 import RecipeCard from "@/components/RecipeCard";
 import { useProgress } from "@/hooks/useProgress";
-import { loadProgress } from "@/services/progressService";
+import { loadProgress, completeOnboardingStep } from "@/services/progressService";
 
 interface Chapter {
   id: number;
@@ -385,6 +385,8 @@ const KetoDiet = () => {
     if (!completedChapters.includes(chapterId)) {
       setCompletedChapters(prev => [...prev, chapterId]);
       completeNutrition("keto", chapterId);
+      // Marca o passo de onboarding (nutrição = step 1)
+      completeOnboardingStep(1);
     }
     
     const nextChapterId = chapterId + 1;

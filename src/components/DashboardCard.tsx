@@ -9,6 +9,7 @@ interface DashboardCardProps {
   progress?: number;
   onClick?: () => void;
   delay?: number;
+  guideBadge?: "start" | "next" | null;
 }
 
 const DashboardCard = ({
@@ -19,6 +20,7 @@ const DashboardCard = ({
   progress,
   onClick,
   delay = 0,
+  guideBadge = null,
 }: DashboardCardProps) => {
   const variantStyles = {
     default: "border-border/50",
@@ -55,8 +57,29 @@ const DashboardCard = ({
         border ${variantStyles[variant]}
         transition-all duration-300
         ${glowStyles[variant]}
+        ${guideBadge ? 'ring-2 ring-gold/50 shadow-glow-gold' : ''}
       `}
     >
+      {/* Guide Badge */}
+      {guideBadge && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: delay + 0.3, type: "spring" }}
+          className="absolute -top-1 -right-1 z-20"
+        >
+          <div className="relative">
+            <motion.div
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="absolute inset-0 bg-gold/30 rounded-full blur-md"
+            />
+            <span className="relative block bg-gradient-to-r from-gold to-coral text-background text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap">
+              {guideBadge === "start" ? "Comece aqui" : "Agora é aqui"}
+            </span>
+          </div>
+        </motion.div>
+      )}
       {/* Background gradient effect */}
       <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-500">
         <div className={`absolute inset-0 bg-gradient-to-br from-${variant === 'default' ? 'primary' : variant}/5 to-transparent`} />

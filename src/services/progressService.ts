@@ -45,6 +45,11 @@ export interface ProgressData {
   sleep: {
     daily: DailySleep[];
   };
+  onboarding: {
+    currentStep: number; // 0 = mentalidade, 1 = nutrição, 2 = treino, 3 = done
+    completedSteps: number[];
+    firstDayCompleted: boolean;
+  };
 }
 
 const STORAGE_KEY = "personal21_progress";
@@ -72,6 +77,11 @@ const getDefaultProgress = (): ProgressData => ({
   sleep: {
     daily: [],
   },
+  onboarding: {
+    currentStep: 0,
+    completedSteps: [],
+    firstDayCompleted: false,
+  },
 });
 
 export const loadProgress = (): ProgressData => {
@@ -88,6 +98,7 @@ export const loadProgress = (): ProgressData => {
         workouts: { ...getDefaultProgress().workouts, ...parsed.workouts },
         hydration: { ...getDefaultProgress().hydration, ...parsed.hydration },
         sleep: { ...getDefaultProgress().sleep, ...parsed.sleep },
+        onboarding: { ...getDefaultProgress().onboarding, ...parsed.onboarding },
       };
     }
   } catch (error) {
@@ -341,5 +352,42 @@ export const analyzeHealth = (): HealthAnalysis => {
     hydration: { level: hydrationLevel, message: hydrationMessage, current: hydrationMl, target: 2000 },
     sleep: { level: sleepLevel, message: sleepMessage, current: sleepHours, target: 8 },
     activity: { level: activityLevel, message: activityMessage, caloriesBurned },
+  };
+};
+
+// Onboarding functions
+export const getOnboardingStep = (): number => {
+  const data = loadProgress();
+  return data.onboarding.currentStep;
+};
+
+export const isOnboardingComplete = (): boolean => {
+  const data = loadProgress();
+  return data.onboarding.firstDayCompleted;
+};
+
+export const completeOnboardingStep = (step: number): ProgressData => {
+  const data = loadProgress();
+  if (!data.onboarding.completedSteps.includes(step)) {
+    data.onboarding.completedSteps.push(step);
+  }
+  // Avança para o próximo step
+  if (step === data.onboarding.currentStep && step < 3) {
+    data.onboarding.currentStep = step + 1;
+  }
+  // Se completou todos os 3 primeiros steps, marca primeiro dia como completo
+  if (data.onboarding.completedSteps.length >= 3) {
+    data.onboarding.firstDayCompleted = true;
+  }
+  saveProgress(data);
+  return data;
+};
+
+export const getOnboardingState = () => {
+  const data = loadProgress();
+  return {
+    currentStep: data.onboarding.currentStep,
+    completedSteps: data.onboarding.completedSteps,
+    isComplete: data.onboarding.firstDayCompleted,
   };
 };

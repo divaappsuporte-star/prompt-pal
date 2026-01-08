@@ -3,7 +3,7 @@ import { Play, Clock, Flame, X, Timer, Pause, SkipForward, Check } from "lucide-
 import { useState, useEffect, useCallback, useRef } from "react";
 import ExerciseImage from "./ExerciseImage";
 import { useProgress } from "@/hooks/useProgress";
-import { loadProgress } from "@/services/progressService";
+import { loadProgress, completeOnboardingStep } from "@/services/progressService";
 
 interface Exercise {
   name: string;
@@ -599,6 +599,8 @@ const WorkoutCarousel = () => {
       if (day + 1 <= 21 && !unlockedDays.includes(day + 1)) {
         setUnlockedDays([...unlockedDays, day + 1]);
       }
+      // Marca o passo de onboarding (treino = step 2)
+      completeOnboardingStep(2);
     }
     closeModal();
   };
