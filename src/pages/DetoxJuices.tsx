@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RecipeCard from "@/components/RecipeCard";
 import { useProgress } from "@/hooks/useProgress";
-import { loadProgress } from "@/services/progressService";
+import { loadProgress, completeOnboardingStep } from "@/services/progressService";
 
 const DetoxJuices = () => {
   const navigate = useNavigate();
@@ -274,6 +274,8 @@ const DetoxJuices = () => {
       if (chapterId < 20 && !unlockedChapters.includes(chapterId + 1)) {
         setUnlockedChapters([...unlockedChapters, chapterId + 1]);
       }
+      // Marca o passo de onboarding (nutrição = step 1)
+      completeOnboardingStep(1);
     }
     setSelectedChapter(null);
   };

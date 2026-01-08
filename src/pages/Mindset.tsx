@@ -20,7 +20,7 @@ import {
 import BottomNavigation from "@/components/BottomNavigation";
 import QuickLogModal from "@/components/modals/QuickLogModal";
 import { useProgress } from "@/hooks/useProgress";
-import { loadProgress } from "@/services/progressService";
+import { loadProgress, completeOnboardingStep } from "@/services/progressService";
 
 interface Chapter {
   id: number;
@@ -195,6 +195,8 @@ const Mindset = () => {
       if (chapterId < 10 && !unlockedChapters.includes(chapterId + 1)) {
         setUnlockedChapters([...unlockedChapters, chapterId + 1]);
       }
+      // Marca o passo de onboarding (mentalidade = step 0)
+      completeOnboardingStep(0);
     }
     setSelectedChapter(null);
   };

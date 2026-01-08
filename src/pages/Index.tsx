@@ -11,6 +11,7 @@ import HealthMonitor from "@/components/HealthMonitor";
 import Logo from "@/components/Logo";
 import QuickLogModal from "@/components/modals/QuickLogModal";
 import ProfileModal from "@/components/modals/ProfileModal";
+import { getOnboardingState } from "@/services/progressService";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const Index = () => {
   const [showQuickLog, setShowQuickLog] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [isOnboarding, setIsOnboarding] = useState(false);
+  const [onboardingState, setOnboardingState] = useState(getOnboardingState());
   const currentDay = 1;
 
   const userName = profile?.full_name?.split(" ")[0] || "Atleta";
@@ -31,6 +33,8 @@ const Index = () => {
       setIsOnboarding(true);
       setShowProfile(true);
     }
+    // Atualiza estado do onboarding ao voltar para a página
+    setOnboardingState(getOnboardingState());
   }, [profile, isProfileIncomplete]);
 
   const handleProfileClose = (forceClose?: boolean) => {
@@ -49,6 +53,8 @@ const Index = () => {
     } else if (id === "treino") {
       navigate("/treino");
     }
+    // Atualiza estado do onboarding após navegação
+    setTimeout(() => setOnboardingState(getOnboardingState()), 100);
   };
 
   const handleTabChange = (tab: string) => {
@@ -70,6 +76,25 @@ const Index = () => {
         setShowQuickLog(true);
         break;
     }
+  };
+
+  // Determina qual card deve ter o badge de guia
+  const getGuideBadge = (cardId: string): "start" | "next" | null => {
+    if (onboardingState.isComplete) return null;
+    
+    const stepMap: Record<number, string> = {
+      0: "mentalidade",
+      1: "nutricao",
+      2: "treino",
+    };
+    
+    const currentCardId = stepMap[onboardingState.currentStep];
+    
+    if (cardId === currentCardId) {
+      return onboardingState.currentStep === 0 ? "start" : "next";
+    }
+    
+    return null;
   };
 
   const dashboardCards = [
@@ -146,6 +171,7 @@ const Index = () => {
               progress={card.progress}
               delay={0.1 + index * 0.1}
               onClick={() => handleCardClick(card.id)}
+              guideBadge={getGuideBadge(card.id)}
             />
           ))}
         </div>
