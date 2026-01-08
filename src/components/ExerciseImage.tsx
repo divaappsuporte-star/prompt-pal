@@ -1,6 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { getExerciseInfo } from "@/data/exerciseData";
-import { useState } from "react";
 
 interface ExerciseImageProps {
   exerciseName: string;
@@ -9,20 +8,8 @@ interface ExerciseImageProps {
 
 const ExerciseImage = ({ exerciseName, isExpanded }: ExerciseImageProps) => {
   const exercise = getExerciseInfo(exerciseName);
-  const [imageError, setImageError] = useState(false);
   
   if (!exercise) return null;
-
-  // Placeholder image with exercise initials
-  const getPlaceholderBg = (name: string) => {
-    const colors = [
-      "from-coral/30 to-coral/10",
-      "from-gold/30 to-gold/10", 
-      "from-mint/30 to-mint/10",
-    ];
-    const index = name.length % colors.length;
-    return colors[index];
-  };
 
   return (
     <AnimatePresence>
@@ -34,38 +21,17 @@ const ExerciseImage = ({ exerciseName, isExpanded }: ExerciseImageProps) => {
           transition={{ duration: 0.3, ease: "easeInOut" }}
           className="overflow-hidden"
         >
-          <div className="pt-3 pb-1 space-y-3">
-            {/* Exercise Image or Placeholder */}
-            <div className="relative rounded-xl overflow-hidden">
-              {!imageError ? (
-                <img
-                  src={exercise.imageUrl}
-                  alt={exercise.name}
-                  className="w-full h-40 object-cover rounded-xl"
-                  onError={() => setImageError(true)}
-                />
-              ) : (
-                <div 
-                  className={`w-full h-40 bg-gradient-to-br ${getPlaceholderBg(exercise.name)} rounded-xl flex flex-col items-center justify-center border border-white/10`}
+          <div className="pt-3 pb-1 space-y-2">
+            {/* Muscle groups badges */}
+            <div className="flex flex-wrap gap-1 mb-2">
+              {exercise.muscleGroups.map((muscle, idx) => (
+                <span 
+                  key={idx}
+                  className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-mint/20 text-mint"
                 >
-                  <div className="text-4xl font-bold text-white/30">
-                    {exercise.name.split(' ').map(w => w[0]).join('').slice(0, 2)}
-                  </div>
-                  <p className="text-xs text-white/40 mt-2">{exercise.description}</p>
-                </div>
-              )}
-              
-              {/* Muscle groups badges */}
-              <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
-                {exercise.muscleGroups.slice(0, 3).map((muscle, idx) => (
-                  <span 
-                    key={idx}
-                    className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/60 text-white/80 backdrop-blur-sm"
-                  >
-                    {muscle}
-                  </span>
-                ))}
-              </div>
+                  {muscle}
+                </span>
+              ))}
             </div>
 
             {/* Instructions */}
