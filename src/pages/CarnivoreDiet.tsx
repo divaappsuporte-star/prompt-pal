@@ -24,11 +24,16 @@ import {
   Coffee,
   Sun,
   UtensilsCrossed,
-  Unlock
+  Unlock,
+  Settings2
 } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import RecipeCard from "@/components/RecipeCard";
 import { useProgress } from "@/hooks/useProgress";
+import { useActivePlan } from "@/hooks/useActivePlan";
+import GoalSelectionModal from "@/components/diet/GoalSelectionModal";
+import DietLoadingOverlay from "@/components/diet/DietLoadingOverlay";
+import { DIET_INFO } from "@/types/diet";
 import { loadProgress, completeOnboardingStep } from "@/services/progressService";
 
 interface Chapter {
@@ -56,8 +61,13 @@ interface Recipe {
 const CarnivoreDiet = () => {
   const navigate = useNavigate();
   const { completeNutrition } = useProgress();
+  const { activePlan, createPlan } = useActivePlan('carnivore');
+  
   const [activeTab, setActiveTab] = useState("chapters");
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
+  const [showGoalModal, setShowGoalModal] = useState(false);
+  const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
+  const [targetKgLoss, setTargetKgLoss] = useState(5);
   
   // Load from localStorage
   const savedProgress = loadProgress();
@@ -70,6 +80,22 @@ const CarnivoreDiet = () => {
     });
     return unlocked;
   });
+
+  const handleGoalConfirm = async (kgLoss: number) => {
+    setTargetKgLoss(kgLoss);
+    setShowGoalModal(false);
+    setShowLoadingOverlay(true);
+  };
+
+  const handleLoadingComplete = async () => {
+    try {
+      await createPlan.mutateAsync({ targetWeightLoss: targetKgLoss });
+      setShowLoadingOverlay(false);
+    } catch (error) {
+      console.error("Error creating plan:", error);
+      setShowLoadingOverlay(false);
+    }
+  };
 
   const chapters: Chapter[] = [
     {
@@ -453,6 +479,41 @@ const CarnivoreDiet = () => {
         </div>
       </motion.div>
 
+      {/* Active Plan Card */}
+      {activePlan && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="px-6 py-2"
+        >
+          <div className="glass-card rounded-2xl p-4 border border-coral/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-coral/20 flex items-center justify-center">
+                  <Target className="text-coral" size={20} />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Plano de 21 dias</p>
+                  <p className="font-display font-bold text-foreground">
+                    Meta: -{activePlan.target_weight_loss}kg
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Dia {activePlan.current_day} de 21
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowGoalModal(true)}
+                className="p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+              >
+                <Settings2 className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Introduction Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -805,6 +866,23 @@ const CarnivoreDiet = () => {
       </AnimatePresence>
 
       <BottomNavigation activeTab="nutrition" onTabChange={() => {}} />
+
+      {/* Goal Selection Modal */}
+      <GoalSelectionModal
+        isOpen={showGoalModal}
+        onClose={() => setShowGoalModal(false)}
+        onConfirm={handleGoalConfirm}
+        diet={DIET_INFO.carnivore}
+        isLoading={createPlan.isPending}
+      />
+
+      {/* Loading Overlay */}
+      <DietLoadingOverlay
+        isOpen={showLoadingOverlay}
+        diet={DIET_INFO.carnivore}
+        targetKgLoss={targetKgLoss}
+        onComplete={handleLoadingComplete}
+      />
     </div>
   );
 };

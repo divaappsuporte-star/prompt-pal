@@ -5,6 +5,7 @@ import { Brain, Dumbbell, User, ChevronRight, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDietAccess } from "@/hooks/useDietAccess";
 import { useActivePlan } from "@/hooks/useActivePlan";
+import { useAllActivePlans } from "@/hooks/useAllActivePlans";
 import { DietType, DIET_INFO } from "@/types/diet";
 import BottomNavigation from "@/components/BottomNavigation";
 import Logo from "@/components/Logo";
@@ -20,6 +21,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { hasDietAccess, isLoading: accessLoading } = useDietAccess();
+  const { hasActivePlan, getActivePlan } = useAllActivePlans();
   
   const [activeTab, setActiveTab] = useState("home");
   const [showQuickLog, setShowQuickLog] = useState(false);
@@ -32,7 +34,7 @@ const Index = () => {
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
   const [targetKgLoss, setTargetKgLoss] = useState(5);
 
-  const { createPlan, activePlan } = useActivePlan(selectedDiet || undefined);
+  const { createPlan } = useActivePlan(selectedDiet || undefined);
 
   const wantsExercise = (profile as any)?.wants_exercise ?? true;
 
@@ -78,8 +80,16 @@ const Index = () => {
     const hasAccess = hasDietAccess(dietKey);
     
     if (hasAccess) {
-      setSelectedDiet(dietKey);
-      setShowGoalModal(true);
+      // Check if user already has an active plan for this diet
+      if (hasActivePlan(dietKey)) {
+        // Go directly to diet page
+        const dietInfo = DIET_INFO[dietKey];
+        navigate(dietInfo.route);
+      } else {
+        // Show goal selection modal for new plan
+        setSelectedDiet(dietKey);
+        setShowGoalModal(true);
+      }
     } else {
       // TODO: Open payment modal
       console.log("Diet locked, show payment modal for:", dietKey);
