@@ -69,16 +69,39 @@ const dietPlans = {
 const Nutrition = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("nutricao");
-  const [showFilters, setShowFilters] = useState(true); // Visible by default
-  const [filterAcknowledged, setFilterAcknowledged] = useState(false); // Track if user acknowledged
   const [showQuickLog, setShowQuickLog] = useState(false);
-  const [medicalConditions, setMedicalConditions] = useState<MedicalCondition[]>([
-    { id: "diabetes", label: "Diabetes", active: false },
-    { id: "gastrite", label: "Gastrite", active: false },
-    { id: "hipertensao", label: "Hipertensão", active: false },
-    { id: "intolerancia_lactose", label: "Intolerância à Lactose", active: false },
-    { id: "celiaquia", label: "Celíaco", active: false },
-  ]);
+  
+  // Load saved preferences from localStorage
+  const [filterAcknowledged, setFilterAcknowledged] = useState(() => {
+    return localStorage.getItem("nutrition_filter_acknowledged") === "true";
+  });
+  const [showFilters, setShowFilters] = useState(() => {
+    return localStorage.getItem("nutrition_filter_acknowledged") !== "true";
+  });
+  
+  const [medicalConditions, setMedicalConditions] = useState<MedicalCondition[]>(() => {
+    const saved = localStorage.getItem("nutrition_medical_conditions");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return [
+          { id: "diabetes", label: "Diabetes", active: false },
+          { id: "gastrite", label: "Gastrite", active: false },
+          { id: "hipertensao", label: "Hipertensão", active: false },
+          { id: "intolerancia_lactose", label: "Intolerância à Lactose", active: false },
+          { id: "celiaquia", label: "Celíaco", active: false },
+        ];
+      }
+    }
+    return [
+      { id: "diabetes", label: "Diabetes", active: false },
+      { id: "gastrite", label: "Gastrite", active: false },
+      { id: "hipertensao", label: "Hipertensão", active: false },
+      { id: "intolerancia_lactose", label: "Intolerância à Lactose", active: false },
+      { id: "celiaquia", label: "Celíaco", active: false },
+    ];
+  });
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -119,9 +142,14 @@ const Nutrition = () => {
   const effectiveDietTab = availableDiets.some(([key]) => key === dietActiveTab) ? dietActiveTab : currentDietKey;
 
   const toggleCondition = (id: string) => {
-    setMedicalConditions((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, active: !c.active } : c))
-    );
+    const updated = medicalConditions.map((c) => (c.id === id ? { ...c, active: !c.active } : c));
+    setMedicalConditions(updated);
+    localStorage.setItem("nutrition_medical_conditions", JSON.stringify(updated));
+    // If any condition is selected, acknowledge the filter
+    if (updated.some(c => c.active)) {
+      setFilterAcknowledged(true);
+      localStorage.setItem("nutrition_filter_acknowledged", "true");
+    }
   };
 
   const getColorClasses = (color: string) => {
@@ -166,7 +194,7 @@ const Nutrition = () => {
   };
 
   return (
-    <div className="min-h-screen pb-8">
+    <div className="min-h-screen pb-24">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
@@ -230,6 +258,7 @@ const Nutrition = () => {
             onDismiss={() => {
               setShowFilters(false);
               setFilterAcknowledged(true);
+              localStorage.setItem("nutrition_filter_acknowledged", "true");
             }}
           />
         )}
