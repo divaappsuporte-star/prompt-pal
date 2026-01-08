@@ -20,6 +20,7 @@ import LowCarbDiet from "./pages/LowCarbDiet";
 import KetoDiet from "./pages/KetoDiet";
 import IntermittentFasting from "./pages/IntermittentFasting";
 import DetoxJuices from "./pages/DetoxJuices";
+import FoodEducation from "./pages/FoodEducation";
 import NotFound from "./pages/NotFound";
 
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -129,6 +130,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Complemento />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/educacao-alimentar"
+              element={
+                <ProtectedRoute>
+                  <FoodEducation />
                 </ProtectedRoute>
               }
             />
