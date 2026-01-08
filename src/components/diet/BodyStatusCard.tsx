@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Activity, Brain, Flame, Moon, Dumbbell, Heart, ChevronDown, ChevronUp } from "lucide-react";
+import { Activity, Brain, Flame, Moon, Dumbbell, Heart, ChevronDown, ChevronUp, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DailyFeedback, MealFeedback } from "@/types/diet";
+import { useProgress } from "@/hooks/useProgress";
+import { CompletedMealWithFeedback } from "@/services/progressService";
 
 interface BodyStatusCardProps {
-  feedbacks: DailyFeedback[];
   className?: string;
 }
 
@@ -16,16 +16,12 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Dumbbell,
   Heart,
   Activity,
+  Zap,
 };
 
-const BodyStatusCard = ({ feedbacks, className }: BodyStatusCardProps) => {
+const BodyStatusCard = ({ className }: BodyStatusCardProps) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  // Get today's feedbacks only
-  const todayFeedbacks = feedbacks.filter(f => {
-    const today = new Date().toDateString();
-    return new Date(f.received_at).toDateString() === today;
-  });
+  const { todayMeals } = useProgress();
 
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString('pt-BR', {
@@ -38,7 +34,17 @@ const BodyStatusCard = ({ feedbacks, className }: BodyStatusCardProps) => {
     setExpandedId(prev => prev === id ? null : id);
   };
 
-  if (todayFeedbacks.length === 0) {
+  const getMealTypeName = (mealType: string) => {
+    const names: Record<string, string> = {
+      breakfast: 'Café da Manhã',
+      lunch: 'Almoço',
+      dinner: 'Jantar',
+      snack: 'Lanche',
+    };
+    return names[mealType] || mealType;
+  };
+
+  if (todayMeals.length === 0) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -81,15 +87,15 @@ const BodyStatusCard = ({ feedbacks, className }: BodyStatusCardProps) => {
             Como Seu Corpo Está Atualmente
           </h3>
           <p className="text-xs text-muted-foreground">
-            {todayFeedbacks.length} processo{todayFeedbacks.length > 1 ? 's' : ''} ativo{todayFeedbacks.length > 1 ? 's' : ''}
+            {todayMeals.length} processo{todayMeals.length > 1 ? 's' : ''} ativo{todayMeals.length > 1 ? 's' : ''}
           </p>
         </div>
       </div>
 
       <div className="space-y-3 max-h-80 overflow-y-auto">
-        {todayFeedbacks.map((item, idx) => {
-          const IconComponent = iconMap[item.feedback.icon] || Activity;
-          const itemId = `${item.day}-${item.meal_type}-${idx}`;
+        {todayMeals.map((meal, idx) => {
+          const IconComponent = iconMap[meal.feedback.icon] || Activity;
+          const itemId = `${meal.mealType}-${idx}`;
           const isExpanded = expandedId === itemId;
 
           return (
@@ -110,10 +116,10 @@ const BodyStatusCard = ({ feedbacks, className }: BodyStatusCardProps) => {
                 
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-foreground text-sm truncate">
-                    {item.feedback.title}
+                    {meal.feedback.title}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {formatTime(item.received_at)}
+                    {getMealTypeName(meal.mealType)} • {formatTime(meal.completedAt)}
                   </p>
                 </div>
 
@@ -134,7 +140,7 @@ const BodyStatusCard = ({ feedbacks, className }: BodyStatusCardProps) => {
                   >
                     <div className="pt-2 border-t border-border space-y-3">
                       <p className="text-sm text-foreground">
-                        {item.feedback.message}
+                        {meal.feedback.message}
                       </p>
                       
                       <div className="bg-background/50 rounded-lg p-3">
@@ -142,13 +148,18 @@ const BodyStatusCard = ({ feedbacks, className }: BodyStatusCardProps) => {
                           O que está acontecendo:
                         </p>
                         <p className="text-sm text-foreground">
-                          {item.feedback.bodyProcess}
+                          {meal.feedback.bodyProcess}
                         </p>
                       </div>
 
-                      <p className="text-xs text-mint font-medium">
-                        ⏱️ {item.feedback.timeframe}
-                      </p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-mint font-medium">
+                          ⏱️ {meal.feedback.timeframe}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {meal.calories} kcal • {meal.protein}g prot
+                        </p>
+                      </div>
                     </div>
                   </motion.div>
                 )}

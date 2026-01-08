@@ -607,6 +607,7 @@ const LowCarbDiet = () => {
                     recipe={recipe}
                     index={index}
                     diet="lowcarb"
+                    mealType="breakfast"
                     accentColor="text-accent"
                   />
                 ))}
@@ -627,6 +628,7 @@ const LowCarbDiet = () => {
                     index={index}
                     delay={0.5}
                     diet="lowcarb"
+                    mealType="lunch"
                     accentColor="text-accent"
                   />
                 ))}
@@ -647,6 +649,7 @@ const LowCarbDiet = () => {
                     index={index}
                     delay={1}
                     diet="lowcarb"
+                    mealType="dinner"
                     accentColor="text-accent"
                   />
                 ))}

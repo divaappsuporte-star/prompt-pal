@@ -110,8 +110,6 @@ const Index = () => {
   // Diet list in order
   const dietList: DietType[] = ['carnivore', 'keto', 'lowcarb', 'metabolic', 'detox', 'fasting'];
 
-  // Mock feedbacks for body status (will come from active plan)
-  const mockFeedbacks = activePlan?.daily_feedbacks || [];
 
   return (
     <div className="min-h-screen pb-24">
@@ -196,7 +194,7 @@ const Index = () => {
 
       {/* Body Status Card */}
       <div className="px-4 mb-6">
-        <BodyStatusCard feedbacks={mockFeedbacks} />
+        <BodyStatusCard />
       </div>
 
       {/* Training Section - Conditional */}
