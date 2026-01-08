@@ -110,6 +110,48 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          diet_type: Database["public"]["Enums"]["diet_type"]
+          id: string
+          metadata: Json | null
+          provider: string
+          provider_transaction_id: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          diet_type: Database["public"]["Enums"]["diet_type"]
+          id?: string
+          metadata?: Json | null
+          provider: string
+          provider_transaction_id?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          diet_type?: Database["public"]["Enums"]["diet_type"]
+          id?: string
+          metadata?: Json | null
+          provider?: string
+          provider_transaction_id?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           activity_level: string | null
@@ -122,8 +164,11 @@ export type Database = {
           goal_weight_kg: number | null
           height_cm: number | null
           id: string
+          is_suspended: boolean | null
           show_name: boolean | null
           sleep_goal_hours: number | null
+          suspended_at: string | null
+          suspended_by: string | null
           updated_at: string
           wants_exercise: boolean | null
           water_goal_ml: number | null
@@ -140,8 +185,11 @@ export type Database = {
           goal_weight_kg?: number | null
           height_cm?: number | null
           id: string
+          is_suspended?: boolean | null
           show_name?: boolean | null
           sleep_goal_hours?: number | null
+          suspended_at?: string | null
+          suspended_by?: string | null
           updated_at?: string
           wants_exercise?: boolean | null
           water_goal_ml?: number | null
@@ -158,8 +206,11 @@ export type Database = {
           goal_weight_kg?: number | null
           height_cm?: number | null
           id?: string
+          is_suspended?: boolean | null
           show_name?: boolean | null
           sleep_goal_hours?: number | null
+          suspended_at?: string | null
+          suspended_by?: string | null
           updated_at?: string
           wants_exercise?: boolean | null
           water_goal_ml?: number | null

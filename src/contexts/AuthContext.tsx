@@ -16,6 +16,8 @@ interface Profile {
   sleep_goal_hours: number;
   show_name: boolean;
   avatar_url: string | null;
+  is_suspended: boolean;
+  wants_exercise: boolean;
 }
 
 interface AuthContextType {
@@ -70,7 +72,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Defer profile fetch with setTimeout to avoid deadlock
         if (session?.user) {
           setTimeout(() => {
-            fetchProfile(session.user.id).then(setProfile);
+            fetchProfile(session.user.id).then((profileData) => {
+              // Check if user is suspended
+              if (profileData?.is_suspended) {
+                supabase.auth.signOut();
+                setUser(null);
+                setSession(null);
+                setProfile(null);
+                return;
+              }
+              setProfile(profileData);
+            });
           }, 0);
         } else {
           setProfile(null);
@@ -85,6 +97,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (session?.user) {
         fetchProfile(session.user.id).then((profileData) => {
+          // Check if user is suspended
+          if (profileData?.is_suspended) {
+            supabase.auth.signOut();
+            setUser(null);
+            setSession(null);
+            setProfile(null);
+            setLoading(false);
+            return;
+          }
           setProfile(profileData);
           setLoading(false);
         });
