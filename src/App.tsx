@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import Nutrition from "./pages/Nutrition";
 import Mindset from "./pages/Mindset";
 import Treino from "./pages/Treino";
+import Progress from "./pages/Progress";
 import CarnivoreDiet from "./pages/CarnivoreDiet";
 import LowCarbDiet from "./pages/LowCarbDiet";
 import KetoDiet from "./pages/KetoDiet";
@@ -57,6 +58,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Treino />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/progresso"
+              element={
+                <ProtectedRoute>
+                  <Progress />
                 </ProtectedRoute>
               }
             />
