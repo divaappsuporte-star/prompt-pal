@@ -82,16 +82,9 @@ const Index = () => {
     const hasAccess = hasDietAccess(dietKey);
     
     if (hasAccess) {
-      // Check if user already has an active plan for this diet
-      if (hasActivePlan(dietKey)) {
-        // Go directly to diet page
-        const dietInfo = DIET_INFO[dietKey];
-        navigate(dietInfo.route);
-      } else {
-        // Show goal selection modal for new plan
-        setSelectedDiet(dietKey);
-        setShowGoalModal(true);
-      }
+      // Always navigate directly to diet page (educational content)
+      const dietInfo = DIET_INFO[dietKey];
+      navigate(dietInfo.route);
     } else {
       // TODO: Open payment modal
       console.log("Diet locked, show payment modal for:", dietKey);
