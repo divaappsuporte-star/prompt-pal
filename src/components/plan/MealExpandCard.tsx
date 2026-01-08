@@ -7,7 +7,10 @@ import {
   Flame, 
   CheckCircle2, 
   Circle,
-  Utensils
+  Utensils,
+  Coffee,
+  UtensilsCrossed,
+  Moon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -34,6 +37,12 @@ interface MealExpandCardProps {
   isLoading?: boolean;
 }
 
+const MEAL_CONFIG = {
+  breakfast: { icon: Coffee, label: 'Café da Manhã', color: 'text-orange-500' },
+  lunch: { icon: UtensilsCrossed, label: 'Almoço', color: 'text-primary' },
+  dinner: { icon: Moon, label: 'Jantar', color: 'text-indigo-500' },
+};
+
 const MealExpandCard = ({
   type,
   label,
@@ -45,6 +54,7 @@ const MealExpandCard = ({
   isLoading = false,
 }: MealExpandCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const config = MEAL_CONFIG[type];
 
   if (isLoading) {
     return (
@@ -74,6 +84,8 @@ const MealExpandCard = ({
     );
   }
 
+  const MealIcon = config.icon;
+
   return (
     <motion.div
       layout
@@ -93,6 +105,12 @@ const MealExpandCard = ({
           <Circle className="w-6 h-6 text-muted-foreground flex-shrink-0" />
         )}
         <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <MealIcon className={`w-4 h-4 ${config.color}`} />
+            <span className={`text-xs font-semibold uppercase tracking-wide ${config.color}`}>
+              {config.label}
+            </span>
+          </div>
           <p className="font-medium text-foreground truncate">{meal.name}</p>
           <p className="text-sm text-muted-foreground">{time}</p>
         </div>

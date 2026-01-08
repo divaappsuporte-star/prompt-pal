@@ -8,22 +8,44 @@ import {
   Utensils,
   CheckCircle2,
   Circle,
-  Sparkles
+  Sparkles,
+  Droplets,
+  Moon as MoonIcon,
+  Leaf
 } from "lucide-react";
 import { usePersonalPlan } from "@/hooks/usePersonalPlan";
 import { useDailyMeals } from "@/hooks/useDailyMeals";
+import { useAuth } from "@/contexts/AuthContext";
 import { DIET_INFO } from "@/types/diet";
 import BottomNavigation from "@/components/BottomNavigation";
 import MealExpandCard from "@/components/plan/MealExpandCard";
+import { DetoxCard, DETOX_RECIPES } from "@/components/plan/DetoxCard";
+import WaterMissionCard from "@/components/plan/WaterMissionCard";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
 
 const MyPlan = () => {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const { personalPlan, isLoading, hasPlan, integratedModules } = usePersonalPlan();
   
-  // Track completed meals locally (will be synced to DB later)
+  // Track completed items locally (will be synced to DB later)
   const [completedMeals, setCompletedMeals] = useState<string[]>([]);
+  const [detoxCompleted, setDetoxCompleted] = useState(false);
+  const [waterMl, setWaterMl] = useState(0);
+  const [sleepLogged, setSleepLogged] = useState(false);
+
+  // Check if detox is integrated
+  const hasDetoxIntegrated = integratedModules.some(m => m.type === 'detox');
+  
+  // Get detox recipe based on current day
+  const detoxRecipe = DETOX_RECIPES[(personalPlan?.current_day || 1) % DETOX_RECIPES.length];
+  
+  // Calculate detox time (between meals)
+  const getDetoxTime = () => {
+    // Suggest mid-morning for detox
+    return "10:00";
+  };
 
   // Fetch daily meals based on plan
   const { dailyPlan, isLoading: mealsLoading } = useDailyMeals(
@@ -73,6 +95,27 @@ const MyPlan = () => {
     });
   };
 
+  const handleDetoxComplete = () => {
+    setDetoxCompleted(true);
+    toast({
+      title: "Suco Detox concluído! 🥬",
+      description: "Seu corpo agradece! Os nutrientes já estão trabalhando na desintoxicação.",
+    });
+  };
+
+  const handleAddWater = (amount: number) => {
+    const newAmount = Math.max(0, waterMl + amount);
+    setWaterMl(newAmount);
+    
+    const goalMl = profile?.water_goal_ml || 2500;
+    if (newAmount >= goalMl && waterMl < goalMl) {
+      toast({
+        title: "Meta de hidratação alcançada! 💧",
+        description: "Excelente! Manter-se hidratado é fundamental para o sucesso do seu plano.",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -86,14 +129,12 @@ const MyPlan = () => {
   }
 
   const dietInfo = DIET_INFO[personalPlan.diet_type];
-  const progress = (personalPlan.current_day / 21) * 100;
-
-  // Daily missions
-  const dailyMissions = [
-    { id: 'water', name: 'Beber 2.5L de água', completed: false },
-    { id: 'meals', name: 'Completar todas as refeições', completed: completedMeals.length >= 3 },
-    { id: 'sleep', name: 'Dormir 8 horas', completed: false },
-  ];
+  const planProgress = (personalPlan.current_day / 21) * 100;
+  const waterGoal = profile?.water_goal_ml || 2500;
+  
+  // Calculate missions completion
+  const allMealsCompleted = completedMeals.length >= 3;
+  const waterCompleted = waterMl >= waterGoal;
 
   return (
     <div className="min-h-screen pb-24">
@@ -153,9 +194,9 @@ const MyPlan = () => {
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Progresso</span>
-              <span className="font-medium text-foreground">{Math.round(progress)}%</span>
+              <span className="font-medium text-foreground">{Math.round(planProgress)}%</span>
             </div>
-            <Progress value={progress} className="h-3" />
+            <Progress value={planProgress} className="h-3" />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>{personalPlan.start_weight}kg</span>
               <span>{personalPlan.target_weight}kg</span>
@@ -213,6 +254,27 @@ const MyPlan = () => {
           </div>
         </motion.div>
 
+        {/* Detox Section - Only if integrated */}
+        {hasDetoxIntegrated && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            <h2 className="font-display text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+              <Leaf className="w-5 h-5 text-mint" />
+              Suco Detox do Dia
+            </h2>
+            
+            <DetoxCard
+              recipe={detoxRecipe}
+              time={getDetoxTime()}
+              completed={detoxCompleted}
+              onComplete={handleDetoxComplete}
+            />
+          </motion.div>
+        )}
+
         {/* Daily Missions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -224,22 +286,46 @@ const MyPlan = () => {
             Missões do Dia
           </h2>
           
-          <div className="glass-card rounded-xl p-4 space-y-3">
-            {dailyMissions.map((mission, index) => (
-              <div
-                key={mission.id}
-                className="flex items-center gap-3"
-              >
-                {mission.completed ? (
-                  <CheckCircle2 className="w-5 h-5 text-primary" />
-                ) : (
-                  <Circle className="w-5 h-5 text-muted-foreground" />
-                )}
-                <span className={mission.completed ? "text-muted-foreground line-through" : "text-foreground"}>
-                  {mission.name}
+          <div className="space-y-3">
+            {/* Water Mission - Expandable */}
+            <WaterMissionCard
+              goalMl={waterGoal}
+              currentMl={waterMl}
+              onAddWater={handleAddWater}
+            />
+            
+            {/* Meals Mission */}
+            <div className={`rounded-xl p-3 flex items-center gap-3 border ${
+              allMealsCompleted ? 'border-primary/30 bg-primary/5' : 'border-border bg-muted/30'
+            }`}>
+              {allMealsCompleted ? (
+                <CheckCircle2 className="w-5 h-5 text-primary" />
+              ) : (
+                <Circle className="w-5 h-5 text-muted-foreground" />
+              )}
+              <div className="flex-1">
+                <span className={allMealsCompleted ? "text-primary font-medium" : "text-foreground"}>
+                  Completar todas as refeições
                 </span>
+                <p className="text-xs text-muted-foreground">
+                  {completedMeals.length}/3 refeições
+                </p>
               </div>
-            ))}
+            </div>
+            
+            {/* Sleep Mission */}
+            <div className={`rounded-xl p-3 flex items-center gap-3 border ${
+              sleepLogged ? 'border-indigo-500/30 bg-indigo-500/5' : 'border-border bg-muted/30'
+            }`}>
+              {sleepLogged ? (
+                <CheckCircle2 className="w-5 h-5 text-indigo-500" />
+              ) : (
+                <MoonIcon className="w-5 h-5 text-muted-foreground" />
+              )}
+              <span className={sleepLogged ? "text-indigo-500 font-medium" : "text-foreground"}>
+                Dormir {profile?.sleep_goal_hours || 8} horas
+              </span>
+            </div>
           </div>
         </motion.div>
 
