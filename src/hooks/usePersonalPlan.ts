@@ -42,9 +42,9 @@ export const usePersonalPlan = () => {
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching personal plan:', error);
         return null;
       }
