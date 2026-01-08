@@ -69,7 +69,7 @@ const dietPlans = {
 const Nutrition = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("nutricao");
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true); // Visible by default
   const [showQuickLog, setShowQuickLog] = useState(false);
   const [medicalConditions, setMedicalConditions] = useState<MedicalCondition[]>([
     { id: "diabetes", label: "Diabetes", active: false },
@@ -195,17 +195,26 @@ const Nutrition = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowFilters(!showFilters)}
-            className={`p-3 rounded-xl transition-colors ${
+            className={`relative p-3 rounded-xl transition-colors ${
               showFilters || activeConditions.length > 0
                 ? "bg-coral/20 text-coral"
                 : "bg-card text-muted-foreground"
             }`}
           >
             <Filter size={20} />
-            {activeConditions.length > 0 && (
+            {activeConditions.length > 0 ? (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-coral text-white text-xs rounded-full flex items-center justify-center">
                 {activeConditions.length}
               </span>
+            ) : (
+              <motion.span
+                initial={{ scale: 0.8 }}
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ repeat: Infinity, duration: 1.5 }}
+                className="absolute -top-1 -right-1 w-5 h-5 bg-coral text-white text-[8px] font-bold rounded-full flex items-center justify-center"
+              >
+                !
+              </motion.span>
             )}
           </motion.button>
         </div>
