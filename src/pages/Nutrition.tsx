@@ -14,6 +14,15 @@ export interface MedicalCondition {
   active: boolean;
 }
 
+// Define which diets are NOT recommended for each condition
+const dietRestrictions: Record<string, string[]> = {
+  diabetes: [], // Todas as dietas low-carb são boas para diabetes
+  gastrite: ["carnivora", "jejum"], // Carnívora e jejum podem irritar o estômago
+  hipertensao: [], // Dietas low-carb geralmente ajudam
+  intolerancia_lactose: [], // Depende das receitas, não da dieta em si
+  celiaquia: [], // Todas as dietas listadas são naturalmente sem glúten
+};
+
 const dietPlans = {
   carnivora: {
     name: "Dieta Carnívora",
@@ -21,6 +30,7 @@ const dietPlans = {
     emoji: "🥩",
     route: "/dieta-carnivora",
     color: "coral",
+    restrictions: ["gastrite"], // Não recomendada para gastrite
   },
   lowcarb: {
     name: "Dieta Low Carb",
@@ -28,6 +38,7 @@ const dietPlans = {
     emoji: "🥗",
     route: "/dieta-lowcarb",
     color: "accent",
+    restrictions: [],
   },
   cetogenica: {
     name: "Dieta Cetogênica",
@@ -35,6 +46,7 @@ const dietPlans = {
     emoji: "🔥",
     route: "/dieta-cetogenica",
     color: "primary",
+    restrictions: [],
   },
   jejum: {
     name: "Jejum Intermitente",
@@ -42,6 +54,7 @@ const dietPlans = {
     emoji: "⏰",
     route: "/jejum-intermitente",
     color: "purple",
+    restrictions: ["gastrite", "diabetes"], // Não recomendado para gastrite e diabetes
   },
   detox: {
     name: "Sucos Detox",
@@ -49,6 +62,7 @@ const dietPlans = {
     emoji: "🥤",
     route: "/sucos-detox",
     color: "green",
+    restrictions: ["diabetes"], // Sucos podem ter alto índice glicêmico
   },
 };
 
@@ -87,8 +101,21 @@ const Nutrition = () => {
   };
 
   const [dietActiveTab, setDietActiveTab] = useState("carnivora");
-  const currentPlan = dietPlans[dietActiveTab as keyof typeof dietPlans];
   const activeConditions = medicalConditions.filter((c) => c.active).map((c) => c.id);
+
+  // Filter available diets based on medical conditions
+  const availableDiets = Object.entries(dietPlans).filter(([key, diet]) => {
+    if (activeConditions.length === 0) return true;
+    // Check if any active condition restricts this diet
+    return !activeConditions.some(condition => diet.restrictions.includes(condition));
+  });
+
+  // Get current plan, fallback to first available if current is restricted
+  const currentDietKey = availableDiets.find(([key]) => key === dietActiveTab)?.[0] || availableDiets[0]?.[0] || "carnivora";
+  const currentPlan = dietPlans[currentDietKey as keyof typeof dietPlans];
+
+  // Update active tab if current diet becomes restricted
+  const effectiveDietTab = availableDiets.some(([key]) => key === dietActiveTab) ? dietActiveTab : currentDietKey;
 
   const toggleCondition = (id: string) => {
     setMedicalConditions((prev) =>
@@ -214,77 +241,79 @@ const Nutrition = () => {
       </AnimatePresence>
 
       {/* Macro Summary */}
-      <MacroSummary macros={{ calories: 0, protein: 0, carbs: 0, fat: 0 }} />
+      <MacroSummary />
 
       {/* Diet Tabs */}
       <div className="px-6 py-4">
         <Tabs 
-          value={dietActiveTab} 
+          value={effectiveDietTab} 
           onValueChange={setDietActiveTab} 
           className="w-full"
         >
-          <TabsList className="w-full bg-card/50 p-1 rounded-xl grid grid-cols-5 gap-1">
-            <TabsTrigger
-              value="carnivora"
-              className="rounded-lg data-[state=active]:bg-coral data-[state=active]:text-primary-foreground text-[10px] font-medium px-1"
-            >
-              Carnívora
-            </TabsTrigger>
-            <TabsTrigger
-              value="cetogenica"
-              className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-[10px] font-medium px-1"
-            >
-              Keto
-            </TabsTrigger>
-            <TabsTrigger
-              value="lowcarb"
-              className="rounded-lg data-[state=active]:bg-accent data-[state=active]:text-accent-foreground text-[10px] font-medium px-1"
-            >
-              Low Carb
-            </TabsTrigger>
-            <TabsTrigger
-              value="jejum"
-              className="rounded-lg data-[state=active]:bg-[#9b87f5] data-[state=active]:text-primary-foreground text-[10px] font-medium px-1"
-            >
-              Jejum
-            </TabsTrigger>
-            <TabsTrigger
-              value="detox"
-              className="rounded-lg data-[state=active]:bg-green-500 data-[state=active]:text-primary-foreground text-[10px] font-medium px-1"
-            >
-              Detox
-            </TabsTrigger>
+          <TabsList className={`w-full bg-card/50 p-1 rounded-xl grid gap-1`} style={{ gridTemplateColumns: `repeat(${availableDiets.length}, 1fr)` }}>
+            {availableDiets.map(([key, diet]) => {
+              const colorClass = key === "carnivora" ? "data-[state=active]:bg-coral" :
+                                key === "cetogenica" ? "data-[state=active]:bg-primary" :
+                                key === "lowcarb" ? "data-[state=active]:bg-accent" :
+                                key === "jejum" ? "data-[state=active]:bg-[#9b87f5]" :
+                                "data-[state=active]:bg-green-500";
+              return (
+                <TabsTrigger
+                  key={key}
+                  value={key}
+                  className={`rounded-lg ${colorClass} data-[state=active]:text-primary-foreground text-[10px] font-medium px-1`}
+                >
+                  {key === "carnivora" ? "Carnívora" :
+                   key === "cetogenica" ? "Keto" :
+                   key === "lowcarb" ? "Low Carb" :
+                   key === "jejum" ? "Jejum" : "Detox"}
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
 
+          {availableDiets.length === 0 && (
+            <div className="mt-6 text-center py-8">
+              <p className="text-muted-foreground text-sm">
+                Nenhuma dieta disponível para suas condições selecionadas.
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Ajuste os filtros médicos para ver opções.
+              </p>
+            </div>
+          )}
+
           {/* Diet Card */}
-          <motion.div
-            key={dietActiveTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-6"
-          >
-            <div 
-              onClick={() => navigate(currentPlan.route)}
-              className={`glass-card rounded-2xl p-6 cursor-pointer transition-all ${getColorClasses(currentPlan.color).border}`}
+          {availableDiets.length > 0 && (
+            <motion.div
+              key={effectiveDietTab}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6"
             >
-              <div className="flex items-center gap-4">
-                <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${getColorClasses(currentPlan.color).bg}`}>
-                  <span className="text-3xl">{currentPlan.emoji}</span>
-                </div>
-                <div className="flex-1">
-                  <h2 className="font-display text-lg font-bold text-foreground">
-                    {currentPlan.name}
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    {currentPlan.description}
-                  </p>
-                  <p className={`text-xs mt-1 ${getColorClasses(currentPlan.color).text}`}>
-                    Toque para acessar o conteúdo completo →
-                  </p>
+              <div 
+                onClick={() => navigate(currentPlan.route)}
+                className={`glass-card rounded-2xl p-6 cursor-pointer transition-all ${getColorClasses(currentPlan.color).border}`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${getColorClasses(currentPlan.color).bg}`}>
+                    <span className="text-3xl">{currentPlan.emoji}</span>
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="font-display text-lg font-bold text-foreground">
+                      {currentPlan.name}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {currentPlan.description}
+                    </p>
+                    <p className={`text-xs mt-1 ${getColorClasses(currentPlan.color).text}`}>
+                      Toque para acessar o conteúdo completo →
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          )}
         </Tabs>
       </div>
       {/* Bottom Navigation */}

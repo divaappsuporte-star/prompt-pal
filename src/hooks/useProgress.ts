@@ -8,6 +8,7 @@ import {
   getTodayHydration,
   getTodaySleep,
   getTodayCaloriesBurned,
+  getTodayMacros,
   calculateOverallProgress,
   analyzeHealth,
   completeMindsetChapter,
@@ -17,6 +18,7 @@ import {
   isRecipeCompletedToday,
   DietType,
   HealthAnalysis,
+  TodayMacros,
 } from "@/services/progressService";
 
 export const useProgress = () => {
@@ -25,6 +27,7 @@ export const useProgress = () => {
   const [todayHydration, setTodayHydration] = useState(getTodayHydration);
   const [todaySleep, setTodaySleep] = useState(getTodaySleep);
   const [todayCalories, setTodayCalories] = useState(getTodayCaloriesBurned);
+  const [todayMacros, setTodayMacros] = useState<TodayMacros>(getTodayMacros);
   const [healthAnalysis, setHealthAnalysis] = useState<HealthAnalysis>(analyzeHealth);
 
   const refreshData = useCallback(() => {
@@ -33,6 +36,7 @@ export const useProgress = () => {
     setTodayHydration(getTodayHydration());
     setTodaySleep(getTodaySleep());
     setTodayCalories(getTodayCaloriesBurned());
+    setTodayMacros(getTodayMacros());
     setHealthAnalysis(analyzeHealth());
   }, []);
 
@@ -77,8 +81,8 @@ export const useProgress = () => {
     window.dispatchEvent(new Event("progressUpdate"));
   }, [refreshData]);
 
-  const markRecipeCompleted = useCallback((diet: DietType, recipeName: string, calories: number) => {
-    markRecipe(diet, recipeName, calories);
+  const markRecipeCompleted = useCallback((diet: DietType, recipeName: string, calories: number, protein: number = 0, fat: number = 0, carbs: number = 0) => {
+    markRecipe(diet, recipeName, calories, protein, fat, carbs);
     refreshData();
     window.dispatchEvent(new Event("progressUpdate"));
   }, [refreshData]);
@@ -103,6 +107,7 @@ export const useProgress = () => {
     todayHydration,
     todaySleep,
     todayCalories,
+    todayMacros,
     healthAnalysis,
     addWaterIntake,
     addSleepTime,
