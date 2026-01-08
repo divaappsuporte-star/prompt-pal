@@ -6,12 +6,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import BottomNavigation from "@/components/BottomNavigation";
 import DashboardCard from "@/components/DashboardCard";
 import HeroBanner from "@/components/HeroBanner";
-import QuickStats from "@/components/QuickStats";
+import ProgressChart from "@/components/ProgressChart";
 import HealthMonitor from "@/components/HealthMonitor";
 import Logo from "@/components/Logo";
+import ThemeToggle from "@/components/ThemeToggle";
 import QuickLogModal from "@/components/modals/QuickLogModal";
 import ProfileModal from "@/components/modals/ProfileModal";
-
 
 const Index = () => {
   const navigate = useNavigate();
@@ -118,7 +118,7 @@ const Index = () => {
         className="px-6 pt-14 pb-6"
       >
         <div className="flex items-center justify-between">
-          <div className="w-10" /> {/* Spacer for centering */}
+          <ThemeToggle />
           <Logo size="md" />
           <button
             onClick={() => setShowProfile(true)}
@@ -153,11 +153,11 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Progress Chart */}
+      <ProgressChart />
+
       {/* Health Monitor */}
       <HealthMonitor />
-
-      {/* Quick Stats - Resumo de Hoje */}
-      <QuickStats />
 
       {/* Motivational Quote */}
       <motion.div

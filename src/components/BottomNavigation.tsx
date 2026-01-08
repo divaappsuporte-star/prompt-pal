@@ -37,7 +37,7 @@ const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationProps) => 
                   onClick={() => onTabChange(item.id)}
                   className="relative -mt-8 flex-1 flex justify-center"
                 >
-                  <div className="gradient-coral p-4 rounded-full shadow-glow-coral animate-glow">
+                  <div className="bg-coral p-4 rounded-full">
                     <Icon size={24} className="text-primary-foreground" />
                   </div>
                 </motion.button>
