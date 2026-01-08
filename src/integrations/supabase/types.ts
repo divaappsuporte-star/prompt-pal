@@ -14,6 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
+      diet_meal_plans: {
+        Row: {
+          body_explanation: Json
+          breakfast: Json
+          created_at: string | null
+          cumulative_loss: number | null
+          daily_deficit: number
+          day_number: number
+          diet_type: Database["public"]["Enums"]["diet_type"]
+          dinner: Json
+          id: string
+          lunch: Json
+          macros: Json
+          meal_feedbacks: Json
+          phase: string
+          snacks: Json | null
+          target_kg_loss: number
+          total_calories: number
+        }
+        Insert: {
+          body_explanation: Json
+          breakfast: Json
+          created_at?: string | null
+          cumulative_loss?: number | null
+          daily_deficit: number
+          day_number: number
+          diet_type: Database["public"]["Enums"]["diet_type"]
+          dinner: Json
+          id?: string
+          lunch: Json
+          macros: Json
+          meal_feedbacks: Json
+          phase: string
+          snacks?: Json | null
+          target_kg_loss: number
+          total_calories: number
+        }
+        Update: {
+          body_explanation?: Json
+          breakfast?: Json
+          created_at?: string | null
+          cumulative_loss?: number | null
+          daily_deficit?: number
+          day_number?: number
+          diet_type?: Database["public"]["Enums"]["diet_type"]
+          dinner?: Json
+          id?: string
+          lunch?: Json
+          macros?: Json
+          meal_feedbacks?: Json
+          phase?: string
+          snacks?: Json | null
+          target_kg_loss?: number
+          total_calories?: number
+        }
+        Relationships: []
+      }
+      health_protocols: {
+        Row: {
+          condition_type: Database["public"]["Enums"]["health_condition"]
+          created_at: string | null
+          diet_type: Database["public"]["Enums"]["diet_type"]
+          id: string
+          is_compatible: boolean
+          medical_notes: string | null
+          modifications: Json | null
+          restrictions: Json | null
+          substitutions: Json | null
+          warnings: Json | null
+        }
+        Insert: {
+          condition_type: Database["public"]["Enums"]["health_condition"]
+          created_at?: string | null
+          diet_type: Database["public"]["Enums"]["diet_type"]
+          id?: string
+          is_compatible?: boolean
+          medical_notes?: string | null
+          modifications?: Json | null
+          restrictions?: Json | null
+          substitutions?: Json | null
+          warnings?: Json | null
+        }
+        Update: {
+          condition_type?: Database["public"]["Enums"]["health_condition"]
+          created_at?: string | null
+          diet_type?: Database["public"]["Enums"]["diet_type"]
+          id?: string
+          is_compatible?: boolean
+          medical_notes?: string | null
+          modifications?: Json | null
+          restrictions?: Json | null
+          substitutions?: Json | null
+          warnings?: Json | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           activity_level: string | null
@@ -29,6 +125,7 @@ export type Database = {
           show_name: boolean | null
           sleep_goal_hours: number | null
           updated_at: string
+          wants_exercise: boolean | null
           water_goal_ml: number | null
           weight_kg: number | null
         }
@@ -46,6 +143,7 @@ export type Database = {
           show_name?: boolean | null
           sleep_goal_hours?: number | null
           updated_at?: string
+          wants_exercise?: boolean | null
           water_goal_ml?: number | null
           weight_kg?: number | null
         }
@@ -63,8 +161,117 @@ export type Database = {
           show_name?: boolean | null
           sleep_goal_hours?: number | null
           updated_at?: string
+          wants_exercise?: boolean | null
           water_goal_ml?: number | null
           weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      user_active_plans: {
+        Row: {
+          completed_meals: Json | null
+          created_at: string | null
+          current_day: number | null
+          daily_feedbacks: Json | null
+          diet_type: Database["public"]["Enums"]["diet_type"]
+          id: string
+          start_weight: number
+          started_at: string | null
+          status: string | null
+          target_weight: number
+          target_weight_loss: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_meals?: Json | null
+          created_at?: string | null
+          current_day?: number | null
+          daily_feedbacks?: Json | null
+          diet_type: Database["public"]["Enums"]["diet_type"]
+          id?: string
+          start_weight: number
+          started_at?: string | null
+          status?: string | null
+          target_weight: number
+          target_weight_loss: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_meals?: Json | null
+          created_at?: string | null
+          current_day?: number | null
+          daily_feedbacks?: Json | null
+          diet_type?: Database["public"]["Enums"]["diet_type"]
+          id?: string
+          start_weight?: number
+          started_at?: string | null
+          status?: string | null
+          target_weight?: number
+          target_weight_loss?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_diet_access: {
+        Row: {
+          diet_type: Database["public"]["Enums"]["diet_type"]
+          expires_at: string | null
+          granted_at: string | null
+          granted_by: string
+          id: string
+          payment_id: string | null
+          user_id: string
+        }
+        Insert: {
+          diet_type: Database["public"]["Enums"]["diet_type"]
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by: string
+          id?: string
+          payment_id?: string | null
+          user_id: string
+        }
+        Update: {
+          diet_type?: Database["public"]["Enums"]["diet_type"]
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string
+          id?: string
+          payment_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_health_conditions: {
+        Row: {
+          active: boolean | null
+          condition_type: Database["public"]["Enums"]["health_condition"]
+          created_at: string | null
+          diagnosed_by: string | null
+          id: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          condition_type: Database["public"]["Enums"]["health_condition"]
+          created_at?: string | null
+          diagnosed_by?: string | null
+          id?: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          condition_type?: Database["public"]["Enums"]["health_condition"]
+          created_at?: string | null
+          diagnosed_by?: string | null
+          id?: string
+          notes?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -97,15 +304,55 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "super_admin" | "admin" | "user"
+      diet_type:
+        | "carnivore"
+        | "keto"
+        | "lowcarb"
+        | "metabolic"
+        | "detox"
+        | "fasting"
+      health_condition:
+        | "diabetes"
+        | "gastrite"
+        | "hipertensao"
+        | "intolerancia_lactose"
+        | "celiaquia"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -232,6 +479,23 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["super_admin", "admin", "user"],
+      diet_type: [
+        "carnivore",
+        "keto",
+        "lowcarb",
+        "metabolic",
+        "detox",
+        "fasting",
+      ],
+      health_condition: [
+        "diabetes",
+        "gastrite",
+        "hipertensao",
+        "intolerancia_lactose",
+        "celiaquia",
+      ],
+    },
   },
 } as const

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, User, Ruler, Scale, Target, Droplets, Moon, LogOut, Save } from "lucide-react";
+import { X, User, Ruler, Scale, Target, Droplets, Moon, LogOut, Save, Dumbbell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,7 @@ const ProfileModal = ({ isOpen, onClose, isOnboarding = false }: ProfileModalPro
     water_goal_ml: "2000",
     sleep_goal_hours: "8",
     show_name: true,
+    wants_exercise: true,
   });
 
   useEffect(() => {
@@ -52,6 +53,7 @@ const ProfileModal = ({ isOpen, onClose, isOnboarding = false }: ProfileModalPro
         water_goal_ml: profile.water_goal_ml?.toString() || "2000",
         sleep_goal_hours: profile.sleep_goal_hours?.toString() || "8",
         show_name: profile.show_name ?? true,
+        wants_exercise: (profile as any).wants_exercise ?? true,
       });
     }
   }, [profile]);
@@ -83,6 +85,7 @@ const ProfileModal = ({ isOpen, onClose, isOnboarding = false }: ProfileModalPro
       water_goal_ml: parseInt(formData.water_goal_ml) || 2000,
       sleep_goal_hours: parseInt(formData.sleep_goal_hours) || 8,
       show_name: formData.show_name,
+      wants_exercise: formData.wants_exercise,
     };
 
     const { error } = await updateProfile(updateData);
@@ -338,6 +341,23 @@ const ProfileModal = ({ isOpen, onClose, isOnboarding = false }: ProfileModalPro
                   <Switch
                     checked={formData.show_name}
                     onCheckedChange={(checked) => handleChange("show_name", checked)}
+                  />
+                </div>
+
+                {/* Wants Exercise Toggle */}
+                <div className="flex items-center justify-between p-3 bg-muted rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <Dumbbell className="w-5 h-5 text-coral" />
+                    <div>
+                      <p className="text-sm font-medium">Incluir exercícios</p>
+                      <p className="text-xs text-muted-foreground">
+                        Deseja treinos no seu plano?
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={formData.wants_exercise}
+                    onCheckedChange={(checked) => handleChange("wants_exercise", checked)}
                   />
                 </div>
               </div>
