@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "icons/apple-touch-icon.png"],
       manifest: {
-        name: "Reset 21 - Sua Jornada de 21 Dias",
-        short_name: "Reset 21",
+        name: "resetfit21 - Sua Jornada de 21 Dias",
+        short_name: "resetfit21",
         description: "Transforme corpo, mente e energia em 21 dias",
         theme_color: "#0C0C0C",
         background_color: "#0C0C0C",
