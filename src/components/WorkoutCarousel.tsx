@@ -687,7 +687,7 @@ const WorkoutCarousel = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-[#0A0A0A] flex flex-col"
+            className="fixed inset-0 z-[60] bg-[#0A0A0A] flex flex-col"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/10">
@@ -715,7 +715,7 @@ const WorkoutCarousel = () => {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto pb-20">
               {/* Idle State - Show workout info */}
               {workoutPhase === "idle" && (
                 <div className="p-4 space-y-4">
