@@ -22,7 +22,8 @@ const Logo = ({ size = "md", showTagline = false }: LogoProps) => {
   return (
     <div className="flex flex-col">
       <h1 className={`font-display font-bold ${sizeClasses[size]} flex items-center`}>
-        <span className="text-foreground">Re</span>
+        <span className="text-gradient-coral">Nutri</span>
+        <span className="text-foreground ml-1">Re</span>
         <motion.span
           initial={{ rotate: -10, scale: 0.8 }}
           animate={{ rotate: 0, scale: 1 }}
@@ -45,8 +46,6 @@ const Logo = ({ size = "md", showTagline = false }: LogoProps) => {
           </svg>
         </motion.span>
         <span className="text-foreground">et</span>
-        <span className="text-gradient-coral ml-1">fit</span>
-        <span className="text-foreground ml-1">21</span>
       </h1>
       {showTagline && (
         <motion.p
