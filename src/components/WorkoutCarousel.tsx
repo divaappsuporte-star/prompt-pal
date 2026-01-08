@@ -2,6 +2,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, Clock, Flame, X, Timer, Pause, SkipForward, Check } from "lucide-react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import ExerciseImage from "./ExerciseImage";
+import { useProgress } from "@/hooks/useProgress";
+import { loadProgress } from "@/services/progressService";
 
 interface Exercise {
   name: string;
@@ -399,8 +401,12 @@ const TOTAL_WORKOUT_TIME = 20 * 60; // 20 minutes in seconds
 const TRANSITION_TIME = 5; // 5 seconds transition
 
 const WorkoutCarousel = () => {
+  const { completeWorkout } = useProgress();
+  const savedProgress = loadProgress();
+  
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
-  const [completedDays, setCompletedDays] = useState<number[]>([]);
+  const [completedDays, setCompletedDays] = useState<number[]>(savedProgress.workouts.completedDays);
+  const [unlockedDays, setUnlockedDays] = useState<number[]>(savedProgress.workouts.unlockedDays);
   
   // Circuit mode states
   const [workoutPhase, setWorkoutPhase] = useState<WorkoutPhase>("idle");
@@ -584,8 +590,15 @@ const WorkoutCarousel = () => {
   }, [isPaused, workoutPhase, selectedWorkout, currentExerciseIndex, nextExercise, startNextRound]);
 
   const handleCompleteDay = (day: number) => {
+    const workout = workoutDays.find(w => w.day === day);
     if (!completedDays.includes(day)) {
       setCompletedDays([...completedDays, day]);
+      // Save to progress service
+      completeWorkout(day, workout?.calories || 0, totalWorkoutTimer);
+      // Unlock next day
+      if (day + 1 <= 21 && !unlockedDays.includes(day + 1)) {
+        setUnlockedDays([...unlockedDays, day + 1]);
+      }
     }
     closeModal();
   };
@@ -626,18 +639,23 @@ const WorkoutCarousel = () => {
         <style>{`.workout-scroll::-webkit-scrollbar { display: none; }`}</style>
         {workoutDays.map((workout) => {
           const isCompleted = completedDays.includes(workout.day);
+          const isUnlocked = unlockedDays.includes(workout.day);
 
           return (
             <motion.div
               key={workout.day}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setExpandedDay(workout.day)}
+              whileTap={isUnlocked ? { scale: 0.95 } : undefined}
+              onClick={() => isUnlocked && setExpandedDay(workout.day)}
               className={`
-                relative min-w-[140px] rounded-2xl overflow-hidden cursor-pointer
+                relative min-w-[140px] rounded-2xl overflow-hidden
                 transition-all duration-300 glass-card
-                ${isCompleted ? "opacity-70 border-mint/30" : "border-coral/30 hover:border-coral/50"}
+                ${!isUnlocked 
+                  ? "opacity-50 border-border/30 cursor-not-allowed" 
+                  : isCompleted 
+                    ? "opacity-70 border-mint/30 cursor-pointer" 
+                    : "border-coral/30 hover:border-coral/50 cursor-pointer"}
               `}
             >
               <div className="p-3">
@@ -645,7 +663,11 @@ const WorkoutCarousel = () => {
                 <div className={`
                   inline-flex items-center justify-center
                   w-8 h-8 rounded-lg mb-2
-                  ${isCompleted ? "bg-mint/20 text-mint" : "bg-coral/20 text-coral"}
+                  ${!isUnlocked 
+                    ? "bg-muted/20 text-muted-foreground" 
+                    : isCompleted 
+                      ? "bg-mint/20 text-mint" 
+                      : "bg-coral/20 text-coral"}
                   font-display font-bold text-sm
                 `}>
                   {workout.day}
@@ -656,6 +678,16 @@ const WorkoutCarousel = () => {
                     <div className="w-5 h-5 rounded-full bg-mint flex items-center justify-center">
                       <svg className="w-3 h-3 text-background" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+
+                {!isUnlocked && (
+                  <div className="absolute top-3 right-3">
+                    <div className="w-5 h-5 rounded-full bg-muted/30 flex items-center justify-center">
+                      <svg className="w-3 h-3 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
                     </div>
                   </div>
