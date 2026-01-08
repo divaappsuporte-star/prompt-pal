@@ -18,7 +18,7 @@ const HeroBanner = ({ userName = "Atleta", currentDay }: HeroBannerProps) => {
       <div className="absolute inset-0">
         <img
           src={heroBanner}
-          alt="Personal 21 Banner"
+          alt="Reset 21 Banner"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />

@@ -7,6 +7,7 @@ import DashboardCard from "@/components/DashboardCard";
 import HeroBanner from "@/components/HeroBanner";
 import QuickStats from "@/components/QuickStats";
 import HealthMonitor from "@/components/HealthMonitor";
+import Logo from "@/components/Logo";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -78,12 +79,7 @@ const Index = () => {
         className="px-6 pt-12 pb-2"
       >
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-2xl font-bold">
-              <span className="text-foreground">Personal</span>
-              <span className="text-gradient-coral"> 21</span>
-            </h1>
-          </div>
+          <Logo size="md" />
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -135,7 +131,7 @@ const Index = () => {
           <p className="text-lg text-foreground font-display italic mb-2">
             "A constância começa na mente antes de aparecer no corpo."
           </p>
-          <p className="text-sm text-gold">— Personal 21</p>
+          <p className="text-sm text-gold">— Reset 21</p>
         </div>
       </motion.div>
 
