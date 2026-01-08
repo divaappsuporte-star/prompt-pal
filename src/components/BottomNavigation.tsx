@@ -1,19 +1,24 @@
 import { motion } from "framer-motion";
-import { Home, Dumbbell, Apple, Brain, User, Plus } from "lucide-react";
+import { Home, Dumbbell, Apple, Brain, Plus } from "lucide-react";
 
 interface BottomNavigationProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  showTraining?: boolean;
 }
 
-const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationProps) => {
-  const navItems = [
+const BottomNavigation = ({ activeTab, onTabChange, showTraining = true }: BottomNavigationProps) => {
+  const allNavItems = [
     { id: "home", icon: Home, label: "Home" },
-    { id: "treino", icon: Dumbbell, label: "Treino" },
+    { id: "treino", icon: Dumbbell, label: "Treino", requiresTraining: true },
     { id: "add", icon: Plus, label: "Adicionar", isCenter: true },
     { id: "nutricao", icon: Apple, label: "Nutrição" },
     { id: "mente", icon: Brain, label: "Mente" },
   ];
+
+  const navItems = allNavItems.filter(item => 
+    !item.requiresTraining || showTraining
+  );
 
   return (
     <motion.nav
