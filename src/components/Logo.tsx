@@ -35,7 +35,8 @@ const Logo = ({ size = "md", showTagline = false }: LogoProps) => {
             strokeWidth={2.5}
           />
         </motion.span>
-        <span className="text-foreground">etfit</span>
+        <span className="text-foreground">et</span>
+        <span className="text-gradient-coral">fit</span>
         <span className="text-foreground">21</span>
       </h1>
       {showTagline && (
