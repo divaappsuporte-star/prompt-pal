@@ -14,7 +14,89 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          activity_level: string | null
+          avatar_url: string | null
+          birth_date: string | null
+          created_at: string
+          diet_preference: string | null
+          full_name: string | null
+          gender: string | null
+          goal_weight_kg: number | null
+          height_cm: number | null
+          id: string
+          show_name: boolean | null
+          sleep_goal_hours: number | null
+          updated_at: string
+          water_goal_ml: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          activity_level?: string | null
+          avatar_url?: string | null
+          birth_date?: string | null
+          created_at?: string
+          diet_preference?: string | null
+          full_name?: string | null
+          gender?: string | null
+          goal_weight_kg?: number | null
+          height_cm?: number | null
+          id: string
+          show_name?: boolean | null
+          sleep_goal_hours?: number | null
+          updated_at?: string
+          water_goal_ml?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          activity_level?: string | null
+          avatar_url?: string | null
+          birth_date?: string | null
+          created_at?: string
+          diet_preference?: string | null
+          full_name?: string | null
+          gender?: string | null
+          goal_weight_kg?: number | null
+          height_cm?: number | null
+          id?: string
+          show_name?: boolean | null
+          sleep_goal_hours?: number | null
+          updated_at?: string
+          water_goal_ml?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      user_progress: {
+        Row: {
+          id: string
+          progress_data: Json
+          synced_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          progress_data?: Json
+          synced_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          progress_data?: Json
+          synced_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

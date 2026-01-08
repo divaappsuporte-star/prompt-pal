@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Brain, Apple, Dumbbell, BarChart3 } from "lucide-react";
+import { Brain, Apple, Dumbbell, BarChart3, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import BottomNavigation from "@/components/BottomNavigation";
 import DashboardCard from "@/components/DashboardCard";
 import HeroBanner from "@/components/HeroBanner";
@@ -9,12 +10,17 @@ import QuickStats from "@/components/QuickStats";
 import HealthMonitor from "@/components/HealthMonitor";
 import Logo from "@/components/Logo";
 import QuickLogModal from "@/components/modals/QuickLogModal";
+import ProfileModal from "@/components/modals/ProfileModal";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [activeTab, setActiveTab] = useState("home");
   const [showQuickLog, setShowQuickLog] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const currentDay = 1;
+
+  const userName = profile?.full_name?.split(" ")[0] || "Atleta";
 
   const handleCardClick = (id: string) => {
     if (id === "nutricao") {
@@ -90,13 +96,20 @@ const Index = () => {
         animate={{ opacity: 1, y: 0 }}
         className="px-6 pt-14 pb-6"
       >
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-between">
+          <div className="w-10" /> {/* Spacer for centering */}
           <Logo size="md" />
+          <button
+            onClick={() => setShowProfile(true)}
+            className="w-10 h-10 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+          >
+            <User className="w-5 h-5 text-muted-foreground" />
+          </button>
         </div>
       </motion.header>
 
       {/* Hero Banner - Full Width */}
-      <HeroBanner userName="Atleta" currentDay={currentDay} />
+      <HeroBanner userName={userName} currentDay={currentDay} />
 
       {/* Quick Stats */}
       <QuickStats />
@@ -143,8 +156,9 @@ const Index = () => {
       {/* Bottom Navigation */}
       <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
 
-      {/* Quick Log Modal */}
+      {/* Modals */}
       <QuickLogModal isOpen={showQuickLog} onClose={() => setShowQuickLog(false)} />
+      <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} />
     </div>
   );
 };
