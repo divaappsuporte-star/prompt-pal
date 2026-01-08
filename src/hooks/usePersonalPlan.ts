@@ -64,10 +64,12 @@ export const usePersonalPlan = () => {
   const createPlan = useMutation({
     mutationFn: async ({ 
       dietType, 
-      targetWeightLoss 
+      targetWeightLoss,
+      includeDetox = false,
     }: { 
       dietType: DietType; 
       targetWeightLoss: number;
+      includeDetox?: boolean;
     }) => {
       if (!user?.id || !profile) {
         throw new Error('User not authenticated');
@@ -83,6 +85,15 @@ export const usePersonalPlan = () => {
           is_primary: true,
         }
       ];
+
+      // Add detox module if selected
+      if (includeDetox) {
+        initialModules.push({
+          type: 'detox',
+          added_at: new Date().toISOString(),
+          is_primary: false,
+        });
+      }
 
       const { data, error } = await supabase
         .from('user_active_plans')

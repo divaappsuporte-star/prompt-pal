@@ -24,12 +24,14 @@ const DIET_ICONS: Record<DietType, LucideIcon> = {
 interface DietSelectorProps {
   selectedDiet: DietType | null;
   onSelect: (diet: DietType) => void;
+  excludeDetox?: boolean;
 }
 
-const DietSelector = ({ selectedDiet, onSelect }: DietSelectorProps) => {
-  const { hasDietAccess, unlockedDiets, isLoading } = useDietAccess();
+const DietSelector = ({ selectedDiet, onSelect, excludeDetox = false }: DietSelectorProps) => {
+  const { hasDietAccess, isLoading } = useDietAccess();
   
-  const dietList: DietType[] = ['carnivore', 'keto', 'lowcarb', 'metabolic', 'detox', 'fasting'];
+  const allDiets: DietType[] = ['carnivore', 'keto', 'lowcarb', 'metabolic', 'detox', 'fasting'];
+  const dietList = excludeDetox ? allDiets.filter(d => d !== 'detox') : allDiets;
 
   if (isLoading) {
     return (
