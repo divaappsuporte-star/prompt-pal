@@ -49,8 +49,6 @@ const Index = () => {
       navigate("/mentalidade");
     } else if (id === "treino") {
       navigate("/treino");
-    } else if (id === "progresso") {
-      navigate("/progresso");
     }
   };
 
