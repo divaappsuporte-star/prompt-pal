@@ -22,7 +22,7 @@ const Logo = ({ size = "md", showTagline = false }: LogoProps) => {
   return (
     <div className="flex flex-col">
       <h1 className={`font-display font-bold ${sizeClasses[size]} flex items-center`}>
-        <span className="text-gradient-coral">Nutri</span>
+        <span className="text-[#FF6B6B]">Nutri</span>
         <span className="text-foreground ml-1">Re</span>
         <motion.span
           initial={{ rotate: -10, scale: 0.8 }}
@@ -34,16 +34,9 @@ const Logo = ({ size = "md", showTagline = false }: LogoProps) => {
             size={zapSizes[size]} 
             className="-mx-0.5" 
             strokeWidth={2.5}
-            style={{ fill: 'url(#coral-gradient)', stroke: 'url(#coral-gradient)' }}
+            fill="#FF6B6B"
+            stroke="#FF6B6B"
           />
-          <svg width="0" height="0">
-            <defs>
-              <linearGradient id="coral-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#FF6B6B" />
-                <stop offset="100%" stopColor="#FFD580" />
-              </linearGradient>
-            </defs>
-          </svg>
         </motion.span>
         <span className="text-foreground">et</span>
       </h1>
