@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import BottomNavigation from "@/components/BottomNavigation";
 import DashboardCard from "@/components/DashboardCard";
 import HeroBanner from "@/components/HeroBanner";
-import ProgressChart from "@/components/ProgressChart";
+import QuickStats from "@/components/QuickStats";
 import HealthMonitor from "@/components/HealthMonitor";
 import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -49,6 +49,8 @@ const Index = () => {
       navigate("/mentalidade");
     } else if (id === "treino") {
       navigate("/treino");
+    } else if (id === "progresso") {
+      navigate("/progresso");
     }
   };
 
@@ -153,8 +155,8 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Progress Chart */}
-      <ProgressChart />
+      {/* Quick Stats */}
+      <QuickStats />
 
       {/* Health Monitor */}
       <HealthMonitor />
