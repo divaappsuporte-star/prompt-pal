@@ -41,6 +41,13 @@ const dietPlans = {
     route: "/jejum-intermitente",
     color: "purple",
   },
+  detox: {
+    name: "Sucos Detox",
+    description: "20 capítulos + 50 receitas completas",
+    emoji: "🥤",
+    route: "/sucos-detox",
+    color: "green",
+  },
 };
 
 const Nutrition = () => {
@@ -89,6 +96,12 @@ const Nutrition = () => {
           border: "border-[#9b87f5]/30 hover:border-[#9b87f5]/50",
           bg: "bg-[#9b87f5]/20",
           text: "text-[#9b87f5]",
+        };
+      case "green":
+        return {
+          border: "border-green-500/30 hover:border-green-500/50",
+          bg: "bg-green-500/20",
+          text: "text-green-500",
         };
       default:
         return {
@@ -185,30 +198,36 @@ const Nutrition = () => {
           onValueChange={setActiveTab} 
           className="w-full"
         >
-          <TabsList className="w-full bg-card/50 p-1 rounded-xl grid grid-cols-4 gap-1">
+          <TabsList className="w-full bg-card/50 p-1 rounded-xl grid grid-cols-5 gap-1">
             <TabsTrigger
               value="carnivora"
-              className="rounded-lg data-[state=active]:bg-coral data-[state=active]:text-primary-foreground text-xs font-medium"
+              className="rounded-lg data-[state=active]:bg-coral data-[state=active]:text-primary-foreground text-[10px] font-medium px-1"
             >
               Carnívora
             </TabsTrigger>
             <TabsTrigger
               value="cetogenica"
-              className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs font-medium"
+              className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-[10px] font-medium px-1"
             >
               Keto
             </TabsTrigger>
             <TabsTrigger
               value="lowcarb"
-              className="rounded-lg data-[state=active]:bg-accent data-[state=active]:text-accent-foreground text-xs font-medium"
+              className="rounded-lg data-[state=active]:bg-accent data-[state=active]:text-accent-foreground text-[10px] font-medium px-1"
             >
               Low Carb
             </TabsTrigger>
             <TabsTrigger
               value="jejum"
-              className="rounded-lg data-[state=active]:bg-[#9b87f5] data-[state=active]:text-primary-foreground text-xs font-medium"
+              className="rounded-lg data-[state=active]:bg-[#9b87f5] data-[state=active]:text-primary-foreground text-[10px] font-medium px-1"
             >
               Jejum
+            </TabsTrigger>
+            <TabsTrigger
+              value="detox"
+              className="rounded-lg data-[state=active]:bg-green-500 data-[state=active]:text-primary-foreground text-[10px] font-medium px-1"
+            >
+              Detox
             </TabsTrigger>
           </TabsList>
 
