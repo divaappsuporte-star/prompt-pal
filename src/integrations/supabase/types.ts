@@ -175,6 +175,7 @@ export type Database = {
           daily_feedbacks: Json | null
           diet_type: Database["public"]["Enums"]["diet_type"]
           id: string
+          integrated_modules: Json | null
           start_weight: number
           started_at: string | null
           status: string | null
@@ -190,6 +191,7 @@ export type Database = {
           daily_feedbacks?: Json | null
           diet_type: Database["public"]["Enums"]["diet_type"]
           id?: string
+          integrated_modules?: Json | null
           start_weight: number
           started_at?: string | null
           status?: string | null
@@ -205,6 +207,7 @@ export type Database = {
           daily_feedbacks?: Json | null
           diet_type?: Database["public"]["Enums"]["diet_type"]
           id?: string
+          integrated_modules?: Json | null
           start_weight?: number
           started_at?: string | null
           status?: string | null

@@ -49,7 +49,13 @@ export const usePersonalPlan = () => {
         return null;
       }
 
-      return data as PersonalPlan | null;
+      if (!data) return null;
+
+      // Transform the data to match our interface
+      return {
+        ...data,
+        integrated_modules: (data.integrated_modules as unknown as IntegratedModule[]) || [],
+      } as PersonalPlan;
     },
     enabled: !!user?.id,
   });
@@ -90,7 +96,7 @@ export const usePersonalPlan = () => {
           status: 'active',
           completed_meals: [],
           daily_feedbacks: [],
-          integrated_modules: initialModules,
+          integrated_modules: initialModules as unknown as any,
         })
         .select()
         .single();
@@ -139,7 +145,7 @@ export const usePersonalPlan = () => {
       const { error } = await supabase
         .from('user_active_plans')
         .update({
-          integrated_modules: [...currentModules, newModule],
+          integrated_modules: [...currentModules, newModule] as unknown as any,
         })
         .eq('id', personalPlan.id);
 
@@ -180,7 +186,7 @@ export const usePersonalPlan = () => {
       const { error } = await supabase
         .from('user_active_plans')
         .update({
-          integrated_modules: updatedModules,
+          integrated_modules: updatedModules as unknown as any,
         })
         .eq('id', personalPlan.id);
 

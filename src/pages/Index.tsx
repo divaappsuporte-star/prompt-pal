@@ -15,6 +15,7 @@ import GoalSelectionModal from "@/components/diet/GoalSelectionModal";
 import DietLoadingOverlay from "@/components/diet/DietLoadingOverlay";
 import QuickLogModal from "@/components/modals/QuickLogModal";
 import ProfileModal from "@/components/modals/ProfileModal";
+import MyPlanCard from "@/components/plan/MyPlanCard";
 import { cn } from "@/lib/utils";
 
 const Index = () => {
@@ -141,33 +142,37 @@ const Index = () => {
         </div>
       </motion.header>
 
-      {/* Mindset Card - Start Here */}
+      {/* Top Cards Grid - Mentalidade + Meu Plano */}
       <div className="px-4 mb-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => navigate("/mentalidade")}
-          className="glass-card rounded-2xl p-5 cursor-pointer border border-gold/20 bg-gradient-to-br from-gold/10 to-transparent"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gold/20 flex items-center justify-center">
-              <Brain className="w-7 h-7 text-gold" />
-            </div>
-            <div className="flex-1">
+        <div className="grid grid-cols-2 gap-3">
+          {/* Mindset Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate("/mentalidade")}
+            className="aspect-square rounded-2xl p-4 cursor-pointer border border-gold/20 bg-gradient-to-br from-gold/10 to-transparent glass-card flex flex-col justify-between"
+          >
+            <div>
+              <div className="w-12 h-12 rounded-xl bg-gold/20 flex items-center justify-center mb-3">
+                <Brain className="w-6 h-6 text-gold" />
+              </div>
               <p className="text-xs text-gold font-medium mb-1">COMECE POR AQUI</p>
-              <h3 className="font-display font-bold text-lg text-foreground">
+              <h3 className="font-display font-bold text-base text-foreground leading-tight">
                 Mentalidade
               </h3>
-              <p className="text-sm text-muted-foreground">
-                PNL & Reprogramação Mental
-              </p>
             </div>
-            <ChevronRight className="w-5 h-5 text-gold" />
-          </div>
-        </motion.div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">PNL & Reprog.</span>
+              <ChevronRight className="w-4 h-4 text-gold" />
+            </div>
+          </motion.div>
+
+          {/* My Plan Card */}
+          <MyPlanCard delay={0.15} />
+        </div>
       </div>
 
       {/* Diet Cards Section */}

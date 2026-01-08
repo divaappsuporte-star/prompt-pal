@@ -11,6 +11,8 @@ import Nutrition from "./pages/Nutrition";
 import Mindset from "./pages/Mindset";
 import Treino from "./pages/Treino";
 import Complemento from "./pages/Complemento";
+import CreatePlan from "./pages/CreatePlan";
+import MyPlan from "./pages/MyPlan";
 
 import CarnivoreDiet from "./pages/CarnivoreDiet";
 import LowCarbDiet from "./pages/LowCarbDiet";
@@ -35,6 +37,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Index />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/criar-plano"
+              element={
+                <ProtectedRoute>
+                  <CreatePlan />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/meu-plano"
+              element={
+                <ProtectedRoute>
+                  <MyPlan />
                 </ProtectedRoute>
               }
             />
