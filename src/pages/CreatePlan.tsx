@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Target, Scale, Ruler, User2 } from "lucide-react";
@@ -13,7 +13,7 @@ import { Slider } from "@/components/ui/slider";
 const CreatePlan = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const { createPlan, hasPlan } = usePersonalPlan();
+  const { createPlan, hasPlan, isLoading } = usePersonalPlan();
   
   const [step, setStep] = useState<'diet' | 'goal'>('diet');
   const [selectedDiet, setSelectedDiet] = useState<DietType | null>(null);
@@ -21,8 +21,23 @@ const CreatePlan = () => {
   const [showLoading, setShowLoading] = useState(false);
 
   // Redirect if user already has a plan
+  useEffect(() => {
+    if (!isLoading && hasPlan) {
+      navigate("/meu-plano", { replace: true });
+    }
+  }, [isLoading, hasPlan, navigate]);
+
+  // Show loading while checking for existing plan
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  // Don't render if redirecting
   if (hasPlan) {
-    navigate("/meu-plano", { replace: true });
     return null;
   }
 
