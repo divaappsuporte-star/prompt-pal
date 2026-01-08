@@ -270,6 +270,7 @@ const DetoxJuices = () => {
   const handleCompleteChapter = (chapterId: number) => {
     if (!completedChapters.includes(chapterId)) {
       setCompletedChapters([...completedChapters, chapterId]);
+      completeNutrition("detox", chapterId);
       if (chapterId < 20 && !unlockedChapters.includes(chapterId + 1)) {
         setUnlockedChapters([...unlockedChapters, chapterId + 1]);
       }

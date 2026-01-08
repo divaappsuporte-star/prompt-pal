@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -18,6 +18,8 @@ import {
   Lock
 } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
+import { useProgress } from "@/hooks/useProgress";
+import { loadProgress } from "@/services/progressService";
 
 interface Chapter {
   id: number;
@@ -34,10 +36,14 @@ interface Chapter {
 
 const Mindset = () => {
   const navigate = useNavigate();
+  const { completeMindset } = useProgress();
   const [activeTab, setActiveTab] = useState("home");
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
-  const [completedChapters, setCompletedChapters] = useState<number[]>([]);
-  const [unlockedChapters, setUnlockedChapters] = useState<number[]>([1]);
+  
+  // Load from localStorage
+  const savedProgress = loadProgress();
+  const [completedChapters, setCompletedChapters] = useState<number[]>(savedProgress.mindset.completedChapters);
+  const [unlockedChapters, setUnlockedChapters] = useState<number[]>(savedProgress.mindset.unlockedChapters);
 
   const chaptersData = [
     {
@@ -162,6 +168,7 @@ const Mindset = () => {
   const handleCompleteChapter = (chapterId: number) => {
     if (!completedChapters.includes(chapterId)) {
       setCompletedChapters([...completedChapters, chapterId]);
+      completeMindset(chapterId);
       if (chapterId < 10 && !unlockedChapters.includes(chapterId + 1)) {
         setUnlockedChapters([...unlockedChapters, chapterId + 1]);
       }

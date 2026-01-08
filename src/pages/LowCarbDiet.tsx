@@ -379,6 +379,7 @@ const LowCarbDiet = () => {
   const handleCompleteChapter = (chapterId: number) => {
     if (!completedChapters.includes(chapterId)) {
       setCompletedChapters(prev => [...prev, chapterId]);
+      completeNutrition("lowcarb", chapterId);
     }
     
     const nextChapterId = chapterId + 1;
@@ -599,25 +600,13 @@ const LowCarbDiet = () => {
               </div>
               <div className="space-y-2">
                 {breakfastRecipes.map((recipe, index) => (
-                  <motion.div
+                  <RecipeCard
                     key={index}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="glass-card rounded-xl p-4 border border-border/50"
-                  >
-                    <p className="text-sm font-medium text-foreground mb-2">{recipe.name}</p>
-                    <div className="flex gap-3 text-xs text-muted-foreground mb-2">
-                      <span>{recipe.calories} kcal</span>
-                      <span>•</span>
-                      <span>{recipe.protein}g prot</span>
-                      <span>•</span>
-                      <span>{recipe.fat}g gord</span>
-                      <span>•</span>
-                      <span>{recipe.carbs}g carb</span>
-                    </div>
-                    <p className="text-xs text-accent">{recipe.instructions}</p>
-                  </motion.div>
+                    recipe={recipe}
+                    index={index}
+                    diet="lowcarb"
+                    accentColor="text-accent"
+                  />
                 ))}
               </div>
             </div>
@@ -630,25 +619,14 @@ const LowCarbDiet = () => {
               </div>
               <div className="space-y-2">
                 {lunchRecipes.map((recipe, index) => (
-                  <motion.div
+                  <RecipeCard
                     key={index}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 + index * 0.05 }}
-                    className="glass-card rounded-xl p-4 border border-border/50"
-                  >
-                    <p className="text-sm font-medium text-foreground mb-2">{recipe.name}</p>
-                    <div className="flex gap-3 text-xs text-muted-foreground mb-2">
-                      <span>{recipe.calories} kcal</span>
-                      <span>•</span>
-                      <span>{recipe.protein}g prot</span>
-                      <span>•</span>
-                      <span>{recipe.fat}g gord</span>
-                      <span>•</span>
-                      <span>{recipe.carbs}g carb</span>
-                    </div>
-                    <p className="text-xs text-accent">{recipe.instructions}</p>
-                  </motion.div>
+                    recipe={recipe}
+                    index={index}
+                    delay={0.5}
+                    diet="lowcarb"
+                    accentColor="text-accent"
+                  />
                 ))}
               </div>
             </div>
@@ -661,25 +639,14 @@ const LowCarbDiet = () => {
               </div>
               <div className="space-y-2">
                 {dinnerRecipes.map((recipe, index) => (
-                  <motion.div
+                  <RecipeCard
                     key={index}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1 + index * 0.05 }}
-                    className="glass-card rounded-xl p-4 border border-border/50"
-                  >
-                    <p className="text-sm font-medium text-foreground mb-2">{recipe.name}</p>
-                    <div className="flex gap-3 text-xs text-muted-foreground mb-2">
-                      <span>{recipe.calories} kcal</span>
-                      <span>•</span>
-                      <span>{recipe.protein}g prot</span>
-                      <span>•</span>
-                      <span>{recipe.fat}g gord</span>
-                      <span>•</span>
-                      <span>{recipe.carbs}g carb</span>
-                    </div>
-                    <p className="text-xs text-accent">{recipe.instructions}</p>
-                  </motion.div>
+                    recipe={recipe}
+                    index={index}
+                    delay={1}
+                    diet="lowcarb"
+                    accentColor="text-accent"
+                  />
                 ))}
               </div>
             </div>
