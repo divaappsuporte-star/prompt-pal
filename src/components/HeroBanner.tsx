@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import heroBanner from "@/assets/hero-banner.jpg";
+import NeuralNetwork from "./NeuralNetwork";
+import { useProgress } from "@/hooks/useProgress";
 
 interface HeroBannerProps {
   userName?: string;
@@ -7,25 +8,26 @@ interface HeroBannerProps {
 }
 
 const HeroBanner = ({ userName = "Atleta", currentDay }: HeroBannerProps) => {
+  const { overallProgress } = useProgress();
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
-      className="relative h-56 rounded-3xl overflow-hidden mx-4 mt-4 shadow-elevated"
+      className="relative h-64 rounded-3xl overflow-hidden mx-4 mt-4 shadow-elevated"
     >
-      {/* Background Image */}
-      <div className="absolute inset-0">
-        <img
-          src={heroBanner}
-          alt="Reset 21 Banner"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-      </div>
+      {/* Neural Network Background */}
+      <NeuralNetwork 
+        currentUserProgress={overallProgress} 
+        currentUserDay={currentDay} 
+      />
+      
+      {/* Gradient overlay for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent pointer-events-none" />
 
       {/* Content */}
-      <div className="relative h-full flex flex-col justify-end p-6">
+      <div className="relative h-full flex flex-col justify-end p-6 pointer-events-none">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -56,7 +58,7 @@ const HeroBanner = ({ userName = "Atleta", currentDay }: HeroBannerProps) => {
       </div>
 
       {/* Decorative Elements */}
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 pointer-events-none">
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
