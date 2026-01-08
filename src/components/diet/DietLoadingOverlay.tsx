@@ -1,8 +1,19 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LineChart, Line, ResponsiveContainer, AreaChart, Area } from "recharts";
-import { DietInfo } from "@/types/diet";
+import { AreaChart, Area, ResponsiveContainer } from "recharts";
+import { Beef, Salad, Leaf, Flame, GlassWater, Clock, LucideIcon } from "lucide-react";
+import { DietInfo, DietType } from "@/types/diet";
 import { cn } from "@/lib/utils";
+
+// Icon mapping for each diet type
+const DIET_ICONS: Record<DietType, LucideIcon> = {
+  carnivore: Beef,
+  keto: Salad,
+  lowcarb: Leaf,
+  metabolic: Flame,
+  detox: GlassWater,
+  fasting: Clock,
+};
 
 interface DietLoadingOverlayProps {
   isOpen: boolean;
@@ -128,11 +139,7 @@ const DietLoadingOverlay = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className={cn(
-            "fixed inset-0 z-[100] flex flex-col items-center justify-center",
-            "bg-gradient-to-b",
-            colors.bg
-          )}
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black"
         >
           {/* Background pattern */}
           <div className="absolute inset-0 opacity-5">
@@ -150,14 +157,29 @@ const DietLoadingOverlay = ({
               transition={{ delay: 0.2 }}
               className="text-center"
             >
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.3, type: "spring" }}
-                className="text-6xl block mb-4"
-              >
-                {diet.emoji}
-              </motion.span>
+              {(() => {
+                const IconComponent = DIET_ICONS[diet.key];
+                return (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.3, type: "spring" }}
+                    className={cn(
+                      "w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4",
+                      diet.color === 'coral' && "bg-coral/20",
+                      diet.color === 'mint' && "bg-mint/20",
+                      diet.color === 'gold' && "bg-gold/20"
+                    )}
+                  >
+                    <IconComponent className={cn(
+                      "w-10 h-10",
+                      diet.color === 'coral' && "text-coral",
+                      diet.color === 'mint' && "text-mint",
+                      diet.color === 'gold' && "text-gold"
+                    )} />
+                  </motion.div>
+                );
+              })()}
               <h2 className="font-display text-2xl font-bold text-foreground mb-2">
                 {diet.name}
               </h2>

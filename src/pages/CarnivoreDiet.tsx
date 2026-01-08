@@ -406,7 +406,7 @@ const CarnivoreDiet = () => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => navigate("/nutricao")}
+            onClick={() => navigate("/")}
             className="w-10 h-10 rounded-full bg-card flex items-center justify-center border border-border"
           >
             <ArrowLeft size={20} className="text-foreground" />
