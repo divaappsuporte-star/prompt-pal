@@ -1,51 +1,76 @@
 import { motion } from "framer-motion";
-import { Activity, Droplets, Moon, AlertTriangle, CheckCircle2, Info } from "lucide-react";
+import { Brain, Utensils, Dumbbell, Droplets, Moon, TrendingUp } from "lucide-react";
 import { useProgress } from "@/hooks/useProgress";
+import { Progress } from "@/components/ui/progress";
 
 const HealthMonitor = () => {
-  const { healthAnalysis } = useProgress();
-  const { hydration, sleep, activity } = healthAnalysis;
+  const { progress, todayHydration, todaySleep, todayCalories, overallProgress } = useProgress();
 
-  const hasAnyData = hydration.level !== "none" || sleep.level !== "none" || activity.level !== "none";
+  // Calculate pillar progress
+  const mindsetProgress = Math.round((progress.mindset.completedChapters.length / 10) * 100);
+  const workoutProgress = Math.round((progress.workouts.completedDays.length / 21) * 100);
+  
+  // Nutrition progress (average of all diets)
+  const diets = ["carnivore", "lowcarb", "keto", "fasting", "detox"] as const;
+  const totalNutritionChapters = diets.reduce((acc, diet) => {
+    return acc + progress.nutrition[diet].completedChapters.length;
+  }, 0);
+  const nutritionProgress = Math.round((totalNutritionChapters / (5 * 20)) * 100); // 5 diets × 20 chapters each
 
-  const getLevelIcon = (level: string) => {
-    switch (level) {
-      case "critical":
-        return <AlertTriangle size={16} className="text-coral" />;
-      case "warning":
-        return <AlertTriangle size={16} className="text-gold" />;
-      case "good":
-        return <CheckCircle2 size={16} className="text-mint" />;
-      default:
-        return <Info size={16} className="text-muted-foreground" />;
-    }
-  };
+  // Daily stats
+  const hydrationPercent = Math.min(100, Math.round((todayHydration / 2000) * 100));
+  const sleepPercent = Math.min(100, Math.round((todaySleep / 8) * 100));
 
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case "critical":
-        return "border-coral/30 bg-coral/5";
-      case "warning":
-        return "border-gold/30 bg-gold/5";
-      case "good":
-        return "border-mint/30 bg-mint/5";
-      default:
-        return "border-border/30 bg-muted/5";
-    }
-  };
+  const pillars = [
+    {
+      name: "Mentalidade",
+      icon: Brain,
+      progress: mindsetProgress,
+      detail: `${progress.mindset.completedChapters.length}/10 capítulos`,
+      color: "coral",
+    },
+    {
+      name: "Nutrição",
+      icon: Utensils,
+      progress: nutritionProgress,
+      detail: `${totalNutritionChapters} capítulos concluídos`,
+      color: "gold",
+    },
+    {
+      name: "Treino",
+      icon: Dumbbell,
+      progress: workoutProgress,
+      detail: `${progress.workouts.completedDays.length}/21 dias`,
+      color: "mint",
+    },
+  ];
 
-  const getTextColor = (level: string) => {
-    switch (level) {
-      case "critical":
-        return "text-coral";
-      case "warning":
-        return "text-gold";
-      case "good":
-        return "text-mint";
-      default:
-        return "text-muted-foreground";
-    }
-  };
+  const dailyStats = [
+    {
+      name: "Hidratação",
+      icon: Droplets,
+      value: `${(todayHydration / 1000).toFixed(1)}L`,
+      target: "2L",
+      percent: hydrationPercent,
+      color: "gold",
+    },
+    {
+      name: "Sono",
+      icon: Moon,
+      value: `${todaySleep}h`,
+      target: "8h",
+      percent: sleepPercent,
+      color: "mint",
+    },
+    {
+      name: "Calorias",
+      icon: TrendingUp,
+      value: `${todayCalories}`,
+      target: "kcal",
+      percent: Math.min(100, Math.round((todayCalories / 300) * 100)),
+      color: "coral",
+    },
+  ];
 
   return (
     <motion.div
@@ -55,116 +80,83 @@ const HealthMonitor = () => {
       className="px-4 py-2"
     >
       <div className="glass-card rounded-2xl p-5 border border-border/30">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-coral/20 flex items-center justify-center">
-            <Activity className="text-coral" size={20} />
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-coral/20 flex items-center justify-center">
+              <TrendingUp className="text-coral" size={20} />
+            </div>
+            <div>
+              <h3 className="font-display font-bold text-foreground">Seu Progresso</h3>
+              <p className="text-xs text-muted-foreground">Jornada de 21 dias</p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-display font-bold text-foreground">Monitor de Saúde</h3>
-            <p className="text-xs text-muted-foreground">Análise baseada nos seus dados</p>
+          <div className="text-right">
+            <span className="text-2xl font-bold text-coral">{overallProgress}%</span>
+            <p className="text-xs text-muted-foreground">Total</p>
           </div>
         </div>
 
-        {!hasAnyData ? (
-          <div className="text-center py-4">
-            <p className="text-sm text-muted-foreground">
-              Registre água, sono e faça treinos para ver análises personalizadas.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {/* Hydration */}
-            {hydration.level !== "none" && (
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                className={`rounded-xl p-3 border ${getLevelColor(hydration.level)}`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-gold/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Droplets size={16} className="text-gold" />
+        {/* Pillars Progress */}
+        <div className="space-y-4 mb-5">
+          {pillars.map((pillar, index) => (
+            <motion.div
+              key={pillar.name}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 * index }}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center gap-2">
+                  <div className={`w-7 h-7 rounded-lg bg-${pillar.color}/20 flex items-center justify-center`}>
+                    <pillar.icon size={14} className={`text-${pillar.color}`} />
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-sm font-semibold ${getTextColor(hydration.level)}`}>
-                        Hidratação: {hydration.level === "good" ? "Boa!" : hydration.level === "warning" ? "Atenção" : "Crítico!"}
-                      </span>
-                      {getLevelIcon(hydration.level)}
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {hydration.message}
-                    </p>
-                    <p className="text-xs text-foreground/70 mt-1">
-                      {(hydration.current / 1000).toFixed(1)}L de {(hydration.target / 1000)}L
-                    </p>
-                  </div>
+                  <span className="text-sm font-medium text-foreground">{pillar.name}</span>
                 </div>
-              </motion.div>
-            )}
+                <span className="text-xs text-muted-foreground">{pillar.detail}</span>
+              </div>
+              <div className="relative h-2 bg-muted/30 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pillar.progress}%` }}
+                  transition={{ duration: 0.8, delay: 0.2 + index * 0.1 }}
+                  className={`absolute inset-y-0 left-0 rounded-full ${
+                    pillar.color === "coral" ? "bg-coral" :
+                    pillar.color === "gold" ? "bg-gold" : "bg-mint"
+                  }`}
+                />
+              </div>
+            </motion.div>
+          ))}
+        </div>
 
-            {/* Sleep */}
-            {sleep.level !== "none" && (
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-                className={`rounded-xl p-3 border ${getLevelColor(sleep.level)}`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-mint/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Moon size={16} className="text-mint" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-sm font-semibold ${getTextColor(sleep.level)}`}>
-                        Sono: {sleep.level === "good" ? "Bom!" : sleep.level === "warning" ? "Atenção" : "Crítico!"}
-                      </span>
-                      {getLevelIcon(sleep.level)}
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {sleep.message}
-                    </p>
-                    <p className="text-xs text-foreground/70 mt-1">
-                      {sleep.current}h de {sleep.target}h recomendadas
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
+        {/* Divider */}
+        <div className="border-t border-border/20 my-4" />
 
-            {/* Activity */}
-            {activity.level !== "none" && (
+        {/* Daily Stats */}
+        <div>
+          <p className="text-xs text-muted-foreground mb-3">Hoje</p>
+          <div className="grid grid-cols-3 gap-3">
+            {dailyStats.map((stat, index) => (
               <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-                className={`rounded-xl p-3 border ${getLevelColor(activity.level)}`}
+                key={stat.name}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 + index * 0.1 }}
+                className="text-center"
               >
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-coral/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Activity size={16} className="text-coral" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-sm font-semibold ${getTextColor(activity.level)}`}>
-                        Atividade: {activity.level === "good" ? "Excelente!" : activity.level === "warning" ? "Leve" : "Nenhuma"}
-                      </span>
-                      {getLevelIcon(activity.level)}
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {activity.message}
-                    </p>
-                    {activity.caloriesBurned > 0 && (
-                      <p className="text-xs text-foreground/70 mt-1">
-                        🔥 {activity.caloriesBurned} kcal queimadas hoje
-                      </p>
-                    )}
-                  </div>
+                <div className={`w-10 h-10 mx-auto rounded-xl bg-${stat.color}/20 flex items-center justify-center mb-2`}>
+                  <stat.icon size={18} className={`text-${stat.color}`} />
                 </div>
+                <p className="text-sm font-semibold text-foreground">
+                  {stat.value}
+                  <span className="text-xs text-muted-foreground ml-0.5">/{stat.target}</span>
+                </p>
+                <p className="text-xs text-muted-foreground">{stat.name}</p>
               </motion.div>
-            )}
+            ))}
           </div>
-        )}
+        </div>
       </div>
     </motion.div>
   );
