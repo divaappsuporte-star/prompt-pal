@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Brain, Apple, Dumbbell, BarChart3, User } from "lucide-react";
@@ -18,9 +18,28 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
   const [showQuickLog, setShowQuickLog] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [isOnboarding, setIsOnboarding] = useState(false);
   const currentDay = 1;
 
   const userName = profile?.full_name?.split(" ")[0] || "Atleta";
+
+  // Check if profile is incomplete and show onboarding modal
+  const isProfileIncomplete = !profile?.full_name || !profile?.height_cm || !profile?.weight_kg || !profile?.goal_weight_kg;
+
+  useEffect(() => {
+    if (profile && isProfileIncomplete) {
+      setIsOnboarding(true);
+      setShowProfile(true);
+    }
+  }, [profile, isProfileIncomplete]);
+
+  const handleProfileClose = () => {
+    // Only allow closing if not in onboarding or profile is now complete
+    if (!isOnboarding || !isProfileIncomplete) {
+      setShowProfile(false);
+      setIsOnboarding(false);
+    }
+  };
 
   const handleCardClick = (id: string) => {
     if (id === "nutricao") {
@@ -158,7 +177,11 @@ const Index = () => {
 
       {/* Modals */}
       <QuickLogModal isOpen={showQuickLog} onClose={() => setShowQuickLog(false)} />
-      <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} />
+      <ProfileModal 
+        isOpen={showProfile} 
+        onClose={handleProfileClose}
+        isOnboarding={isOnboarding}
+      />
     </div>
   );
 };
