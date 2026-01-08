@@ -1,104 +1,100 @@
 import { motion } from "framer-motion";
 import { useProgress } from "@/hooks/useProgress";
-import { useMemo } from "react";
-import heroBanner from "@/assets/hero-banner.jpg";
+import { Brain, Apple, Dumbbell } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
 interface HeroBannerProps {
   userName?: string;
   currentDay: number;
 }
 
-type DailyStatus = 'critical' | 'emerging' | 'elite';
-
 const HeroBanner = ({ userName = "Atleta", currentDay }: HeroBannerProps) => {
-  const { overallProgress, todayHydration, todaySleep, todayCalories, progress } = useProgress();
+  const { progress, overallProgress } = useProgress();
 
-  // Calculate daily tasks completion
-  const dailyTasks = useMemo(() => {
-    const today = new Date().toISOString().split("T")[0];
-    const diets = ["carnivore", "lowcarb", "keto", "fasting", "detox"] as const;
-    
-    const hasNutrition = diets.some(diet => 
-      progress.nutrition[diet].completedRecipes.some(r => r.endsWith(`_${today}`))
-    );
-    
-    return {
-      workout: todayCalories > 0,
-      nutrition: hasNutrition,
-      hydration: todayHydration >= 2000,
-      sleep: todaySleep >= 7,
-      mindset: progress.mindset.completedChapters.length > 0
-    };
-  }, [todayCalories, todayHydration, todaySleep, progress]);
-
-  const completedCount = Object.values(dailyTasks).filter(Boolean).length;
+  // Calculate individual progress
+  const mindsetProgress = Math.round((progress.mindset.completedChapters.length / 10) * 100);
+  const workoutProgress = Math.round((progress.workouts.completedSessions.length / 21) * 100);
   
-  const dailyStatus: DailyStatus = useMemo(() => {
-    if (completedCount === 5) return 'elite';
-    if (completedCount >= 1) return 'emerging';
-    return 'critical';
-  }, [completedCount]);
+  const nutritionTotal = Object.values(progress.nutrition).reduce((acc, diet) => {
+    return acc + diet.completedChapters.length;
+  }, 0);
+  const nutritionProgress = Math.round((nutritionTotal / 25) * 100);
 
-  // Dynamic message based on status
-  const statusMessage = useMemo(() => {
-    switch (dailyStatus) {
-      case 'elite':
-        return { text: "Parabéns! Continue assim!", color: "text-emerald-400" };
-      case 'emerging':
-        return { text: "Você está no ritmo certo!", color: "text-amber-400" };
-      case 'critical':
-        return { text: "Comece suas tarefas hoje!", color: "text-red-400" };
-    }
-  }, [dailyStatus]);
+  // Pie chart data
+  const pieData = [
+    { name: "Mentalidade", value: mindsetProgress || 5, color: "hsl(40, 90%, 65%)" },
+    { name: "Nutrição", value: nutritionProgress || 5, color: "hsl(145, 45%, 65%)" },
+    { name: "Treino", value: workoutProgress || 5, color: "hsl(0, 85%, 65%)" },
+  ];
+
+  const pillars = [
+    { icon: Brain, label: "Mente", value: mindsetProgress, color: "text-gold", bg: "bg-gold" },
+    { icon: Apple, label: "Nutrição", value: nutritionProgress, color: "text-mint", bg: "bg-mint" },
+    { icon: Dumbbell, label: "Treino", value: workoutProgress, color: "text-coral", bg: "bg-coral" },
+  ];
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
-      className="relative h-40 overflow-hidden mx-4 rounded-2xl"
+      className="mx-4 mb-4"
     >
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${heroBanner})` }}
-      />
-      
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/50" />
+      <div className="bg-card/60 rounded-2xl p-4">
+        <div className="flex items-center gap-4">
+          {/* Pie Chart */}
+          <div className="w-24 h-24 relative flex-shrink-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={28}
+                  outerRadius={42}
+                  paddingAngle={4}
+                  dataKey="value"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            {/* Center Text */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-lg font-bold text-foreground">{overallProgress}%</span>
+            </div>
+          </div>
 
-      {/* Content */}
-      <div className="relative h-full flex flex-col justify-end p-5">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <p className="text-sm text-white/70 mb-1">Olá, {userName}</p>
-          <h1 className="font-display text-2xl font-bold text-white mb-2">
-            Dia <span className="text-coral">{currentDay}</span> de 21
-          </h1>
-          <p className={`text-sm ${statusMessage.color} flex items-center gap-2`}>
-            <span className={`inline-block w-2 h-2 rounded-full ${
-              dailyStatus === 'elite' ? 'bg-emerald-400' :
-              dailyStatus === 'emerging' ? 'bg-amber-400' : 'bg-red-400'
-            }`} />
-            {statusMessage.text}
-          </p>
-        </motion.div>
-
-        {/* Day Progress */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-          className="absolute bottom-0 left-0 right-0 h-1 bg-white/20"
-        >
-          <div
-            className="h-full bg-coral origin-left"
-            style={{ width: `${(currentDay / 21) * 100}%` }}
-          />
-        </motion.div>
+          {/* Progress Bars */}
+          <div className="flex-1 space-y-2">
+            {pillars.map((pillar, index) => (
+              <motion.div
+                key={pillar.label}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="flex items-center gap-2"
+              >
+                <pillar.icon size={14} className={pillar.color} />
+                <div className="flex-1">
+                  <div className="w-full h-1.5 rounded-full bg-muted/30">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pillar.value}%` }}
+                      transition={{ duration: 0.8, delay: 0.2 + index * 0.1 }}
+                      className={`h-full rounded-full ${pillar.bg}`}
+                    />
+                  </div>
+                </div>
+                <span className={`text-xs font-medium ${pillar.color} w-8 text-right`}>
+                  {pillar.value}%
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </div>
     </motion.div>
   );
