@@ -22,7 +22,7 @@ const Logo = ({ size = "md", showTagline = false }: LogoProps) => {
   return (
     <div className="flex flex-col">
       <h1 className={`font-display font-bold ${sizeClasses[size]} flex items-center`}>
-        <span className="text-foreground">re</span>
+        <span className="text-foreground">Re</span>
         <motion.span
           initial={{ rotate: -10, scale: 0.8 }}
           animate={{ rotate: 0, scale: 1 }}
