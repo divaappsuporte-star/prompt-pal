@@ -1,7 +1,17 @@
 import { motion } from "framer-motion";
-import { Lock, ChevronRight } from "lucide-react";
+import { Lock, Beef, Salad, Leaf, Flame, GlassWater, Clock, LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DietInfo } from "@/types/diet";
+import { DietInfo, DietType } from "@/types/diet";
+
+// Icon mapping for each diet type
+const DIET_ICONS: Record<DietType, LucideIcon> = {
+  carnivore: Beef,
+  keto: Salad,
+  lowcarb: Leaf,
+  metabolic: Flame,
+  detox: GlassWater,
+  fasting: Clock,
+};
 
 interface DietCardProps {
   diet: DietInfo;
@@ -87,12 +97,17 @@ const DietCard = ({
 
       <div className="flex flex-col items-center text-center">
         {/* Icon container - same style as Mentalidade */}
-        <div className={cn(
-          "w-12 h-12 rounded-xl flex items-center justify-center mb-3",
-          colors.iconBg
-        )}>
-          <span className="text-2xl">{diet.emoji}</span>
-        </div>
+        {(() => {
+          const IconComponent = DIET_ICONS[diet.key];
+          return (
+            <div className={cn(
+              "w-12 h-12 rounded-xl flex items-center justify-center mb-3",
+              colors.iconBg
+            )}>
+              <IconComponent className={cn("w-6 h-6", colors.iconText)} />
+            </div>
+          );
+        })()}
         
         {/* Title */}
         <h3 className="font-display font-bold text-foreground text-sm mb-1 line-clamp-1">
