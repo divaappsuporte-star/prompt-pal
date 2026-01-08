@@ -130,13 +130,7 @@ const Index = () => {
       {/* Hero Banner - Full Width */}
       <HeroBanner userName={userName} currentDay={currentDay} />
 
-      {/* Quick Stats */}
-      <QuickStats />
-
-      {/* Health Monitor */}
-      <HealthMonitor />
-
-      {/* Dashboard Cards */}
+      {/* Dashboard Cards - Sua Jornada */}
       <div className="px-4 py-2">
         <h2 className="font-display text-xl font-bold text-foreground mb-4 px-0">
           Sua Jornada
@@ -156,6 +150,12 @@ const Index = () => {
           ))}
         </div>
       </div>
+
+      {/* Health Monitor */}
+      <HealthMonitor />
+
+      {/* Quick Stats - Resumo de Hoje */}
+      <QuickStats />
 
       {/* Motivational Quote */}
       <motion.div
