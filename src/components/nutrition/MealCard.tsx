@@ -1,6 +1,18 @@
 import { motion } from "framer-motion";
-import { Clock, Flame, Droplets, Wheat } from "lucide-react";
-import type { Meal } from "@/pages/Nutrition";
+import { Clock } from "lucide-react";
+
+interface Meal {
+  id: string;
+  name: string;
+  time: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  image: string;
+  tags: string[];
+  restrictions?: string[];
+}
 
 interface MealCardProps {
   meal: Meal;
@@ -49,13 +61,13 @@ const MealCard = ({ meal, delay = 0 }: MealCardProps) => {
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-gold" />
+              <div className="w-2 h-2 rounded-full bg-accent" />
               <span className="text-xs text-muted-foreground">
                 {meal.carbs}g carb
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-mint" />
+              <div className="w-2 h-2 rounded-full bg-primary" />
               <span className="text-xs text-muted-foreground">
                 {meal.fat}g fat
               </span>
