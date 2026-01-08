@@ -1,24 +1,36 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, 
   Target, 
   CalendarDays, 
-  ChevronRight,
   Utensils,
   CheckCircle2,
   Circle,
   Sparkles
 } from "lucide-react";
 import { usePersonalPlan } from "@/hooks/usePersonalPlan";
+import { useDailyMeals } from "@/hooks/useDailyMeals";
 import { DIET_INFO } from "@/types/diet";
 import BottomNavigation from "@/components/BottomNavigation";
+import MealExpandCard from "@/components/plan/MealExpandCard";
 import { Progress } from "@/components/ui/progress";
+import { toast } from "@/hooks/use-toast";
 
 const MyPlan = () => {
   const navigate = useNavigate();
-  const { personalPlan, isLoading, hasPlan, integratedModules, primaryModule } = usePersonalPlan();
+  const { personalPlan, isLoading, hasPlan, integratedModules } = usePersonalPlan();
+  
+  // Track completed meals locally (will be synced to DB later)
+  const [completedMeals, setCompletedMeals] = useState<string[]>([]);
+
+  // Fetch daily meals based on plan
+  const { dailyPlan, isLoading: mealsLoading } = useDailyMeals(
+    personalPlan?.diet_type,
+    personalPlan?.target_weight_loss,
+    personalPlan?.current_day
+  );
 
   // Redirect if no plan exists
   useEffect(() => {
@@ -44,6 +56,23 @@ const MyPlan = () => {
     }
   };
 
+  const handleMealComplete = (mealType: string) => {
+    if (completedMeals.includes(mealType)) {
+      toast({
+        title: "Refeição já concluída",
+        description: "Você já marcou essa refeição hoje.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setCompletedMeals(prev => [...prev, mealType]);
+    toast({
+      title: "Refeição concluída! 🎉",
+      description: dailyPlan?.meal_feedbacks?.[mealType as keyof typeof dailyPlan.meal_feedbacks] || "Continue assim!",
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -58,18 +87,11 @@ const MyPlan = () => {
 
   const dietInfo = DIET_INFO[personalPlan.diet_type];
   const progress = (personalPlan.current_day / 21) * 100;
-  
-  // Mock meals for the day (will be replaced with real data from diet_meal_plans)
-  const todayMeals = [
-    { id: 'breakfast', name: 'Café da Manhã', time: '07:00', completed: false },
-    { id: 'lunch', name: 'Almoço', time: '12:00', completed: false },
-    { id: 'dinner', name: 'Jantar', time: '19:00', completed: false },
-  ];
 
-  // Mock missions
+  // Daily missions
   const dailyMissions = [
     { id: 'water', name: 'Beber 2.5L de água', completed: false },
-    { id: 'meals', name: 'Completar todas as refeições', completed: false },
+    { id: 'meals', name: 'Completar todas as refeições', completed: completedMeals.length >= 3 },
     { id: 'sleep', name: 'Dormir 8 horas', completed: false },
   ];
 
@@ -150,29 +172,44 @@ const MyPlan = () => {
           <h2 className="font-display text-lg font-bold text-foreground mb-3 flex items-center gap-2">
             <Utensils className="w-5 h-5 text-primary" />
             Refeições de Hoje
+            {dailyPlan && (
+              <span className="text-xs font-normal text-muted-foreground ml-auto">
+                {dailyPlan.total_calories} kcal total
+              </span>
+            )}
           </h2>
           
           <div className="space-y-3">
-            {todayMeals.map((meal, index) => (
-              <motion.div
-                key={meal.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.25 + index * 0.05 }}
-                className="glass-card rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:bg-muted/30 transition-colors"
-              >
-                {meal.completed ? (
-                  <CheckCircle2 className="w-6 h-6 text-primary" />
-                ) : (
-                  <Circle className="w-6 h-6 text-muted-foreground" />
-                )}
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">{meal.name}</p>
-                  <p className="text-sm text-muted-foreground">{meal.time}</p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              </motion.div>
-            ))}
+            <MealExpandCard
+              type="breakfast"
+              label="Café da Manhã"
+              time="07:00"
+              meal={dailyPlan?.breakfast || null}
+              feedback={dailyPlan?.meal_feedbacks?.breakfast || null}
+              completed={completedMeals.includes('breakfast')}
+              onComplete={() => handleMealComplete('breakfast')}
+              isLoading={mealsLoading}
+            />
+            <MealExpandCard
+              type="lunch"
+              label="Almoço"
+              time="12:00"
+              meal={dailyPlan?.lunch || null}
+              feedback={dailyPlan?.meal_feedbacks?.lunch || null}
+              completed={completedMeals.includes('lunch')}
+              onComplete={() => handleMealComplete('lunch')}
+              isLoading={mealsLoading}
+            />
+            <MealExpandCard
+              type="dinner"
+              label="Jantar"
+              time="19:00"
+              meal={dailyPlan?.dinner || null}
+              feedback={dailyPlan?.meal_feedbacks?.dinner || null}
+              completed={completedMeals.includes('dinner')}
+              onComplete={() => handleMealComplete('dinner')}
+              isLoading={mealsLoading}
+            />
           </div>
         </motion.div>
 
