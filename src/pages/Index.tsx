@@ -33,9 +33,9 @@ const Index = () => {
     }
   }, [profile, isProfileIncomplete]);
 
-  const handleProfileClose = () => {
-    // Only allow closing if not in onboarding or profile is now complete
-    if (!isOnboarding || !isProfileIncomplete) {
+  const handleProfileClose = (forceClose?: boolean) => {
+    // Allow closing if forced (after successful save) or not in onboarding
+    if (forceClose || !isOnboarding) {
       setShowProfile(false);
       setIsOnboarding(false);
     }

@@ -16,7 +16,7 @@ import { toast } from "sonner";
 
 interface ProfileModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (forceClose?: boolean) => void;
   isOnboarding?: boolean;
 }
 
@@ -91,7 +91,8 @@ const ProfileModal = ({ isOpen, onClose, isOnboarding = false }: ProfileModalPro
       toast.error("Erro ao salvar perfil");
     } else {
       toast.success(isOnboarding ? "Perfil configurado! Bem-vindo!" : "Perfil atualizado!");
-      onClose();
+      // Force close to bypass the incomplete check since we just saved
+      onClose(true);
     }
 
     setIsSaving(false);
@@ -112,7 +113,7 @@ const ProfileModal = ({ isOpen, onClose, isOnboarding = false }: ProfileModalPro
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={isOnboarding ? undefined : onClose}
+            onClick={isOnboarding ? undefined : () => onClose()}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
           />
 
@@ -131,7 +132,7 @@ const ProfileModal = ({ isOpen, onClose, isOnboarding = false }: ProfileModalPro
               </h2>
               {!isOnboarding && (
                 <button
-                  onClick={onClose}
+                  onClick={() => onClose()}
                   className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
                 >
                   <X className="w-5 h-5" />
