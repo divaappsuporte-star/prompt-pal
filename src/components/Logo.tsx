@@ -27,13 +27,22 @@ const Logo = ({ size = "md", showTagline = false }: LogoProps) => {
           initial={{ rotate: -10, scale: 0.8 }}
           animate={{ rotate: 0, scale: 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 15 }}
-          className="inline-flex items-center justify-center text-coral"
+          className="inline-flex items-center justify-center"
         >
           <Zap 
             size={zapSizes[size]} 
-            className="fill-coral stroke-coral -mx-0.5" 
+            className="-mx-0.5" 
             strokeWidth={2.5}
+            style={{ fill: 'url(#coral-gradient)', stroke: 'url(#coral-gradient)' }}
           />
+          <svg width="0" height="0">
+            <defs>
+              <linearGradient id="coral-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#FF6B6B" />
+                <stop offset="100%" stopColor="#FFD580" />
+              </linearGradient>
+            </defs>
+          </svg>
         </motion.span>
         <span className="text-foreground">et</span>
         <span className="text-gradient-coral">fit</span>
