@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
-import { Heart, AlertTriangle } from "lucide-react";
+import { Heart, AlertTriangle, X } from "lucide-react";
 import type { MedicalCondition } from "@/pages/Nutrition";
 
 interface MedicalFiltersProps {
   conditions: MedicalCondition[];
   onToggle: (id: string) => void;
+  onDismiss: () => void;
 }
 
 const conditionIcons: Record<string, string> = {
@@ -15,7 +16,7 @@ const conditionIcons: Record<string, string> = {
   celiaquia: "🌾",
 };
 
-const MedicalFilters = ({ conditions, onToggle }: MedicalFiltersProps) => {
+const MedicalFilters = ({ conditions, onToggle, onDismiss }: MedicalFiltersProps) => {
   const hasActiveConditions = conditions.some(c => c.active);
 
   return (
@@ -30,8 +31,7 @@ const MedicalFilters = ({ conditions, onToggle }: MedicalFiltersProps) => {
         <div className="flex items-center gap-2 p-3 rounded-xl bg-coral/10 border border-coral/30 mb-4">
           <AlertTriangle size={18} className="text-coral flex-shrink-0" />
           <p className="text-xs text-coral font-medium">
-            <strong>Obrigatório:</strong> Selecione suas condições de saúde para receitas seguras. 
-            Dietas incompatíveis serão ocultadas.
+            <strong>Importante:</strong> Selecione suas condições de saúde para receitas seguras.
           </p>
         </div>
 
@@ -42,9 +42,9 @@ const MedicalFilters = ({ conditions, onToggle }: MedicalFiltersProps) => {
           </h3>
         </div>
         <p className="text-xs text-muted-foreground mb-4">
-          Selecione suas condições para adaptar automaticamente as receitas e dietas disponíveis
+          Selecione suas condições para adaptar automaticamente as receitas e dietas
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 mb-4">
           {conditions.map((condition) => (
             <motion.button
               key={condition.id}
@@ -63,11 +63,16 @@ const MedicalFilters = ({ conditions, onToggle }: MedicalFiltersProps) => {
           ))}
         </div>
 
-        {!hasActiveConditions && (
-          <p className="text-xs text-muted-foreground mt-3 text-center italic">
-            Nenhuma condição selecionada - todas as dietas estão disponíveis
-          </p>
-        )}
+        {/* Dismiss Button */}
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={onDismiss}
+          className="w-full py-3 rounded-xl bg-muted/30 text-muted-foreground text-sm font-medium hover:bg-muted/50 transition-colors flex items-center justify-center gap-2"
+        >
+          <X size={16} />
+          Não tenho nenhum desses problemas
+        </motion.button>
       </div>
     </motion.div>
   );

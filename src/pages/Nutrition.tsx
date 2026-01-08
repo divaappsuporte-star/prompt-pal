@@ -226,6 +226,7 @@ const Nutrition = () => {
           <MedicalFilters
             conditions={medicalConditions}
             onToggle={toggleCondition}
+            onDismiss={() => setShowFilters(false)}
           />
         )}
       </AnimatePresence>
