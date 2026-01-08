@@ -116,43 +116,10 @@ const dietPlans = {
   },
   lowcarb: {
     name: "Low Carb",
-    description: "Redução moderada de carboidratos",
-    meals: [
-      {
-        id: "l1",
-        name: "Iogurte Grego com Nozes",
-        time: "07:30",
-        calories: 280,
-        protein: 18,
-        carbs: 15,
-        fat: 16,
-        image: "🥛",
-        tags: ["café da manhã", "probiótico"],
-        restrictions: ["gastrite"],
-      },
-      {
-        id: "l2",
-        name: "Salada Caesar com Frango",
-        time: "12:00",
-        calories: 420,
-        protein: 35,
-        carbs: 12,
-        fat: 26,
-        image: "🥗",
-        tags: ["almoço", "leve"],
-      },
-      {
-        id: "l3",
-        name: "Peixe Assado com Brócolis",
-        time: "19:00",
-        calories: 380,
-        protein: 42,
-        carbs: 8,
-        fat: 18,
-        image: "🐠",
-        tags: ["jantar", "omega-3"],
-      },
-    ] as Meal[],
+    description: "Nutrição, Hormônios e Reprogramação Metabólica",
+    isSpecialPage: true,
+    route: "/dieta-lowcarb",
+    meals: [] as Meal[],
   },
   mediterranea: {
     name: "Mediterrânea",
@@ -389,7 +356,38 @@ const Nutrition = () => {
             </motion.div>
           )}
 
-          {activeTab !== "carnivora" && (
+          {/* Special page card for Low Carb */}
+          {activeTab === "lowcarb" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6"
+            >
+              <div 
+                onClick={() => navigate("/dieta-lowcarb")}
+                className="glass-card rounded-2xl p-6 border border-green-500/30 cursor-pointer hover:border-green-500/50 transition-all"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-xl bg-green-500/20 flex items-center justify-center">
+                    <span className="text-3xl">🥗</span>
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="font-display text-lg font-bold text-foreground">
+                      Dieta Low Carb
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      20 capítulos + 30 receitas completas
+                    </p>
+                    <p className="text-xs text-green-400 mt-1">
+                      Toque para acessar o conteúdo completo →
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab !== "carnivora" && activeTab !== "lowcarb" && (
             <motion.div
               key={activeTab}
               initial={{ opacity: 0, x: 20 }}

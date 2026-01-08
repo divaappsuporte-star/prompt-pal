@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Nutrition from "./pages/Nutrition";
 import Mindset from "./pages/Mindset";
 import CarnivoreDiet from "./pages/CarnivoreDiet";
+import LowCarbDiet from "./pages/LowCarbDiet";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/nutricao" element={<Nutrition />} />
           <Route path="/mentalidade" element={<Mindset />} />
           <Route path="/dieta-carnivora" element={<CarnivoreDiet />} />
+          <Route path="/dieta-lowcarb" element={<LowCarbDiet />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
