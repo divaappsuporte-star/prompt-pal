@@ -23,7 +23,8 @@ import {
   Calendar,
   Coffee,
   Sun,
-  UtensilsCrossed
+  UtensilsCrossed,
+  Unlock
 } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 
@@ -39,362 +40,341 @@ interface Chapter {
     tips?: string[];
     quote?: string;
   };
-  completed: boolean;
-  unlocked: boolean;
 }
 
 interface Recipe {
   name: string;
-  description?: string;
+  calories: number;
+  protein: number;
+  fat: number;
+  instructions: string;
 }
 
 const CarnivoreDiet = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("chapters");
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
+  const [completedChapters, setCompletedChapters] = useState<number[]>([]);
+  const [unlockedChapters, setUnlockedChapters] = useState<number[]>([1, 2, 3]);
 
   const chapters: Chapter[] = [
     {
       id: 1,
-      title: "Proteína e Gordura",
-      subtitle: "Por que o corpo foi feito para isso",
+      title: "Por Que a Carne é Perfeita",
+      subtitle: "O alimento ideal para o corpo humano",
       icon: Beef,
       content: {
-        intro: "O sistema digestivo humano é ácido e curto, projetado para digerir carne. O estômago humano atinge pH 1,5 — equivalente ao de carnívoros predadores. O intestino é mais curto do que o dos herbívoros, facilitando a absorção de aminoácidos e gorduras.",
-        science: "Moléculas essenciais como vitamina B12, ferro-heme, creatina, carnitina e taurina só existem em forma biodisponível em alimentos de origem animal.",
-        quote: "Ao se afastar da carne, o corpo entra em déficit nutricional crônico.",
+        intro: "Nosso sistema digestivo é curto e altamente ácido, projetado para a digestão de carne. A proteína animal contém todos os aminoácidos essenciais sem necessidade de combinação com vegetais. Toda a vitamina B12, ferro-heme, creatina e colina só existem de forma biodisponível em produtos de origem animal.",
+        science: "Frontiers in Nutrition (2021): dietas ricas em proteínas magras e gordura natural preservam músculos e reduzem risco cardiovascular.",
+        quote: "O ser humano pode viver décadas com carne, ovos e água, mas nenhuma civilização sobreviveu só de açúcar e farináceos.",
       },
-      completed: false,
-      unlocked: true,
     },
     {
       id: 2,
-      title: "Bioquímica Metabólica",
+      title: "Metabolismo da Gordura",
       subtitle: "Gordura como combustível limpo",
       icon: Flame,
       content: {
-        intro: "Gorduras naturais (saturadas e monoinsaturadas) não são vilãs — são substratos energéticos de alta eficiência. A Dieta da Carne induz cetose fisiológica, um estado em que o corpo utiliza gordura como energia primária.",
-        science: "Cell Metabolism, 2019 — corpos cetônicos (beta-hidroxibutirato e acetoacetato) formados pela oxidação da gordura fornecem 25% mais energia ao cérebro que a glicose, reduzindo inflamação e melhorando foco.",
-        benefits: ["Estabilização da glicemia", "Controle natural do apetite", "Energia cerebral superior"],
+        intro: "Gorduras naturais (manteiga, banha, gordura intramuscular) são combustíveis eficientes. Quando o corpo diminui carboidratos, passa a oxidar gordura — própria e alimentar — como fonte primária de energia.",
+        science: "Cell Metabolism (2019) mostrou que essa 'cetose leve' aumenta a função mitocondrial e reduz a fadiga. O resultado é energia estável, sem picos de sono após as refeições.",
+        benefits: ["Energia estável o dia todo", "Sem picos de sono pós-refeição", "Função mitocondrial otimizada"],
       },
-      completed: false,
-      unlocked: true,
     },
     {
       id: 3,
-      title: "Como Funciona",
-      subtitle: "Princípios da dieta carnívora",
-      icon: Target,
+      title: "Hormônios da Fome",
+      subtitle: "Proteína que controla o apetite",
+      icon: Scale,
       content: {
-        intro: "O princípio é simples: exclusão total de carboidratos processados e vegetais fibrosos desnecessários; consumo de carnes de todos os tipos, ovos e gorduras naturais.",
-        tips: ["65–70% calorias de gordura", "30–35% de proteína", "0–5% de carboidratos (traços em ovos e laticínios)"],
-        science: "Essa proporção ativa lipólise constante, otimizando o uso de gordura corporal e reduzindo picos de insulina a níveis mínimos.",
+        intro: "Toda refeição rica em proteína estimula dois hormônios cruciais: Leptina (controla saciedade) e Grelina (diminui fome quando bem regulada).",
+        science: "American Journal of Physiology (2020) comprovou que refeições com patinho, frango ou ovo reduzem a grelina em até 40%. Fome emocional diminui, e o apetite se torna biológico.",
+        benefits: ["Redução de 40% na grelina", "Fim da fome emocional", "Apetite biológico equilibrado"],
       },
-      completed: false,
-      unlocked: true,
     },
     {
       id: 4,
-      title: "Benefícios Comprovados",
-      subtitle: "Evidências científicas",
-      icon: CheckCircle2,
+      title: "Benefício Cardíaco Real",
+      subtitle: "A verdade sobre gordura e coração",
+      icon: Heart,
       content: {
-        intro: "A dieta carnívora oferece uma série de benefícios comprovados por estudos científicos de instituições renomadas.",
-        benefits: [
-          "Redução da inflamação crônica (Frontiers in Nutrition, 2020)",
-          "Melhora da sensibilidade à insulina (Harvard Medical Review, 2022)",
-          "Clareza mental e foco prolongado (Nature Neuroscience, 2019)",
-          "Aumento da testosterona e GH (Journal of Endocrinology, 2021)",
-          "Redução de gordura visceral (Metabolism Journal, 2021)"
-        ],
+        intro: "Durante décadas, a gordura animal foi culpada pelo colesterol. Hoje, revisões do British Medical Journal derrubam esse mito: o problema não é a gordura, mas o açúcar.",
+        science: "A carne com gordura natural melhora o HDL (colesterol bom) e reduz triglicerídeos. O verdadeiro vilão inflamatório são os óleos vegetais refinados.",
+        tips: ["Evitar óleos vegetais refinados", "Preferir gorduras animais naturais", "Focar em HDL e triglicerídeos, não colesterol total"],
       },
-      completed: false,
-      unlocked: false,
     },
     {
       id: 5,
-      title: "Carnes e Gorduras Ideais",
-      subtitle: "Tipos e fontes essenciais",
-      icon: Beef,
+      title: "Ferro e Creatina",
+      subtitle: "Energia do trabalhador",
+      icon: Zap,
       content: {
-        intro: "Conhecer os tipos de carnes e gorduras ideais é fundamental para maximizar os benefícios da dieta carnívora.",
-        tips: [
-          "🥩 Carnes vermelhas: Bovino, cordeiro, veado — ricas em ferro-heme e creatina",
-          "🍗 Carnes brancas: Frango, pato, peru — proteína leve e colágeno",
-          "🦴 Vísceras: Fígado, coração, rim — supernutrientes (vitamina A, cobre, zinco)",
-          "🧈 Gorduras: Manteiga, tallow, azeite e toucinho"
-        ],
+        intro: "Quem sente fraqueza, anemia e cansaço crônico costuma ter deficiência de ferro-heme (animal). 100g de patinho grelhado = 40% do ferro diário recomendado.",
+        science: "Journal of Neuroscience (2019) observou 15% melhor desempenho cognitivo após 6 semanas de consumo de creatina natural da carne.",
+        benefits: ["40% do ferro diário em 100g de patinho", "Creatina melhora força e memória", "15% melhor desempenho cognitivo"],
       },
-      completed: false,
-      unlocked: false,
     },
     {
       id: 6,
-      title: "Psicologia do Apetite",
-      subtitle: "Normalização natural da fome",
-      icon: Brain,
+      title: "O Superalimento: Ovo",
+      subtitle: "Completo, acessível e versátil",
+      icon: Target,
       content: {
-        intro: "Um dos impactos mais rápidos na Dieta da Carne é a normalização da fome. Sem glicose oscilando, o cérebro reduz os impulsos emocionais ligados à comida.",
-        science: "American Journal of Clinical Nutrition (2020): reduzir carboidratos por 21 dias regula grelina (fome) e leptina (saciedade).",
-        quote: "A fome deixa de ser emocional e volta a ser instinto.",
+        intro: "O ovo é completo: contém proteína perfeita, gordura boa e micronutrientes. É acessível, rápido, barato e versátil. 2 ovos = 140 kcal, 12g proteína, 10g gordura.",
+        science: "Harvard Brain Studies (2020): a colina dos ovos é precursora da acetilcolina – neurotransmissor do foco mental.",
+        benefits: ["Proteína perfeita e completa", "Rico em colina para foco mental", "Custo-benefício excelente"],
       },
-      completed: false,
-      unlocked: false,
     },
     {
       id: 7,
-      title: "Adaptação 21 Dias",
-      subtitle: "As fases da transição",
+      title: "Primeiras 2 Semanas",
+      subtitle: "Início prático da adaptação",
       icon: Calendar,
       content: {
-        intro: "No início, o corpo atravessa o que chamamos de fase de adaptação carnívora. É fundamental entender e respeitar cada fase.",
+        intro: "Durante os primeiros dias, pode ocorrer leve dor de cabeça ou fraqueza — transição natural ao abandono do açúcar. Em 7 dias, o corpo já ativa totalmente o metabolismo de gordura.",
         tips: [
-          "Dias 1–5: queda de glicose percebida (fadiga leve)",
-          "Dias 6–10: aumento de energia e início da perda de peso visível",
-          "Dias 11–21: adaptação completa ao uso de gordura como energia"
+          "Beber 2,5L de água por dia",
+          "Acrescentar sal rosa ou comum",
+          "Incluir 2 ovos extras ou mais gordura natural"
         ],
-        science: "Hidratação e sal mineral são fundamentais nessa fase para evitar os sintomas de adaptação.",
+        science: "A transição é temporária e indica que o corpo está mudando de combustível (glicose para gordura).",
       },
-      completed: false,
-      unlocked: false,
     },
     {
       id: 8,
-      title: "Suplementação",
-      subtitle: "Componentes essenciais",
+      title: "Minerais da Longevidade",
+      subtitle: "Zinco e selênio essenciais",
       icon: Droplets,
       content: {
-        intro: "Mesmo numa dieta de base animal, alguns ajustes otimizam resultados e garantem o equilíbrio mineral.",
-        tips: [
-          "Sal rosa e magnésio (evitam câimbras)",
-          "Colágeno hidrolisado (mantém articulações)",
-          "Vitamina D3 e ômega-3 (potencializam efeito anti-inflamatório)"
-        ],
+        intro: "Carne, suíno e frango são ricos em zinco e selênio. Esses minerais reforçam sistema imunológico e tratam queda de cabelo e unhas fracas.",
+        science: "European Journal of Nutrition (2021) comprovou melhora na imunidade com 15mg zinco/dia — valor coberto por 200g de carne.",
+        benefits: ["Sistema imunológico reforçado", "Cabelo e unhas fortalecidos", "15mg zinco em 200g de carne"],
       },
-      completed: false,
-      unlocked: false,
     },
     {
       id: 9,
-      title: "Cérebro e Cetose",
+      title: "Cérebro Sem Neblina",
       subtitle: "Clareza mental potencializada",
       icon: Brain,
       content: {
-        intro: "O aumento de cetona cerebral diminui microinflamações neurais. A serotonina estabiliza-se sem picos artificiais de açúcar.",
-        science: "Frontiers in Human Neuroscience (2022) — corpos cetônicos regulam GABA e dopamina, reduzindo ansiedade e melhorando foco.",
-        benefits: ["Clareza mental", "Constância emocional", "Sono mais profundo"],
+        intro: "Quando o corpo usa gordura como combustível, há menos glicose oscilando no sangue, logo menos variações emocionais. O humor se estabiliza.",
+        science: "Frontiers in Human Neuroscience (2020): dietas carnívoras elevam níveis de GABA — neurotransmissor calmante — reduzindo ansiedade alimentar.",
+        benefits: ["Clareza mental", "Humor estável", "Redução da ansiedade alimentar"],
       },
-      completed: false,
-      unlocked: false,
     },
     {
       id: 10,
-      title: "Mito do Colesterol",
-      subtitle: "A verdade sobre gordura animal",
-      icon: Heart,
+      title: "Cortes do Povo",
+      subtitle: "Opções acessíveis e saborosas",
+      icon: Beef,
       content: {
-        intro: "Décadas de demonização da gordura animal foram baseadas em estudos mal interpretados. Hoje sabemos que colesterol não é vilão, mas base estrutural de hormônios e membranas celulares.",
-        science: "British Medical Journal (2021): não há correlação direta entre colesterol total e mortalidade; o relevante é o equilíbrio HDL/Triglicerídeos. A dieta carnívora, ao baixar triglicerídeos e manter HDL alto, melhora marcadores cardíacos.",
+        intro: "Conhecer os cortes populares e acessíveis é fundamental para manter a dieta de forma econômica.",
+        tips: [
+          "Patinho (R$30-35/kg): magro e macio, ideal para moído e bifes",
+          "Coxão mole (R$28-33/kg): sabor suave, ótimo para cozidos",
+          "Músculo (R$25-28/kg): alto colágeno, perfeito para sopas",
+          "Frango coxa/sobrecoxa (R$14-18/kg): suculento e econômico",
+          "Suíno pernil/bisteca (R$20-25/kg): sabor intenso"
+        ],
       },
-      completed: false,
-      unlocked: false,
     },
     {
       id: 11,
-      title: "Perfil Ideal",
-      subtitle: "Para quem é indicado",
+      title: "Simplicidade Funciona",
+      subtitle: "Menos decisões, mais constância",
       icon: Target,
       content: {
-        intro: "A dieta carnívora é especialmente indicada para pessoas com condições específicas que se beneficiam da eliminação de carboidratos e vegetais.",
-        benefits: [
-          "Pessoas resistentes à insulina ou com pré-diabetes",
-          "Portadores de inflamação crônica",
-          "Quem busca foco, clareza e simplificação alimentar",
-          "Indivíduos com má adaptação a fibras vegetais"
-        ],
-        tips: ["Contraindicado em: Doenças renais agudas e gravidez sem acompanhamento médico"],
+        intro: "O corpo humano é um mecanismo que adora previsibilidade. Reduzir variedade alimentar diminui impulsos e facilita a adesão.",
+        science: "Behavioral Science (2020) provou: quanto menos decisões sobre comida, maior constância e disciplina geral.",
+        quote: "Simplificar o prato é libertar a mente.",
       },
-      completed: false,
-      unlocked: false,
     },
     {
       id: 12,
-      title: "Cronobiologia",
-      subtitle: "Melhor horário para comer",
-      icon: Clock,
+      title: "Termogênese",
+      subtitle: "Gasto energético aumentado",
+      icon: Flame,
       content: {
-        intro: "Nosso relógio biológico é adaptado a longos intervalos de alimento. Por isso, a Dieta da Carne combina perfeitamente com um ciclo alimentar de 2 ou 3 refeições por dia.",
-        tips: [
-          "1ª refeição: 10h–12h",
-          "2ª refeição: 18h–20h"
-        ],
-        science: "O corpo entra em jejum fisiológico natural sem perda de energia, otimizando a queima de gordura.",
+        intro: "A digestão de proteína aumenta o Efeito Térmico dos Alimentos em até 30%, o que significa que a carne literalmente faz o corpo gastar calorias para digeri-la.",
+        science: "Metabolism Journal (2021): indivíduos em dieta carne + ovos atingem gasto extra de 170 kcal/dia apenas pela digestão.",
+        benefits: ["30% mais gasto calórico na digestão", "170 kcal extras gastas por dia", "Metabolismo acelerado naturalmente"],
       },
-      completed: false,
-      unlocked: false,
     },
     {
       id: 13,
-      title: "Jejum Intermitente",
-      subtitle: "Combinação poderosa",
-      icon: Moon,
+      title: "Temperos e Conservação",
+      subtitle: "Simplicidade no preparo",
+      icon: UtensilsCrossed,
       content: {
-        intro: "Após 3 semanas de adaptação, é possível intercalar janelas alimentares (16:8 ou 20:4), reduzindo inflamação e maximizando queima de gordura.",
-        science: "O organismo adaptado à gordura mantém performance estável mesmo sem glicose, permitindo jejuns mais longos sem desconforto.",
+        intro: "Use apenas sal, alho, páprica ou alecrim. Evite molhos prontos, temperos industrializados e óleo de soja.",
+        tips: [
+          "Sal, alho, páprica e alecrim são suficientes",
+          "Evitar molhos prontos e industrializados",
+          "Nunca usar óleo de soja",
+          "Comida fresca dura até 3 dias refrigerada"
+        ],
       },
-      completed: false,
-      unlocked: false,
     },
     {
       id: 14,
-      title: "Mente-Corpo",
-      subtitle: "Simplicidade alimentar",
-      icon: Brain,
-      content: {
-        intro: "Remover variedade excessiva diminui a ansiedade alimentar. A previsibilidade reduz decisões repetitivas.",
-        science: "Behavioral Neuroscience (2020): quanto menos decisões alimentares diárias, mais foco e disciplina geral.",
-        quote: "Simplificar o prato é libertar a mente.",
-      },
-      completed: false,
-      unlocked: false,
-    },
-    {
-      id: 15,
-      title: "Performance Física",
-      subtitle: "Força e resistência",
-      icon: Dumbbell,
-      content: {
-        intro: "A energia estável das gorduras permite treinos mais intensos e recuperação mais rápida.",
-        science: "Simulações em atletas ('The Carnivore Study', Univ. Texas 2021) mostraram:",
-        benefits: [
-          "Aumento de força e tempo de resistência de 15–20%",
-          "Redução do tempo de recuperação muscular",
-          "Maior densidade óssea"
-        ],
-      },
-      completed: false,
-      unlocked: false,
-    },
-    {
-      id: 16,
-      title: "Indicadores Biológicos",
-      subtitle: "Resultados após 30 dias",
-      icon: Activity,
-      content: {
-        intro: "Após 30 dias de dieta carnívora, os indicadores biológicos mostram melhorias significativas.",
-        benefits: [
-          "Triglicerídeos ↓ 30–40%",
-          "HDL ↑ 20%",
-          "Glicemia ↓ 15%",
-          "Marcadores inflamatórios (CRP) ↓ 25%"
-        ],
-        science: "Dados de metanálises clínicas da American Journal of Clinical Nutrition (2022).",
-      },
-      completed: false,
-      unlocked: false,
-    },
-    {
-      id: 17,
-      title: "Sustentabilidade",
-      subtitle: "Ética e consciência",
-      icon: Leaf,
-      content: {
-        intro: "A Dieta da Carne moderna pode (e deve) ser feita com consciência ambiental.",
-        tips: [
-          "Prefira carnes de pasto",
-          "Use partes integrais (nariz ao rabo)",
-          "Apoie produtores sustentáveis"
-        ],
-        science: "O equilíbrio ético é parte da saúde integral.",
-      },
-      completed: false,
-      unlocked: false,
-    },
-    {
-      id: 18,
       title: "Plano 21 Dias",
       subtitle: "Cardápio estruturado",
       icon: Calendar,
       content: {
-        intro: "Um plano estruturado de 21 dias para sua adaptação completa à dieta carnívora.",
+        intro: "Um plano estruturado de 21 dias para sua adaptação completa à dieta carnívora. Foco em saciedade e consistência, não restrição.",
         tips: [
-          "Semana 1 - Adaptação: Ovos + carne moída + gordura natural",
-          "Semana 2 - Consolidação: Cortes variados (costela, músculo) + ovos",
-          "Semana 3 - Performance: Carnes gordas e vísceras"
+          "Fase 1 (1-7): Carne + ovos + água",
+          "Fase 2 (8-14): Introduzir queijo e frango alternado",
+          "Fase 3 (15-21): Manter 3 refeições com variação leve de cortes"
         ],
         benefits: [
-          "💧 Hidratação: 2,5 L/dia + sal marinho + magnésio",
-          "☀️ Luz solar: 15 min/dia — regula hormônios e sono"
+          "💧 Hidratação: 2,5L/dia + sal marinho",
+          "☀️ Luz solar: 15 min/dia para hormônios"
         ],
       },
-      completed: false,
-      unlocked: false,
+    },
+    {
+      id: 15,
+      title: "Mulheres e Idosos",
+      subtitle: "Ajustes específicos",
+      icon: Heart,
+      content: {
+        intro: "Mulheres podem necessitar mais ferro e colágeno (não dispensar músculo e ovos). Idosos devem priorizar proteína bem tratada: carne moída, bem cozida, com gordura.",
+        tips: [
+          "Mulheres: focar em ferro e colágeno",
+          "Idosos: carne moída bem cozida com gordura",
+          "Todos: manter hidratação adequada"
+        ],
+      },
+    },
+    {
+      id: 16,
+      title: "Contraindicações",
+      subtitle: "Cuidados importantes",
+      icon: Activity,
+      content: {
+        intro: "A dieta carnívora é segura para a maioria das pessoas, mas alguns casos requerem supervisão médica.",
+        tips: [
+          "Evitar sem supervisão em doença renal grave",
+          "Gravidez requer acompanhamento médico",
+          "Consultar profissional para ajuste individual"
+        ],
+        science: "A maioria das pessoas pode seguir a dieta com segurança, mas condições específicas exigem monitoramento.",
+      },
+    },
+    {
+      id: 17,
+      title: "Sustentabilidade Popular",
+      subtitle: "Apoiando produtores locais",
+      icon: Leaf,
+      content: {
+        intro: "A carne de pasto, ovos caipiras e suínos locais apoiam pequenos produtores e reduzem impacto ambiental. Usar até o caldo dos ossos gera nutrição sem desperdício.",
+        tips: [
+          "Preferir carne de pasto",
+          "Comprar ovos caipiras locais",
+          "Usar ossos para caldo nutritivo",
+          "Apoiar pequenos produtores"
+        ],
+      },
+    },
+    {
+      id: 18,
+      title: "Horário e Ritmo",
+      subtitle: "Quando e como comer",
+      icon: Clock,
+      content: {
+        intro: "Comer 2 a 3 vezes ao dia é suficiente para sustentar energia constante. Evite beliscos. A carne libera energia lenta e de longa duração.",
+        tips: [
+          "2-3 refeições por dia são suficientes",
+          "Evitar beliscos entre refeições",
+          "A carne libera energia de longa duração"
+        ],
+      },
     },
     {
       id: 19,
-      title: "30 Receitas",
-      subtitle: "Café, almoço e jantar",
-      icon: UtensilsCrossed,
+      title: "Jejum e Dieta",
+      subtitle: "Combinação natural",
+      icon: Moon,
       content: {
-        intro: "Uma coleção completa de 30 receitas carnívoras divididas em café da manhã, almoço e jantar para variar seu cardápio.",
+        intro: "Após duas semanas, as pessoas naturalmente fazem jejum de 12-16h sem fome. Isso amplifica a queima de gordura e descanso digestivo.",
+        science: "O corpo adaptado à gordura não sente fome com a mesma frequência, permitindo jejuns mais longos naturalmente.",
+        benefits: ["Jejum natural de 12-16h", "Queima de gordura amplificada", "Descanso digestivo completo"],
       },
-      completed: false,
-      unlocked: false,
     },
     {
       id: 20,
-      title: "Constância e Liberdade",
+      title: "Constância é Luxo",
       subtitle: "O fechamento do ciclo",
       icon: CheckCircle2,
       content: {
-        intro: "Emagrecer e viver bem não é punir o corpo, é ajustá-lo à sua biologia natural. Com algumas semanas, o corpo e a mente se tornam autorregulados: sem desejos compulsivos, sem culpa, sem fadiga.",
-        quote: "A carne devolve ao corpo a clareza e à mente a estabilidade. A verdadeira liberdade não é comer de tudo; é não precisar mais lutar contra o próprio corpo.",
+        intro: "Projetos curtos não transformam hábitos. Comer carne de verdade por 90 dias reeduca hormônios e sistema nervoso. A verdadeira liberdade não é comer de tudo; é não precisar mais lutar contra o próprio corpo.",
+        quote: "Firmeza é melhor que força. É ela que mantém o processo vivo.",
+        benefits: [
+          "⬇ Redução de 2-6kg sem fome",
+          "💪 Mais força e disposição",
+          "😌 Sono profundo e humor estável",
+          "🧠 Clareza mental acelerada"
+        ],
       },
-      completed: false,
-      unlocked: false,
     },
   ];
 
   const breakfastRecipes: Recipe[] = [
-    { name: "Ovos mexidos com manteiga e fígado picado" },
-    { name: "Omelete de três ovos com queijo e toucinho" },
-    { name: "Café preto + bife de 100g com manteiga" },
-    { name: "Ovo frito na gordura bovina" },
-    { name: "Burguer matinal com ovo e queijo" },
-    { name: "Língua bovina grelhada com manteiga" },
-    { name: "Panceta dourada com ovos" },
-    { name: "Fígado salteado com coração de boi" },
-    { name: "Ensopado matinal de carne com osso" },
-    { name: "Ovo pochê com sal rosa e azeite" },
+    { name: "Ovos mexidos clássicos", calories: 260, protein: 14, fat: 20, instructions: "Bater 2 ovos com sal, manteiga na frigideira, mexer lento." },
+    { name: "Omelete de carne moída (100g patinho)", calories: 340, protein: 27, fat: 24, instructions: "Refogue carne, misture ovos, tampe 2 min." },
+    { name: "Ovo frito + 2 tiras bacon", calories: 310, protein: 18, fat: 26, instructions: "Aquecer gordura natural, fritar até média cozura." },
+    { name: "Bife rápido 200g alcatra", calories: 390, protein: 28, fat: 29, instructions: "Grelha 3 min de cada lado, sal rosa." },
+    { name: "Ovo cozido + queijo coalho 50g", calories: 280, protein: 17, fat: 22, instructions: "Cozer 8 min e dourar queijo na frigideira." },
+    { name: "Frango desfiado com ovos", calories: 290, protein: 25, fat: 19, instructions: "Refogar 50g frango, adicionar 2 ovos." },
+    { name: "Carne moída + ovo cozido", calories: 310, protein: 27, fat: 21, instructions: "Misturar fora do fogo para textura sólida." },
+    { name: "Queijo prato com ovo frito", calories: 300, protein: 20, fat: 23, instructions: "Fritar ovo, colocar fatias de queijo sobre." },
+    { name: "Músculo desfiado aquecido", calories: 280, protein: 26, fat: 18, instructions: "Reaproveite resto do almoço." },
+    { name: "Omelete duplo frango e ovos", calories: 350, protein: 32, fat: 22, instructions: "Frango picado, mexer com ovos, assar leve." },
   ];
 
   const lunchRecipes: Recipe[] = [
-    { name: "Costela bovina lentamente assada" },
-    { name: "Picanha na manteiga de ervas" },
-    { name: "Frango ao curry com nata animal" },
-    { name: "Lombo suíno com crosta de toucinho" },
-    { name: "Hambúrguer duplo com queijo curado" },
-    { name: "Fígado ao alho com ovo cozido" },
-    { name: "Músculo cozido em caldo de osso" },
-    { name: "Peito de pato confitado" },
-    { name: "Cordeiro ao azeite" },
-    { name: "Almôndegas de carne pura com manteiga clarificada" },
+    { name: "Bife de patinho grelhado", calories: 370, protein: 31, fat: 26, instructions: "Grelhar 4 min, manteiga ghee." },
+    { name: "Coxa e sobrecoxa assadas", calories: 420, protein: 32, fat: 30, instructions: "Forno 200°C 40 min, sal e páprica." },
+    { name: "Carne moída com ovo", calories: 360, protein: 27, fat: 25, instructions: "Fritar 150g carne + 2 ovos." },
+    { name: "Bisteca suína", calories: 410, protein: 30, fat: 29, instructions: "Frigir em banha 6 min cada lado." },
+    { name: "Músculo cozido", calories: 330, protein: 26, fat: 20, instructions: "Pressão 40 min com sal e alho." },
+    { name: "Pernil grelhado", calories: 390, protein: 27, fat: 27, instructions: "Selar em frigideira de ferro." },
+    { name: "Frango na manteiga", calories: 320, protein: 26, fat: 22, instructions: "Refogar peito em ghee 10 min." },
+    { name: "Hambúrguer simples caseiro", calories: 270, protein: 23, fat: 18, instructions: "Carne moída + sal + chapa quente." },
+    { name: "Caldo de osso com carne", calories: 230, protein: 20, fat: 15, instructions: "Cozinhar 3h." },
+    { name: "Frango picado coxa/sobrecoxa", calories: 350, protein: 32, fat: 25, instructions: "Grelhar frango picado até dourar." },
   ];
 
   const dinnerRecipes: Recipe[] = [
-    { name: "Peixe gordo (salmão ou tainha) com ghee" },
-    { name: "Bisteca de porco com banha derretida" },
-    { name: "Ensopado de ossobuco com tutano" },
-    { name: "Ovo cozido em caldo de osso" },
-    { name: "Frango com pele crocante" },
-    { name: "Linguiça artesanal com gema mole" },
-    { name: "Costela suína assada por 3 horas" },
-    { name: "Estrogonofe carnívoro (sem creme vegetal)" },
-    { name: "Músculo desfiado no tallow" },
-    { name: "Fígado com queijo curado ralado" },
+    { name: "Coxão mole refogado", calories: 390, protein: 30, fat: 27, instructions: "Picar carne, refogar com banha." },
+    { name: "Carne moída com queijo", calories: 340, protein: 26, fat: 23, instructions: "Cozinhar carne + colocar queijo ralado." },
+    { name: "Pernil suíno ao forno", calories: 420, protein: 31, fat: 32, instructions: "200°C 40 min." },
+    { name: "Ovos mexidos c/restos de carne", calories: 290, protein: 24, fat: 20, instructions: "Aqueça restos, adicione ovos." },
+    { name: "Músculo desfiado c/gordura", calories: 360, protein: 28, fat: 28, instructions: "Reaquecido em frigideira." },
+    { name: "Frango ensopado", calories: 340, protein: 26, fat: 23, instructions: "Cozer 15 min com água e sal." },
+    { name: "Bisteca com ovo frito", calories: 420, protein: 33, fat: 31, instructions: "Fritar bisteca, adicionar ovo." },
+    { name: "Patinho moído refogado", calories: 310, protein: 27, fat: 20, instructions: "Refogue com alho e sal." },
+    { name: "Ovo cozido + peito frango", calories: 270, protein: 25, fat: 14, instructions: "Cozinhar 10 min." },
+    { name: "Caldo de ossos e restos", calories: 230, protein: 20, fat: 16, instructions: "Cozinhar 2h – beba quente." },
   ];
 
-  const completedCount = chapters.filter(c => c.completed).length;
+  const isChapterUnlocked = (chapterId: number) => unlockedChapters.includes(chapterId);
+  const isChapterCompleted = (chapterId: number) => completedChapters.includes(chapterId);
+
+  const handleCompleteChapter = (chapterId: number) => {
+    if (!completedChapters.includes(chapterId)) {
+      setCompletedChapters(prev => [...prev, chapterId]);
+    }
+    
+    const nextChapterId = chapterId + 1;
+    if (nextChapterId <= chapters.length && !unlockedChapters.includes(nextChapterId)) {
+      setUnlockedChapters(prev => [...prev, nextChapterId]);
+    }
+    
+    setSelectedChapter(null);
+  };
+
+  const completedCount = completedChapters.length;
   const progress = Math.round((completedCount / chapters.length) * 100);
 
   return (
@@ -418,7 +398,7 @@ const CarnivoreDiet = () => {
             <h1 className="font-display text-2xl font-bold text-foreground">
               Dieta Carnívora
             </h1>
-            <p className="text-sm text-muted-foreground">Ciência, Energia e Performance</p>
+            <p className="text-sm text-muted-foreground">Ciência, Energia e Praticidade</p>
           </div>
         </div>
       </motion.header>
@@ -470,14 +450,14 @@ const CarnivoreDiet = () => {
             </div>
             <div>
               <h3 className="font-display font-semibold text-foreground mb-2">
-                O Retorno ao Alimento Original
+                O Poder da Comida de Verdade
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Antes de panelas, indústria e rótulos, o ser humano era um caçador. 
-                Os alimentos que moldaram nossa espécie eram carne, gordura, vísceras e ossos.
+                A força do corpo brasileiro está na simplicidade: arroz, feijão e carne. 
+                Agora, tiramos o excesso e deixamos o essencial — a carne como combustível natural.
               </p>
               <p className="text-sm text-coral mt-3 italic">
-                "Não existe proteína demais para um corpo que foi feito para caçar."
+                "A carne sustentou trabalhadores, lavradores e atletas por séculos."
               </p>
             </div>
           </div>
@@ -521,66 +501,71 @@ const CarnivoreDiet = () => {
             className="px-6"
           >
             <div className="space-y-3">
-              {chapters.map((chapter, index) => (
-                <motion.div
-                  key={chapter.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.05 + index * 0.03 }}
-                  whileHover={{ scale: chapter.unlocked ? 1.02 : 1 }}
-                  whileTap={{ scale: chapter.unlocked ? 0.98 : 1 }}
-                  onClick={() => chapter.unlocked && setSelectedChapter(chapter)}
-                  className={`
-                    glass-card rounded-xl p-4 cursor-pointer
-                    border transition-all duration-300
-                    ${chapter.unlocked 
-                      ? "border-coral/20 hover:border-coral/40" 
-                      : "border-border/30 opacity-60"
-                    }
-                    ${chapter.completed ? "bg-coral/5" : ""}
-                  `}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`
-                      w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
-                      ${chapter.completed 
-                        ? "bg-coral/30" 
-                        : chapter.unlocked 
-                          ? "bg-muted/50" 
-                          : "bg-muted/30"
+              {chapters.map((chapter, index) => {
+                const unlocked = isChapterUnlocked(chapter.id);
+                const completed = isChapterCompleted(chapter.id);
+                
+                return (
+                  <motion.div
+                    key={chapter.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.05 + index * 0.03 }}
+                    whileHover={{ scale: unlocked ? 1.02 : 1 }}
+                    whileTap={{ scale: unlocked ? 0.98 : 1 }}
+                    onClick={() => unlocked && setSelectedChapter(chapter)}
+                    className={`
+                      glass-card rounded-xl p-4 cursor-pointer
+                      border transition-all duration-300
+                      ${unlocked 
+                        ? "border-coral/20 hover:border-coral/40" 
+                        : "border-border/30 opacity-60"
                       }
-                    `}>
-                      {chapter.unlocked ? (
-                        <chapter.icon 
-                          size={22} 
-                          className={chapter.completed ? "text-coral" : "text-foreground/70"} 
-                        />
-                      ) : (
-                        <Lock size={18} className="text-muted-foreground" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-coral font-medium">
-                          Capítulo {chapter.id}
-                        </span>
-                        {chapter.completed && (
-                          <CheckCircle2 size={14} className="text-coral" />
+                      ${completed ? "bg-coral/5" : ""}
+                    `}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`
+                        w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
+                        ${completed 
+                          ? "bg-coral/30" 
+                          : unlocked 
+                            ? "bg-muted/50" 
+                            : "bg-muted/30"
+                        }
+                      `}>
+                        {unlocked ? (
+                          <chapter.icon 
+                            size={22} 
+                            className={completed ? "text-coral" : "text-foreground/70"} 
+                          />
+                        ) : (
+                          <Lock size={18} className="text-muted-foreground" />
                         )}
                       </div>
-                      <h3 className="font-display font-semibold text-foreground truncate">
-                        {chapter.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {chapter.subtitle}
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-coral font-medium">
+                            Capítulo {chapter.id}
+                          </span>
+                          {completed && (
+                            <CheckCircle2 size={14} className="text-coral" />
+                          )}
+                        </div>
+                        <h3 className="font-display font-semibold text-foreground truncate">
+                          {chapter.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {chapter.subtitle}
+                        </p>
+                      </div>
+                      {unlocked && (
+                        <ChevronRight size={20} className="text-muted-foreground flex-shrink-0" />
+                      )}
                     </div>
-                    {chapter.unlocked && (
-                      <ChevronRight size={20} className="text-muted-foreground flex-shrink-0" />
-                    )}
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
           </motion.div>
         ) : (
@@ -604,9 +589,17 @@ const CarnivoreDiet = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="glass-card rounded-xl p-3 border border-border/50"
+                    className="glass-card rounded-xl p-4 border border-border/50"
                   >
-                    <p className="text-sm text-foreground">{recipe.name}</p>
+                    <p className="text-sm font-medium text-foreground mb-2">{recipe.name}</p>
+                    <div className="flex gap-3 text-xs text-muted-foreground mb-2">
+                      <span>{recipe.calories} kcal</span>
+                      <span>•</span>
+                      <span>{recipe.protein}g prot</span>
+                      <span>•</span>
+                      <span>{recipe.fat}g gord</span>
+                    </div>
+                    <p className="text-xs text-coral">{recipe.instructions}</p>
                   </motion.div>
                 ))}
               </div>
@@ -625,9 +618,17 @@ const CarnivoreDiet = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 + index * 0.05 }}
-                    className="glass-card rounded-xl p-3 border border-border/50"
+                    className="glass-card rounded-xl p-4 border border-border/50"
                   >
-                    <p className="text-sm text-foreground">{recipe.name}</p>
+                    <p className="text-sm font-medium text-foreground mb-2">{recipe.name}</p>
+                    <div className="flex gap-3 text-xs text-muted-foreground mb-2">
+                      <span>{recipe.calories} kcal</span>
+                      <span>•</span>
+                      <span>{recipe.protein}g prot</span>
+                      <span>•</span>
+                      <span>{recipe.fat}g gord</span>
+                    </div>
+                    <p className="text-xs text-coral">{recipe.instructions}</p>
                   </motion.div>
                 ))}
               </div>
@@ -646,9 +647,17 @@ const CarnivoreDiet = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1 + index * 0.05 }}
-                    className="glass-card rounded-xl p-3 border border-border/50"
+                    className="glass-card rounded-xl p-4 border border-border/50"
                   >
-                    <p className="text-sm text-foreground">{recipe.name}</p>
+                    <p className="text-sm font-medium text-foreground mb-2">{recipe.name}</p>
+                    <div className="flex gap-3 text-xs text-muted-foreground mb-2">
+                      <span>{recipe.calories} kcal</span>
+                      <span>•</span>
+                      <span>{recipe.protein}g prot</span>
+                      <span>•</span>
+                      <span>{recipe.fat}g gord</span>
+                    </div>
+                    <p className="text-xs text-coral">{recipe.instructions}</p>
                   </motion.div>
                 ))}
               </div>
@@ -769,6 +778,34 @@ const CarnivoreDiet = () => {
                     </p>
                   </div>
                 )}
+
+                {/* Complete Button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleCompleteChapter(selectedChapter.id)}
+                  className={`
+                    w-full py-4 rounded-xl font-medium text-white
+                    flex items-center justify-center gap-2
+                    ${isChapterCompleted(selectedChapter.id)
+                      ? "bg-coral/50 cursor-default"
+                      : "bg-coral hover:bg-coral/90"
+                    }
+                  `}
+                  disabled={isChapterCompleted(selectedChapter.id)}
+                >
+                  {isChapterCompleted(selectedChapter.id) ? (
+                    <>
+                      <CheckCircle2 size={20} />
+                      Capítulo Concluído
+                    </>
+                  ) : (
+                    <>
+                      <Unlock size={20} />
+                      Concluir e Desbloquear Próximo
+                    </>
+                  )}
+                </motion.button>
               </div>
             </motion.div>
           </motion.div>
