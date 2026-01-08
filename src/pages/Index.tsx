@@ -6,6 +6,7 @@ import BottomNavigation from "@/components/BottomNavigation";
 import DashboardCard from "@/components/DashboardCard";
 import HeroBanner from "@/components/HeroBanner";
 import QuickStats from "@/components/QuickStats";
+import HealthMonitor from "@/components/HealthMonitor";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -98,6 +99,9 @@ const Index = () => {
 
       {/* Quick Stats */}
       <QuickStats />
+
+      {/* Health Monitor */}
+      <HealthMonitor />
 
       {/* Dashboard Cards */}
       <div className="px-4 py-2">

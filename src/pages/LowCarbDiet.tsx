@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -27,6 +27,9 @@ import {
   Unlock
 } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
+import RecipeCard from "@/components/RecipeCard";
+import { useProgress } from "@/hooks/useProgress";
+import { loadProgress } from "@/services/progressService";
 
 interface Chapter {
   id: number;
@@ -53,10 +56,21 @@ interface Recipe {
 
 const LowCarbDiet = () => {
   const navigate = useNavigate();
+  const { completeNutrition } = useProgress();
   const [activeTab, setActiveTab] = useState("chapters");
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
-  const [completedChapters, setCompletedChapters] = useState<number[]>([]);
-  const [unlockedChapters, setUnlockedChapters] = useState<number[]>([1, 2, 3]);
+  
+  // Load from localStorage
+  const savedProgress = loadProgress();
+  const [completedChapters, setCompletedChapters] = useState<number[]>(savedProgress.nutrition.lowcarb.completedChapters);
+  const [unlockedChapters, setUnlockedChapters] = useState<number[]>(() => {
+    const completed = savedProgress.nutrition.lowcarb.completedChapters;
+    const unlocked = [1, 2, 3];
+    completed.forEach(c => {
+      if (c + 1 <= 20 && !unlocked.includes(c + 1)) unlocked.push(c + 1);
+    });
+    return unlocked;
+  });
 
   const chapters: Chapter[] = [
     {

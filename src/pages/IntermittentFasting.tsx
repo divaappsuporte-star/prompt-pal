@@ -1,15 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Clock, BookOpen, ChefHat, Lock, CheckCircle2, X, Flame, Droplets, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import RecipeCard from "@/components/RecipeCard";
+import { useProgress } from "@/hooks/useProgress";
+import { loadProgress } from "@/services/progressService";
 
 const IntermittentFasting = () => {
   const navigate = useNavigate();
+  const { completeNutrition } = useProgress();
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<number | null>(null);
-  const [completedChapters, setCompletedChapters] = useState<number[]>([]);
-  const [unlockedChapters, setUnlockedChapters] = useState<number[]>([1]);
+  
+  // Load from localStorage
+  const savedProgress = loadProgress();
+  const [completedChapters, setCompletedChapters] = useState<number[]>(savedProgress.nutrition.fasting.completedChapters);
+  const [unlockedChapters, setUnlockedChapters] = useState<number[]>(() => {
+    const completed = savedProgress.nutrition.fasting.completedChapters;
+    const unlocked = [1];
+    completed.forEach(c => {
+      if (c + 1 <= 10 && !unlocked.includes(c + 1)) unlocked.push(c + 1);
+    });
+    return unlocked;
+  });
 
   const chapters = [
     {
