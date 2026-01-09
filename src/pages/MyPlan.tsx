@@ -16,7 +16,8 @@ import {
 import { usePersonalPlan } from "@/hooks/usePersonalPlan";
 import { useDailyMeals } from "@/hooks/useDailyMeals";
 import { useAuth } from "@/contexts/AuthContext";
-import { DIET_INFO } from "@/types/diet";
+import { useProgress } from "@/hooks/useProgress";
+import { DIET_INFO, DietType } from "@/types/diet";
 import BottomNavigation from "@/components/BottomNavigation";
 import MealExpandCard from "@/components/plan/MealExpandCard";
 import { DetoxCard, DETOX_RECIPES } from "@/components/plan/DetoxCard";
@@ -28,12 +29,16 @@ const MyPlan = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { personalPlan, isLoading, hasPlan, integratedModules } = usePersonalPlan();
+  const { 
+    todayHydration, 
+    todaySleep, 
+    addWaterIntake,
+    markMealCompleted,
+    checkMealTypeCompleted 
+  } = useProgress();
   
-  // Track completed items locally (will be synced to DB later)
-  const [completedMeals, setCompletedMeals] = useState<string[]>([]);
+  // Track detox locally (not in progressService yet)
   const [detoxCompleted, setDetoxCompleted] = useState(false);
-  const [waterMl, setWaterMl] = useState(0);
-  const [sleepLogged, setSleepLogged] = useState(false);
 
   // Check if detox is integrated
   const hasDetoxIntegrated = integratedModules.some(m => m.type === 'detox');
@@ -78,8 +83,21 @@ const MyPlan = () => {
     }
   };
 
-  const handleMealComplete = (mealType: string) => {
-    if (completedMeals.includes(mealType)) {
+  // Map DietType to progressService DietType
+  const getProgressDiet = (diet: DietType): 'carnivore' | 'lowcarb' | 'keto' | 'fasting' | 'detox' => {
+    if (diet === 'metabolic') return 'lowcarb';
+    return diet as 'carnivore' | 'lowcarb' | 'keto' | 'fasting' | 'detox';
+  };
+
+  const progressDiet = personalPlan ? getProgressDiet(personalPlan.diet_type) : 'lowcarb';
+
+  const handleMealComplete = (mealType: 'breakfast' | 'lunch' | 'dinner') => {
+    if (!personalPlan || !dailyPlan) return;
+    
+    const meal = dailyPlan[mealType];
+    if (!meal) return;
+
+    if (checkMealTypeCompleted(progressDiet, mealType)) {
       toast({
         title: "Refeição já concluída",
         description: "Você já marcou essa refeição hoje.",
@@ -88,11 +106,35 @@ const MyPlan = () => {
       return;
     }
     
-    setCompletedMeals(prev => [...prev, mealType]);
-    toast({
-      title: "Refeição concluída! 🎉",
-      description: dailyPlan?.meal_feedbacks?.[mealType as keyof typeof dailyPlan.meal_feedbacks] || "Continue assim!",
-    });
+    const result = markMealCompleted(
+      progressDiet,
+      mealType,
+      meal.name,
+      meal.calories,
+      meal.protein || 0,
+      meal.fat || 0,
+      meal.carbs || 0,
+      { 
+        title: 'Refeição concluída', 
+        message: dailyPlan?.meal_feedbacks?.[mealType] || 'Continue assim!', 
+        bodyProcess: 'Digestão em andamento',
+        timeframe: 'Agora',
+        icon: '✓'
+      }
+    );
+
+    if (result.success) {
+      toast({
+        title: "Refeição concluída! 🎉",
+        description: dailyPlan?.meal_feedbacks?.[mealType] || "Continue assim!",
+      });
+    } else if (result.error) {
+      toast({
+        title: "Erro",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDetoxComplete = () => {
@@ -104,11 +146,11 @@ const MyPlan = () => {
   };
 
   const handleAddWater = (amount: number) => {
-    const newAmount = Math.max(0, waterMl + amount);
-    setWaterMl(newAmount);
+    addWaterIntake(amount);
     
     const goalMl = profile?.water_goal_ml || 2500;
-    if (newAmount >= goalMl && waterMl < goalMl) {
+    const newAmount = todayHydration + amount;
+    if (newAmount >= goalMl && todayHydration < goalMl) {
       toast({
         title: "Meta de hidratação alcançada! 💧",
         description: "Excelente! Manter-se hidratado é fundamental para o sucesso do seu plano.",
@@ -132,9 +174,14 @@ const MyPlan = () => {
   const planProgress = (personalPlan.current_day / 21) * 100;
   const waterGoal = profile?.water_goal_ml || 2500;
   
-  // Calculate missions completion
-  const allMealsCompleted = completedMeals.length >= 3;
-  const waterCompleted = waterMl >= waterGoal;
+  // Calculate missions completion using progress system
+  const breakfastCompleted = checkMealTypeCompleted(progressDiet, 'breakfast');
+  const lunchCompleted = checkMealTypeCompleted(progressDiet, 'lunch');
+  const dinnerCompleted = checkMealTypeCompleted(progressDiet, 'dinner');
+  const completedMealsCount = [breakfastCompleted, lunchCompleted, dinnerCompleted].filter(Boolean).length;
+  const allMealsCompleted = completedMealsCount >= 3;
+  const waterCompleted = todayHydration >= waterGoal;
+  const sleepLogged = todaySleep > 0;
 
   return (
     <div className="min-h-screen pb-24">
@@ -227,7 +274,7 @@ const MyPlan = () => {
               time="07:00"
               meal={dailyPlan?.breakfast || null}
               feedback={dailyPlan?.meal_feedbacks?.breakfast || null}
-              completed={completedMeals.includes('breakfast')}
+              completed={breakfastCompleted}
               onComplete={() => handleMealComplete('breakfast')}
               isLoading={mealsLoading}
             />
@@ -237,7 +284,7 @@ const MyPlan = () => {
               time="12:00"
               meal={dailyPlan?.lunch || null}
               feedback={dailyPlan?.meal_feedbacks?.lunch || null}
-              completed={completedMeals.includes('lunch')}
+              completed={lunchCompleted}
               onComplete={() => handleMealComplete('lunch')}
               isLoading={mealsLoading}
             />
@@ -247,7 +294,7 @@ const MyPlan = () => {
               time="19:00"
               meal={dailyPlan?.dinner || null}
               feedback={dailyPlan?.meal_feedbacks?.dinner || null}
-              completed={completedMeals.includes('dinner')}
+              completed={dinnerCompleted}
               onComplete={() => handleMealComplete('dinner')}
               isLoading={mealsLoading}
             />
@@ -290,7 +337,7 @@ const MyPlan = () => {
             {/* Water Mission - Expandable */}
             <WaterMissionCard
               goalMl={waterGoal}
-              currentMl={waterMl}
+              currentMl={todayHydration}
               onAddWater={handleAddWater}
             />
             
@@ -308,7 +355,7 @@ const MyPlan = () => {
                   Completar todas as refeições
                 </span>
                 <p className="text-xs text-muted-foreground">
-                  {completedMeals.length}/3 refeições
+                  {completedMealsCount}/3 refeições
                 </p>
               </div>
             </div>
