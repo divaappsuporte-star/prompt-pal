@@ -93,7 +93,7 @@ export const useAdminUsers = () => {
       .insert({
         user_id: userId,
         diet_type: dietType as "carnivore" | "detox" | "fasting" | "keto" | "lowcarb" | "metabolic",
-        granted_by: "admin_manual",
+        granted_by: "admin",
       });
 
     if (!error) {
