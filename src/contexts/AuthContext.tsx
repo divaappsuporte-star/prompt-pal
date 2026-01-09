@@ -200,11 +200,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    // Clear local state first
     setUser(null);
     setSession(null);
     setProfile(null);
     setIsAdmin(false);
+    
+    // Sign out globally (clears all sessions on all devices)
+    await supabase.auth.signOut({ scope: 'global' });
+    
+    // Clear any localStorage/sessionStorage that might persist
+    localStorage.removeItem('sb-emnkzfoznxzvpiiamulp-auth-token');
   };
 
   const updateProfile = async (data: Partial<Profile>) => {
