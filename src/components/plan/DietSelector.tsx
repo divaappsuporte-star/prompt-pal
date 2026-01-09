@@ -28,10 +28,13 @@ interface DietSelectorProps {
 }
 
 const DietSelector = ({ selectedDiet, onSelect, excludeDetox = false }: DietSelectorProps) => {
-  const { hasDietAccess, isLoading } = useDietAccess();
+  const { hasPurchasedDiet, purchasedDiets, isLoading } = useDietAccess();
   
+  // Only show purchased diets in the selector (user must buy first)
   const allDiets: DietType[] = ['carnivore', 'keto', 'lowcarb', 'metabolic', 'detox', 'fasting'];
-  const dietList = excludeDetox ? allDiets.filter(d => d !== 'detox') : allDiets;
+  const dietList = excludeDetox 
+    ? purchasedDiets.filter(d => d !== 'detox') 
+    : purchasedDiets;
 
   if (isLoading) {
     return (
@@ -43,11 +46,27 @@ const DietSelector = ({ selectedDiet, onSelect, excludeDetox = false }: DietSele
     );
   }
 
+  // If no purchased diets, show message
+  if (dietList.length === 0) {
+    return (
+      <div className="text-center py-8 px-4">
+        <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
+          <Lock className="w-8 h-8 text-muted-foreground" />
+        </div>
+        <h3 className="font-display font-bold text-foreground mb-2">
+          Nenhum protocolo desbloqueado
+        </h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          Adquira um protocolo na tela inicial para criar seu plano personalizado de 21 dias.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-2 gap-3">
       {dietList.map((dietKey, index) => {
         const diet = DIET_INFO[dietKey];
-        const hasAccess = hasDietAccess(dietKey);
         const isSelected = selectedDiet === dietKey;
         const Icon = DIET_ICONS[dietKey];
 
@@ -57,37 +76,24 @@ const DietSelector = ({ selectedDiet, onSelect, excludeDetox = false }: DietSele
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            whileHover={hasAccess ? { scale: 1.02 } : undefined}
-            whileTap={hasAccess ? { scale: 0.98 } : undefined}
-            onClick={() => hasAccess && onSelect(dietKey)}
-            disabled={!hasAccess}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => onSelect(dietKey)}
             className={`
               relative aspect-square rounded-2xl p-4 text-left transition-all
-              flex flex-col justify-between
-              ${hasAccess 
-                ? 'cursor-pointer' 
-                : 'cursor-not-allowed opacity-50'
-              }
+              flex flex-col justify-between cursor-pointer
               ${isSelected 
                 ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' 
                 : ''
               }
             `}
             style={{
-              background: hasAccess 
-                ? `linear-gradient(135deg, ${diet.color}15, ${diet.color}05)` 
-                : undefined,
-              borderColor: hasAccess ? `${diet.color}30` : undefined,
+              background: `linear-gradient(135deg, ${diet.color}15, ${diet.color}05)`,
+              borderColor: `${diet.color}30`,
               borderWidth: '1px',
               borderStyle: 'solid',
             }}
           >
-            {/* Lock overlay for locked diets */}
-            {!hasAccess && (
-              <div className="absolute inset-0 rounded-2xl bg-background/60 flex items-center justify-center z-10">
-                <Lock className="w-6 h-6 text-muted-foreground" />
-              </div>
-            )}
             
             {/* Selected check */}
             {isSelected && (
