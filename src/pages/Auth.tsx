@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Navigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, Download, ArrowLeft, Send } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Download, ArrowLeft } from "lucide-react";
 import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
 import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { toast } from "sonner";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import InstallPWAModal from "@/components/modals/InstallPWAModal";
@@ -21,11 +22,12 @@ const adminLoginSchema = z.object({
 });
 
 const Auth = () => {
-  const { user, loading, signIn, signInWithMagicLink, isAdmin } = useAuth();
+  const { user, loading, signIn, sendOtp, verifyOtp, isAdmin } = useAuth();
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
   const { canInstall, isInstalled, isIOSModalOpen, promptInstall, closeIOSModal } = usePWAInstall();
 
   const [formData, setFormData] = useState({
@@ -54,19 +56,21 @@ const Auth = () => {
 
   const handleLogoClick = () => {
     setIsAdminMode(true);
-    setMagicLinkSent(false);
+    setOtpSent(false);
+    setOtpCode("");
     setFormData({ email: "", password: "" });
     setErrors({});
   };
 
   const handleBackToUser = () => {
     setIsAdminMode(false);
-    setMagicLinkSent(false);
+    setOtpSent(false);
+    setOtpCode("");
     setFormData({ email: "", password: "" });
     setErrors({});
   };
 
-  const handleUserLogin = async (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrors({});
@@ -84,16 +88,35 @@ const Auth = () => {
         return;
       }
 
-      const { error } = await signInWithMagicLink(formData.email);
+      const { error } = await sendOtp(formData.email);
       if (error) {
-        if (error.message.includes("User not found") || error.message.includes("Invalid")) {
+        if (error.message.includes("Signups not allowed") || error.message.includes("User not found")) {
           toast.error("Email não cadastrado. Contate o administrador.");
         } else {
           toast.error(error.message);
         }
       } else {
-        setMagicLinkSent(true);
-        toast.success("Link de acesso enviado para seu email!");
+        setOtpSent(true);
+        toast.success("Código enviado para seu email!");
+      }
+    } catch (error) {
+      toast.error("Ocorreu um erro. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (otpCode.length !== 6) return;
+    
+    setIsSubmitting(true);
+    try {
+      const { error } = await verifyOtp(formData.email, otpCode);
+      if (error) {
+        toast.error("Código inválido ou expirado. Tente novamente.");
+        setOtpCode("");
+      } else {
+        toast.success("Bem-vindo!");
       }
     } catch (error) {
       toast.error("Ocorreu um erro. Tente novamente.");
@@ -253,41 +276,83 @@ const Auth = () => {
                 </Button>
               </form>
             </motion.div>
-          ) : magicLinkSent ? (
-            /* Magic Link Sent */
+          ) : otpSent ? (
+            /* OTP Verification */
             <motion.div
-              key="magic-sent"
+              key="otp-verify"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="text-center py-6"
+              className="text-center py-4"
             >
-              <div className="w-16 h-16 rounded-full bg-mint/20 flex items-center justify-center mx-auto mb-4">
-                <Send className="w-8 h-8 text-mint" />
+              <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                <Mail className="w-8 h-8 text-primary" />
               </div>
               <h2 className="text-xl font-display font-bold text-foreground mb-2">
-                Verifique seu Email
+                Digite o Código
               </h2>
               <p className="text-muted-foreground text-sm mb-6">
-                Enviamos um link de acesso para<br />
+                Enviamos um código de 6 dígitos para<br />
                 <span className="text-foreground font-medium">{formData.email}</span>
               </p>
-              <p className="text-xs text-muted-foreground mb-4">
-                Clique no link do email para entrar no app.
-              </p>
+              
+              {/* OTP Input */}
+              <div className="flex justify-center mb-6">
+                <InputOTP
+                  maxLength={6}
+                  value={otpCode}
+                  onChange={(value) => setOtpCode(value)}
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+
               <Button
-                variant="ghost"
-                onClick={() => {
-                  setMagicLinkSent(false);
-                  setFormData({ email: "", password: "" });
-                }}
-                className="text-muted-foreground"
+                onClick={handleVerifyOtp}
+                disabled={isSubmitting || otpCode.length !== 6}
+                className="w-full gradient-coral text-primary-foreground font-semibold py-6 mb-4"
               >
-                Usar outro email
+                {isSubmitting ? (
+                  <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  "Entrar"
+                )}
               </Button>
+
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setOtpCode("");
+                    handleSendOtp({ preventDefault: () => {} } as React.FormEvent);
+                  }}
+                  disabled={isSubmitting}
+                  className="text-muted-foreground text-sm"
+                >
+                  Reenviar código
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setOtpSent(false);
+                    setOtpCode("");
+                    setFormData({ email: "", password: "" });
+                  }}
+                  className="text-muted-foreground text-sm"
+                >
+                  Usar outro email
+                </Button>
+              </div>
             </motion.div>
           ) : (
-            /* User Login - Magic Link */
+            /* User Login - Email Input */
             <motion.div
               key="user"
               initial={{ opacity: 0, x: -20 }}
@@ -298,7 +363,7 @@ const Auth = () => {
                 Acesse sua Conta
               </h2>
 
-              <form onSubmit={handleUserLogin} className="space-y-4">
+              <form onSubmit={handleSendOtp} className="space-y-4">
                 {/* Email */}
                 <div>
                   <label className="block text-sm text-muted-foreground mb-1.5">
@@ -328,16 +393,13 @@ const Auth = () => {
                   {isSubmitting ? (
                     <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <>
-                      <Mail className="w-4 h-4 mr-2" />
-                      Receber Link de Acesso
-                    </>
+                    "Receber Código"
                   )}
                 </Button>
               </form>
 
               <p className="text-xs text-muted-foreground text-center mt-4">
-                Um link será enviado para seu email cadastrado.
+                Um código de 6 dígitos será enviado para seu email.
               </p>
             </motion.div>
           )}
