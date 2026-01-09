@@ -27,7 +27,8 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signInWithMagicLink: (email: string) => Promise<{ error: Error | null }>;
+  sendOtp: (email: string) => Promise<{ error: Error | null }>;
+  verifyOtp: (email: string, token: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   updateProfile: (data: Partial<Profile>) => Promise<{ error: Error | null }>;
@@ -171,14 +172,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error: error as Error | null };
   };
 
-  const signInWithMagicLink = async (email: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
+  const sendOtp = async (email: string) => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: redirectUrl,
+        shouldCreateUser: false, // Don't create new users - only existing users can login
       },
+    });
+    return { error: error as Error | null };
+  };
+
+  const verifyOtp = async (email: string, token: string) => {
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'email',
     });
     return { error: error as Error | null };
   };
@@ -231,7 +239,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loading,
         isAdmin,
         signIn,
-        signInWithMagicLink,
+        sendOtp,
+        verifyOtp,
         signUp,
         signOut,
         updateProfile,
