@@ -15,6 +15,7 @@ import GoalSelectionModal from "@/components/diet/GoalSelectionModal";
 import DietLoadingOverlay from "@/components/diet/DietLoadingOverlay";
 import QuickLogModal from "@/components/modals/QuickLogModal";
 import ProfileModal from "@/components/modals/ProfileModal";
+import PurchaseModal from "@/components/modals/PurchaseModal";
 import MyPlanCard from "@/components/plan/MyPlanCard";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +36,10 @@ const Index = () => {
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
   const [targetKgLoss, setTargetKgLoss] = useState(5);
+  
+  // Purchase modal state
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [purchaseDiet, setPurchaseDiet] = useState<DietType | null>(null);
 
   const { createPlan } = useActivePlan(selectedDiet || undefined);
 
@@ -82,12 +87,13 @@ const Index = () => {
     const hasAccess = hasDietAccess(dietKey);
     
     if (hasAccess) {
-      // Always navigate directly to diet page (educational content)
+      // Navigate directly to diet page (educational content)
       const dietInfo = DIET_INFO[dietKey];
       navigate(dietInfo.route);
     } else {
-      // TODO: Open payment modal
-      console.log("Diet locked, show payment modal for:", dietKey);
+      // Open purchase modal for locked diet
+      setPurchaseDiet(dietKey);
+      setShowPurchaseModal(true);
     }
   };
 
@@ -334,6 +340,17 @@ const Index = () => {
         diet={selectedDiet ? DIET_INFO[selectedDiet] : null}
         targetKgLoss={targetKgLoss}
         onComplete={handleLoadingComplete}
+      />
+
+      {/* Purchase Modal */}
+      <PurchaseModal
+        isOpen={showPurchaseModal}
+        onClose={() => {
+          setShowPurchaseModal(false);
+          setPurchaseDiet(null);
+        }}
+        diet={purchaseDiet ? DIET_INFO[purchaseDiet] : null}
+        dietKey={purchaseDiet}
       />
     </div>
   );
