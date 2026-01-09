@@ -1,13 +1,20 @@
 import { motion } from "framer-motion";
 import { Home, Dumbbell, Apple, Brain, Plus } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface BottomNavigationProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
-  showTraining?: boolean;
+  showTraining?: boolean; // Optional override, otherwise uses profile preference
 }
 
-const BottomNavigation = ({ activeTab, onTabChange, showTraining = true }: BottomNavigationProps) => {
+const BottomNavigation = ({ activeTab, onTabChange, showTraining }: BottomNavigationProps) => {
+  const { profile } = useAuth();
+  
+  // Use profile preference if showTraining is not explicitly provided
+  const shouldShowTraining = showTraining !== undefined 
+    ? showTraining 
+    : ((profile as any)?.wants_exercise ?? false);
   const allNavItems = [
     { id: "home", icon: Home, label: "Home" },
     { id: "treino", icon: Dumbbell, label: "Treino", requiresTraining: true },
@@ -17,7 +24,7 @@ const BottomNavigation = ({ activeTab, onTabChange, showTraining = true }: Botto
   ];
 
   const navItems = allNavItems.filter(item => 
-    !item.requiresTraining || showTraining
+    !item.requiresTraining || shouldShowTraining
   );
 
   return (

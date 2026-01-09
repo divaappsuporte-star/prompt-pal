@@ -440,7 +440,6 @@ const MyPlan = () => {
       <BottomNavigation 
         activeTab="home" 
         onTabChange={handleTabChange}
-        showTraining={true}
       />
     </div>
   );
