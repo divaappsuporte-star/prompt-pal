@@ -27,7 +27,6 @@ import { z } from "zod";
 const newUserSchema = z.object({
   email: z.string().trim().email("Email inválido").max(255, "Email muito longo"),
   fullName: z.string().trim().min(2, "Nome deve ter pelo menos 2 caracteres").max(100, "Nome muito longo"),
-  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
 });
 
 const AdminUsers = () => {
@@ -40,12 +39,10 @@ const AdminUsers = () => {
   const [newUserData, setNewUserData] = useState({
     email: "",
     fullName: "",
-    password: "",
   });
   const [newUserErrors, setNewUserErrors] = useState<{
     email?: string;
     fullName?: string;
-    password?: string;
   }>({});
 
   const filteredUsers = users.filter(
@@ -106,7 +103,6 @@ const AdminUsers = () => {
 
       const { error } = await createUser(
         newUserData.email,
-        newUserData.password,
         newUserData.fullName
       );
 
@@ -119,7 +115,7 @@ const AdminUsers = () => {
       } else {
         toast.success("Usuário criado com sucesso!");
         setShowNewUserModal(false);
-        setNewUserData({ email: "", fullName: "", password: "" });
+        setNewUserData({ email: "", fullName: "" });
         refetch();
       }
     } catch (error) {
@@ -445,25 +441,9 @@ const AdminUsers = () => {
                   )}
                 </div>
 
-                {/* Password */}
-                <div>
-                  <label className="block text-sm text-muted-foreground mb-1.5">
-                    Senha inicial
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="Senha temporária"
-                    value={newUserData.password}
-                    onChange={(e) => handleNewUserChange("password", e.target.value)}
-                    className="bg-muted border-border"
-                  />
-                  {newUserErrors.password && (
-                    <p className="text-sm text-destructive mt-1">{newUserErrors.password}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground mt-1">
-                    O usuário receberá um email com link de acesso.
-                  </p>
-                </div>
+                <p className="text-xs text-muted-foreground">
+                  O usuário usará o email para acessar diretamente.
+                </p>
 
                 <Button
                   type="submit"
