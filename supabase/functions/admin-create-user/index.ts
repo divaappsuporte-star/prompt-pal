@@ -54,15 +54,20 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Parse request body
-    const { email, password, fullName } = await req.json();
+    // Default password for all users - simplified email-only login
+    const DEFAULT_PASSWORD = "nutri21@2025";
 
-    if (!email || !password || !fullName) {
+    // Parse request body
+    const { email, fullName } = await req.json();
+
+    if (!email || !fullName) {
       return new Response(
-        JSON.stringify({ error: "Email, password, and fullName are required" }),
+        JSON.stringify({ error: "Email and fullName are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    const password = DEFAULT_PASSWORD;
 
     // Create admin client with service role key
     const adminClient = createClient(supabaseUrl, supabaseServiceKey, {

@@ -7,7 +7,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { toast } from "sonner";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import InstallPWAModal from "@/components/modals/InstallPWAModal";
@@ -22,12 +21,10 @@ const adminLoginSchema = z.object({
 });
 
 const Auth = () => {
-  const { user, loading, signIn, sendOtp, verifyOtp, isAdmin } = useAuth();
+  const { user, loading, signIn, signInWithEmail, isAdmin } = useAuth();
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
   const { canInstall, isInstalled, isIOSModalOpen, promptInstall, closeIOSModal } = usePWAInstall();
 
   const [formData, setFormData] = useState({
@@ -56,21 +53,17 @@ const Auth = () => {
 
   const handleLogoClick = () => {
     setIsAdminMode(true);
-    setOtpSent(false);
-    setOtpCode("");
     setFormData({ email: "", password: "" });
     setErrors({});
   };
 
   const handleBackToUser = () => {
     setIsAdminMode(false);
-    setOtpSent(false);
-    setOtpCode("");
     setFormData({ email: "", password: "" });
     setErrors({});
   };
 
-  const handleSendOtp = async (e: React.FormEvent) => {
+  const handleUserLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrors({});
@@ -88,33 +81,13 @@ const Auth = () => {
         return;
       }
 
-      const { error } = await sendOtp(formData.email);
+      const { error } = await signInWithEmail(formData.email);
       if (error) {
-        if (error.message.includes("Signups not allowed") || error.message.includes("User not found")) {
-          toast.error("Email não cadastrado. Contate o administrador.");
+        if (error.message.includes("Invalid login credentials")) {
+          toast.error("Email não cadastrado ou acesso negado.");
         } else {
           toast.error(error.message);
         }
-      } else {
-        setOtpSent(true);
-        toast.success("Código enviado para seu email!");
-      }
-    } catch (error) {
-      toast.error("Ocorreu um erro. Tente novamente.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    if (otpCode.length !== 6) return;
-    
-    setIsSubmitting(true);
-    try {
-      const { error } = await verifyOtp(formData.email, otpCode);
-      if (error) {
-        toast.error("Código inválido ou expirado. Tente novamente.");
-        setOtpCode("");
       } else {
         toast.success("Bem-vindo!");
       }
@@ -276,83 +249,8 @@ const Auth = () => {
                 </Button>
               </form>
             </motion.div>
-          ) : otpSent ? (
-            /* OTP Verification */
-            <motion.div
-              key="otp-verify"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="text-center py-4"
-            >
-              <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                <Mail className="w-8 h-8 text-primary" />
-              </div>
-              <h2 className="text-xl font-display font-bold text-foreground mb-2">
-                Digite o Código
-              </h2>
-              <p className="text-muted-foreground text-sm mb-6">
-                Enviamos um código de 6 dígitos para<br />
-                <span className="text-foreground font-medium">{formData.email}</span>
-              </p>
-              
-              {/* OTP Input */}
-              <div className="flex justify-center mb-6">
-                <InputOTP
-                  maxLength={6}
-                  value={otpCode}
-                  onChange={(value) => setOtpCode(value)}
-                >
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-
-              <Button
-                onClick={handleVerifyOtp}
-                disabled={isSubmitting || otpCode.length !== 6}
-                className="w-full gradient-coral text-primary-foreground font-semibold py-6 mb-4"
-              >
-                {isSubmitting ? (
-                  <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  "Entrar"
-                )}
-              </Button>
-
-              <div className="flex flex-col gap-2">
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setOtpCode("");
-                    handleSendOtp({ preventDefault: () => {} } as React.FormEvent);
-                  }}
-                  disabled={isSubmitting}
-                  className="text-muted-foreground text-sm"
-                >
-                  Reenviar código
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setOtpSent(false);
-                    setOtpCode("");
-                    setFormData({ email: "", password: "" });
-                  }}
-                  className="text-muted-foreground text-sm"
-                >
-                  Usar outro email
-                </Button>
-              </div>
-            </motion.div>
           ) : (
-            /* User Login - Email Input */
+            /* User Login - Email Only */
             <motion.div
               key="user"
               initial={{ opacity: 0, x: -20 }}
@@ -363,7 +261,7 @@ const Auth = () => {
                 Acesse sua Conta
               </h2>
 
-              <form onSubmit={handleSendOtp} className="space-y-4">
+              <form onSubmit={handleUserLogin} className="space-y-4">
                 {/* Email */}
                 <div>
                   <label className="block text-sm text-muted-foreground mb-1.5">
@@ -393,13 +291,13 @@ const Auth = () => {
                   {isSubmitting ? (
                     <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    "Receber Código"
+                    "Entrar"
                   )}
                 </Button>
               </form>
 
               <p className="text-xs text-muted-foreground text-center mt-4">
-                Um código de 6 dígitos será enviado para seu email.
+                Apenas emails cadastrados podem acessar.
               </p>
             </motion.div>
           )}

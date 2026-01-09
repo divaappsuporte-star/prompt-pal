@@ -20,6 +20,9 @@ interface Profile {
   wants_exercise: boolean;
 }
 
+// Default password for all users - used for simplified email-only login
+const DEFAULT_PASSWORD = "nutri21@2025";
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -27,8 +30,7 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  sendOtp: (email: string) => Promise<{ error: Error | null }>;
-  verifyOtp: (email: string, token: string) => Promise<{ error: Error | null }>;
+  signInWithEmail: (email: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   updateProfile: (data: Partial<Profile>) => Promise<{ error: Error | null }>;
@@ -172,21 +174,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error: error as Error | null };
   };
 
-  const sendOtp = async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({
+  // Simplified email-only login using default password
+  const signInWithEmail = async (email: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
       email,
-      options: {
-        shouldCreateUser: false, // Don't create new users - only existing users can login
-      },
-    });
-    return { error: error as Error | null };
-  };
-
-  const verifyOtp = async (email: string, token: string) => {
-    const { error } = await supabase.auth.verifyOtp({
-      email,
-      token,
-      type: 'email',
+      password: DEFAULT_PASSWORD,
     });
     return { error: error as Error | null };
   };
@@ -239,8 +231,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loading,
         isAdmin,
         signIn,
-        sendOtp,
-        verifyOtp,
+        signInWithEmail,
         signUp,
         signOut,
         updateProfile,

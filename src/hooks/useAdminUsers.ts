@@ -115,7 +115,7 @@ export const useAdminUsers = () => {
     return { error };
   };
 
-  const createUser = async (email: string, password: string, fullName: string) => {
+  const createUser = async (email: string, fullName: string) => {
     try {
       const { data: session } = await supabase.auth.getSession();
       
@@ -127,7 +127,7 @@ export const useAdminUsers = () => {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${session.session?.access_token}`,
           },
-          body: JSON.stringify({ email, password, fullName }),
+          body: JSON.stringify({ email, fullName }),
         }
       );
 
