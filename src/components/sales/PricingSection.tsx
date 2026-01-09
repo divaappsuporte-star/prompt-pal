@@ -72,10 +72,7 @@ const PricingSection = ({ onCtaClick }: PricingSectionProps) => {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-coral/20 blur-3xl" />
 
           <div className="relative z-10">
-            <p className="text-coral font-bold mb-2">ACESSO HOJE</p>
-            <p className="text-muted-foreground text-sm mb-4">
-              Para tornar esse método acessível e validar em escala
-            </p>
+            <p className="text-coral font-bold mb-4">ACESSO HOJE</p>
 
             <div className="mb-6">
               <span className="text-muted-foreground line-through text-lg">De R$297</span>
