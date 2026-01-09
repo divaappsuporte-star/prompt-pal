@@ -12,8 +12,9 @@ const MyPlanCard = ({ delay = 0.15 }: MyPlanCardProps) => {
   const navigate = useNavigate();
   const { activePlans, isLoading } = useAllActivePlans();
   
-  // Get the primary active plan (first one or most recent)
-  const primaryPlan = activePlans?.[0];
+  // Get the primary active plan (first one from the object)
+  const activePlanEntries = Object.values(activePlans || {});
+  const primaryPlan = activePlanEntries.length > 0 ? activePlanEntries[0] : null;
   const hasPlan = !!primaryPlan;
   
   const handleClick = () => {
