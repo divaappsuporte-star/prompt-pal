@@ -35,9 +35,9 @@ const TwoPathsSection = () => {
             transition={{ delay: 0.2 }}
           >
             <div className="bg-card/50 border border-border/50 rounded-2xl p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-2xl">🧠</span>
-                <span className="text-coral font-bold">1️⃣ MENTALIDADE</span>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="font-display text-3xl font-bold text-white">1</span>
+                <span className="text-gold font-bold uppercase">Mentalidade</span>
               </div>
               
               {/* Mockup card */}
@@ -85,9 +85,9 @@ const TwoPathsSection = () => {
             transition={{ delay: 0.4 }}
           >
             <div className="bg-card/50 border border-border/50 rounded-2xl p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-2xl">🥗</span>
-                <span className="text-coral font-bold">2️⃣ CRIAR MEU PLANO</span>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="font-display text-3xl font-bold text-white">2</span>
+                <span className="text-coral font-bold uppercase">Criar Meu Plano</span>
               </div>
               
               {/* Mockup card */}
