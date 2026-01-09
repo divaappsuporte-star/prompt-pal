@@ -23,36 +23,39 @@ Deno.serve(async (req) => {
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    console.log("Auth header present");
+    
+    const token = authHeader.replace("Bearer ", "");
+    console.log("Token length:", token.length);
 
-    // Create Supabase client with user token to verify they're authenticated
+    // Create Supabase clients
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    // Get the calling user
-    console.log("Getting calling user...");
-    const { data: { user: callingUser }, error: userError } = await userClient.auth.getUser();
-    if (userError || !callingUser) {
-      console.log("ERROR: Failed to get user -", userError?.message || "No user found");
-      return new Response(
-        JSON.stringify({ error: "Sessão expirada. Faça logout e login novamente." }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-    console.log("Calling user ID:", callingUser.id, "Email:", callingUser.email);
-
-    // Create admin client with service role key to check roles (bypasses RLS)
+    // Create admin client with service role key (bypasses RLS)
     const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
       },
     });
+
+    // Verify the token using admin client
+    console.log("Verifying token...");
+    const { data: userData, error: userError } = await adminClient.auth.getUser(token);
+    
+    if (userError || !userData.user) {
+      console.log("ERROR: Invalid token -", userError?.message || "No user found");
+      return new Response(
+        JSON.stringify({ error: "Sessão expirada. Faça logout e login novamente." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    const callingUser = userData.user;
+    console.log("Calling user ID:", callingUser.id, "Email:", callingUser.email);
+
+    // Check if calling user is an admin using admin client to bypass RLS
 
     // Check if calling user is an admin using admin client to bypass RLS
     console.log("Checking admin role...");
