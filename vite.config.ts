@@ -14,8 +14,15 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === "development" && componentTagger(),
     VitePWA({
-      registerType: "autoUpdate",
+      registerType: "prompt",
       includeAssets: ["favicon.ico", "icons/apple-touch-icon.png"],
+      workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
+      },
+      devOptions: {
+        enabled: false,
+      },
       manifest: {
         name: "Nutri21 - Transforme em 21 dias",
         short_name: "Nutri21",
