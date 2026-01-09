@@ -25,11 +25,14 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
+  isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signInWithMagicLink: (email: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   updateProfile: (data: Partial<Profile>) => Promise<{ error: Error | null }>;
   refreshProfile: () => Promise<void>;
+  checkIsAdmin: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,6 +42,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -55,10 +59,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return data as Profile;
   };
 
+  const checkIsAdmin = async (): Promise<boolean> => {
+    if (!user) return false;
+    
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .in("role", ["super_admin", "admin"])
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error checking admin status:", error);
+      return false;
+    }
+
+    const adminStatus = !!data;
+    setIsAdmin(adminStatus);
+    return adminStatus;
+  };
+
   const refreshProfile = async () => {
     if (user) {
       const profileData = await fetchProfile(user.id);
       setProfile(profileData);
+      await checkIsAdmin();
     }
   };
 
@@ -71,44 +96,65 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         // Defer profile fetch with setTimeout to avoid deadlock
         if (session?.user) {
-          setTimeout(() => {
-            fetchProfile(session.user.id).then((profileData) => {
-              // Check if user is suspended
-              if (profileData?.is_suspended) {
-                supabase.auth.signOut();
-                setUser(null);
-                setSession(null);
-                setProfile(null);
-                return;
-              }
-              setProfile(profileData);
-            });
+          setTimeout(async () => {
+            const profileData = await fetchProfile(session.user.id);
+            // Check if user is suspended
+            if (profileData?.is_suspended) {
+              supabase.auth.signOut();
+              setUser(null);
+              setSession(null);
+              setProfile(null);
+              setIsAdmin(false);
+              return;
+            }
+            setProfile(profileData);
+            
+            // Check admin status
+            const { data: roleData } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", session.user.id)
+              .in("role", ["super_admin", "admin"])
+              .maybeSingle();
+            
+            setIsAdmin(!!roleData);
           }, 0);
         } else {
           setProfile(null);
+          setIsAdmin(false);
         }
       }
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchProfile(session.user.id).then((profileData) => {
-          // Check if user is suspended
-          if (profileData?.is_suspended) {
-            supabase.auth.signOut();
-            setUser(null);
-            setSession(null);
-            setProfile(null);
-            setLoading(false);
-            return;
-          }
-          setProfile(profileData);
+        const profileData = await fetchProfile(session.user.id);
+        // Check if user is suspended
+        if (profileData?.is_suspended) {
+          supabase.auth.signOut();
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+          setIsAdmin(false);
           setLoading(false);
-        });
+          return;
+        }
+        setProfile(profileData);
+        
+        // Check admin status
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .in("role", ["super_admin", "admin"])
+          .maybeSingle();
+        
+        setIsAdmin(!!roleData);
+        setLoading(false);
       } else {
         setLoading(false);
       }
@@ -121,6 +167,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
+    });
+    return { error: error as Error | null };
+  };
+
+  const signInWithMagicLink = async (email: string) => {
+    const redirectUrl = `${window.location.origin}/`;
+    
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: redirectUrl,
+      },
     });
     return { error: error as Error | null };
   };
@@ -146,6 +204,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setSession(null);
     setProfile(null);
+    setIsAdmin(false);
   };
 
   const updateProfile = async (data: Partial<Profile>) => {
@@ -170,11 +229,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         session,
         profile,
         loading,
+        isAdmin,
         signIn,
+        signInWithMagicLink,
         signUp,
         signOut,
         updateProfile,
         refreshProfile,
+        checkIsAdmin,
       }}
     >
       {children}

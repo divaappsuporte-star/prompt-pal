@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { ArrowLeft, Search, UserX, UserCheck, Unlock, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Search, UserX, UserCheck, Unlock, ChevronDown, UserPlus, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,12 +22,31 @@ import { useAdminUsers } from "@/hooks/useAdminUsers";
 import { DIET_INFO } from "@/types/diet";
 import { toast } from "sonner";
 import Logo from "@/components/Logo";
+import { z } from "zod";
+
+const newUserSchema = z.object({
+  email: z.string().trim().email("Email inválido").max(255, "Email muito longo"),
+  fullName: z.string().trim().min(2, "Nome deve ter pelo menos 2 caracteres").max(100, "Nome muito longo"),
+  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+});
 
 const AdminUsers = () => {
   const navigate = useNavigate();
-  const { users, isLoading, suspendUser, grantDietAccess, revokeDietAccess } = useAdminUsers();
+  const { users, isLoading, suspendUser, grantDietAccess, revokeDietAccess, createUser, refetch } = useAdminUsers();
   const [search, setSearch] = useState("");
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
+  const [showNewUserModal, setShowNewUserModal] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [newUserData, setNewUserData] = useState({
+    email: "",
+    fullName: "",
+    password: "",
+  });
+  const [newUserErrors, setNewUserErrors] = useState<{
+    email?: string;
+    fullName?: string;
+    password?: string;
+  }>({});
 
   const filteredUsers = users.filter(
     (user) =>
@@ -62,6 +81,54 @@ const AdminUsers = () => {
     }
   };
 
+  const handleNewUserChange = (field: string, value: string) => {
+    setNewUserData((prev) => ({ ...prev, [field]: value }));
+    setNewUserErrors((prev) => ({ ...prev, [field]: undefined }));
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsCreating(true);
+    setNewUserErrors({});
+
+    try {
+      const result = newUserSchema.safeParse(newUserData);
+      if (!result.success) {
+        const fieldErrors: Record<string, string> = {};
+        result.error.errors.forEach((err) => {
+          const field = err.path[0] as string;
+          fieldErrors[field] = err.message;
+        });
+        setNewUserErrors(fieldErrors);
+        setIsCreating(false);
+        return;
+      }
+
+      const { error } = await createUser(
+        newUserData.email,
+        newUserData.password,
+        newUserData.fullName
+      );
+
+      if (error) {
+        if (error.message.includes("already registered")) {
+          toast.error("Este email já está cadastrado");
+        } else {
+          toast.error(error.message);
+        }
+      } else {
+        toast.success("Usuário criado com sucesso!");
+        setShowNewUserModal(false);
+        setNewUserData({ email: "", fullName: "", password: "" });
+        refetch();
+      }
+    } catch (error) {
+      toast.error("Erro ao criar usuário");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   const allDietTypes = Object.keys(DIET_INFO);
 
   return (
@@ -83,6 +150,14 @@ const AdminUsers = () => {
               | Usuários
             </span>
           </div>
+          <Button
+            size="sm"
+            className="gradient-coral text-primary-foreground"
+            onClick={() => setShowNewUserModal(true)}
+          >
+            <UserPlus className="w-4 h-4 mr-2" />
+            Novo
+          </Button>
         </div>
       </header>
 
@@ -305,6 +380,110 @@ const AdminUsers = () => {
           )}
         </div>
       </main>
+
+      {/* New User Modal */}
+      <AnimatePresence>
+        {showNewUserModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowNewUserModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-md glass-card rounded-2xl p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-display font-bold text-foreground">
+                  Cadastrar Novo Usuário
+                </h2>
+                <button
+                  onClick={() => setShowNewUserModal(false)}
+                  className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
+                >
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateUser} className="space-y-4">
+                {/* Full Name */}
+                <div>
+                  <label className="block text-sm text-muted-foreground mb-1.5">
+                    Nome completo
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="Nome do usuário"
+                    value={newUserData.fullName}
+                    onChange={(e) => handleNewUserChange("fullName", e.target.value)}
+                    className="bg-muted border-border"
+                  />
+                  {newUserErrors.fullName && (
+                    <p className="text-sm text-destructive mt-1">{newUserErrors.fullName}</p>
+                  )}
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm text-muted-foreground mb-1.5">
+                    Email
+                  </label>
+                  <Input
+                    type="email"
+                    placeholder="email@exemplo.com"
+                    value={newUserData.email}
+                    onChange={(e) => handleNewUserChange("email", e.target.value)}
+                    className="bg-muted border-border"
+                  />
+                  {newUserErrors.email && (
+                    <p className="text-sm text-destructive mt-1">{newUserErrors.email}</p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className="block text-sm text-muted-foreground mb-1.5">
+                    Senha inicial
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="Senha temporária"
+                    value={newUserData.password}
+                    onChange={(e) => handleNewUserChange("password", e.target.value)}
+                    className="bg-muted border-border"
+                  />
+                  {newUserErrors.password && (
+                    <p className="text-sm text-destructive mt-1">{newUserErrors.password}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    O usuário receberá um email com link de acesso.
+                  </p>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={isCreating}
+                  className="w-full gradient-coral text-primary-foreground font-semibold py-6 mt-4"
+                >
+                  {isCreating ? (
+                    <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Cadastrar Usuário
+                    </>
+                  )}
+                </Button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
