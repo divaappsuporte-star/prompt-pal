@@ -49,7 +49,7 @@ const InstallPWAModal = ({ isOpen, onClose }: InstallPWAModalProps) => {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-display text-xl font-bold text-foreground">
-                Instalar Reset 21
+                Instalar Nutri21
               </h2>
               <button
                 onClick={onClose}

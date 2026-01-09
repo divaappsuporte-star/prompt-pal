@@ -301,7 +301,7 @@ const Index = () => {
           <p className="text-lg text-foreground font-display italic mb-2">
             "A constância começa na mente antes de aparecer no corpo."
           </p>
-          <p className="text-sm text-gold">— Reset 21</p>
+          <p className="text-sm text-gold">— Nutri21</p>
         </div>
       </motion.div>
 
