@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Target, ChevronRight, CalendarDays } from "lucide-react";
+import { Target, ChevronRight, CalendarDays, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAllActivePlans } from "@/hooks/useAllActivePlans";
 import { DIET_INFO } from "@/types/diet";
@@ -68,9 +68,12 @@ const MyPlanCard = ({ delay = 0.15 }: MyPlanCardProps) => {
               <span>Dia {primaryPlan.current_day} de 21</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium" style={{ color: dietInfo?.color }}>
-                {dietInfo?.name}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <Play className="w-3 h-3 text-primary fill-primary" />
+                <span className="text-xs font-medium text-primary">
+                  Continuar
+                </span>
+              </div>
               <ChevronRight className="w-4 h-4 text-primary" />
             </div>
             {/* Progress bar */}
