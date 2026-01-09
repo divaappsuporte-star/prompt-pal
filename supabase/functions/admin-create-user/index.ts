@@ -12,14 +12,18 @@ Deno.serve(async (req) => {
   }
 
   try {
+    console.log("=== Admin Create User - Starting ===");
+    
     // Get the authorization header
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
+      console.log("ERROR: Missing authorization header");
       return new Response(
         JSON.stringify({ error: "Missing authorization header" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    console.log("Auth header present");
 
     // Create Supabase client with user token to verify they're authenticated
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -31,13 +35,16 @@ Deno.serve(async (req) => {
     });
 
     // Get the calling user
+    console.log("Getting calling user...");
     const { data: { user: callingUser }, error: userError } = await userClient.auth.getUser();
     if (userError || !callingUser) {
+      console.log("ERROR: Failed to get user -", userError?.message || "No user found");
       return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
+        JSON.stringify({ error: "Sessão expirada. Faça logout e login novamente." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    console.log("Calling user ID:", callingUser.id, "Email:", callingUser.email);
 
     // Create admin client with service role key to check roles (bypasses RLS)
     const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
@@ -48,6 +55,7 @@ Deno.serve(async (req) => {
     });
 
     // Check if calling user is an admin using admin client to bypass RLS
+    console.log("Checking admin role...");
     const { data: roleData, error: roleError } = await adminClient
       .from("user_roles")
       .select("role")
@@ -55,29 +63,37 @@ Deno.serve(async (req) => {
       .in("role", ["super_admin", "admin"])
       .maybeSingle();
 
+    console.log("Role check result:", roleData, "Error:", roleError?.message);
+
     if (roleError || !roleData) {
+      console.log("ERROR: User is not an admin");
       return new Response(
-        JSON.stringify({ error: "You are not authorized to create users" }),
+        JSON.stringify({ error: "Você não tem permissão para criar usuários" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    console.log("User has admin role:", roleData.role);
 
     // Default password for all users - simplified email-only login
     const DEFAULT_PASSWORD = "nutri21@2025";
 
     // Parse request body
+    console.log("Parsing request body...");
     const { email, fullName } = await req.json();
 
     if (!email || !fullName) {
+      console.log("ERROR: Missing email or fullName");
       return new Response(
-        JSON.stringify({ error: "Email and fullName are required" }),
+        JSON.stringify({ error: "Email e nome completo são obrigatórios" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    console.log("Creating user:", email, fullName);
 
     const password = DEFAULT_PASSWORD;
 
     // Create the user
+    console.log("Calling admin.createUser...");
     const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
       email,
       password,
@@ -88,21 +104,25 @@ Deno.serve(async (req) => {
     });
 
     if (createError) {
+      console.log("ERROR: Failed to create user -", createError.message);
       return new Response(
         JSON.stringify({ error: createError.message }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    console.log("User created successfully:", newUser.user?.id);
 
     // The profile should be created automatically by the handle_new_user trigger
     // But let's update the full_name just in case
     if (newUser.user) {
+      console.log("Updating profile with full_name...");
       await adminClient
         .from("profiles")
         .update({ full_name: fullName })
         .eq("id", newUser.user.id);
     }
 
+    console.log("=== Admin Create User - Success ===");
     return new Response(
       JSON.stringify({ 
         success: true, 
@@ -115,9 +135,9 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    console.error("Error creating user:", error);
+    console.error("=== Admin Create User - Error ===", error);
     return new Response(
-      JSON.stringify({ error: "Internal server error" }),
+      JSON.stringify({ error: "Erro interno do servidor" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
