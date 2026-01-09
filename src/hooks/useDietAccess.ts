@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { DietType, DietAccess } from "@/types/diet";
@@ -10,6 +11,7 @@ const MONETIZATION_ENABLED = true;
 
 export function useDietAccess() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   // Fetch user's purchased diet access
   const { data: dietAccess, isLoading: accessLoading } = useQuery({
@@ -26,7 +28,35 @@ export function useDietAccess() {
       return (data || []) as DietAccess[];
     },
     enabled: !!user && MONETIZATION_ENABLED,
+    staleTime: 0, // Always refetch when component mounts
+    refetchOnWindowFocus: true,
   });
+
+  // Set up realtime subscription for diet access changes
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('diet-access-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_diet_access',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          // Invalidate and refetch diet access when changes occur
+          queryClient.invalidateQueries({ queryKey: ['diet-access', user.id] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, queryClient]);
 
   // Fetch user's active plan
   const { data: activePlan, isLoading: planLoading } = useQuery({
