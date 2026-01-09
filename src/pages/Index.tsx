@@ -128,7 +128,7 @@ const Index = () => {
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="px-6 pt-14 pb-6"
+        className="px-6 pt-8 pb-4"
       >
         <div className="flex items-center justify-between">
           {/* Admin link - only visible for super admins */}

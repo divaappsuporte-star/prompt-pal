@@ -17,9 +17,9 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "icons/apple-touch-icon.png"],
       manifest: {
-        name: "NutriReset - Nutrição Inteligente",
-        short_name: "NutriReset",
-        description: "Transforme sua alimentação com nutrição inteligente e personalizada",
+        name: "Nutri21 - Transforme em 21 dias",
+        short_name: "Nutri21",
+        description: "Transforme corpo, mente e energia em 21 dias com nutrição inteligente",
         theme_color: "#0C0C0C",
         background_color: "#0C0C0C",
         display: "standalone",
