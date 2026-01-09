@@ -378,7 +378,7 @@ const workoutDays: WorkoutDay[] = [
   },
   {
     day: 21,
-    title: "Reset Metabólico",
+    title: "Renovação Metabólica",
     objective: "Recuperação e consolidação",
     duration: "20 min",
     calories: 80,
