@@ -39,8 +39,16 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if calling user is an admin
-    const { data: roleData, error: roleError } = await userClient
+    // Create admin client with service role key to check roles (bypasses RLS)
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+
+    // Check if calling user is an admin using admin client to bypass RLS
+    const { data: roleData, error: roleError } = await adminClient
       .from("user_roles")
       .select("role")
       .eq("user_id", callingUser.id)
@@ -68,14 +76,6 @@ Deno.serve(async (req) => {
     }
 
     const password = DEFAULT_PASSWORD;
-
-    // Create admin client with service role key
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
 
     // Create the user
     const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
