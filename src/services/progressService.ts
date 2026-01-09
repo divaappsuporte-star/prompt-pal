@@ -88,7 +88,7 @@ export interface ProgressData {
 
 const STORAGE_KEY = "personal21_progress";
 
-const getDefaultProgress = (): ProgressData => ({
+export const getDefaultProgress = (): ProgressData => ({
   mindset: {
     completedChapters: [],
     unlockedChapters: [1],
