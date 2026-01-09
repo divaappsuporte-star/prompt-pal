@@ -1,83 +1,96 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Droplets, Dumbbell, Apple, Moon, Brain, Check, Plus, ChevronRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { X } from "lucide-react";
 import { useProgress } from "@/hooks/useProgress";
+import { useAuth } from "@/contexts/AuthContext";
+import { useAllActivePlans } from "@/hooks/useAllActivePlans";
+import {
+  HydrationExpandCard,
+  SleepExpandCard,
+  MindsetExpandCard,
+  MealsExpandCard,
+  WorkoutExpandCard,
+} from "@/components/quicklog";
 
 interface QuickLogModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface DailyTasks {
-  workout: boolean;
-  nutrition: boolean;
-  hydration: boolean;
-  sleep: boolean;
-  mindset: boolean;
-}
-
 type DailyStatus = 'critical' | 'emerging' | 'elite';
 
 const QuickLogModal = ({ isOpen, onClose }: QuickLogModalProps) => {
-  const navigate = useNavigate();
+  const { profile } = useAuth();
+  const { activePlans } = useAllActivePlans();
   const { 
     todayHydration, 
     todaySleep, 
     todayCalories,
     progress,
-    addWaterIntake,
-    addSleepTime 
+    checkMealTypeCompleted
   } = useProgress();
 
-  const [tasks, setTasks] = useState<DailyTasks>({
-    workout: false,
-    nutrition: false,
-    hydration: false,
-    sleep: false,
-    mindset: false,
-  });
+  const wantsExercise = (profile as any)?.wants_exercise ?? false;
+  const waterGoal = profile?.water_goal_ml || 2000;
+  const sleepGoal = profile?.sleep_goal_hours || 8;
 
-  // Calculate task status from progress data
-  useEffect(() => {
-    const today = new Date().toISOString().split("T")[0];
-    
-    // Check workout - if any calories burned today
-    const workoutDone = todayCalories > 0;
-    
-    // Check nutrition - if any recipe completed today
-    const nutritionDone = Object.values(progress.nutrition).some(diet => 
-      diet.completedRecipes.some(r => r.endsWith(`_${today}`))
-    );
-    
-    // Check hydration - if >= 2000ml
-    const hydrationDone = todayHydration >= 2000;
-    
-    // Check sleep - if >= 7 hours
-    const sleepDone = todaySleep >= 7;
-    
-    // Check mindset - if any chapter completed
-    const mindsetDone = progress.mindset.completedChapters.length > 0;
+  // Get first active plan
+  const activePlanEntries = Object.entries(activePlans);
+  const hasPlan = activePlanEntries.length > 0;
+  const primaryDiet = hasPlan ? activePlanEntries[0][0] : null;
 
-    setTasks({
-      workout: workoutDone,
-      nutrition: nutritionDone,
-      hydration: hydrationDone,
-      sleep: sleepDone,
-      mindset: mindsetDone,
-    });
-  }, [todayHydration, todaySleep, todayCalories, progress]);
+  // Map to progressService diet type
+  const getProgressDiet = () => {
+    if (!primaryDiet) return null;
+    if (primaryDiet === 'metabolic') return 'lowcarb';
+    return primaryDiet as 'carnivore' | 'lowcarb' | 'keto' | 'fasting' | 'detox';
+  };
+
+  const progressDiet = getProgressDiet();
+
+  // Calculate task completion status
+  const hydrationCompleted = todayHydration >= waterGoal;
+  const sleepCompleted = todaySleep >= sleepGoal;
+  const mindsetCompleted = progress.mindset.completedChapters.length > 0;
+  const workoutCompleted = todayCalories > 0;
+  
+  // Check meals completion
+  const mealsCompleted = progressDiet ? (
+    checkMealTypeCompleted(progressDiet, 'breakfast') &&
+    checkMealTypeCompleted(progressDiet, 'lunch') &&
+    checkMealTypeCompleted(progressDiet, 'dinner')
+  ) : false;
+
+  // Calculate total tasks and completed
+  const getTotalTasks = () => {
+    let total = 3; // Hydration, Sleep, Mindset are always present
+    if (hasPlan) total += 1; // Nutrition
+    if (wantsExercise) total += 1; // Workout
+    return total;
+  };
+
+  const getCompletedTasks = () => {
+    let completed = 0;
+    if (hydrationCompleted) completed++;
+    if (sleepCompleted) completed++;
+    if (mindsetCompleted) completed++;
+    if (hasPlan && mealsCompleted) completed++;
+    if (wantsExercise && workoutCompleted) completed++;
+    return completed;
+  };
+
+  const totalTasks = getTotalTasks();
+  const completedTasks = getCompletedTasks();
 
   const calculateStatus = (): DailyStatus => {
-    const completed = Object.values(tasks).filter(Boolean).length;
-    if (completed === 5) return 'elite';
-    if (completed >= 3) return 'emerging';
+    const ratio = completedTasks / totalTasks;
+    if (ratio >= 1) return 'elite';
+    if (ratio >= 0.6) return 'emerging';
     return 'critical';
   };
 
   const getStatusInfo = () => {
     const status = calculateStatus();
-    const completed = Object.values(tasks).filter(Boolean).length;
     
     switch (status) {
       case 'elite':
@@ -89,69 +102,7 @@ const QuickLogModal = ({ isOpen, onClose }: QuickLogModalProps) => {
     }
   };
 
-  const handleNavigate = (path: string) => {
-    onClose();
-    navigate(path);
-  };
-
-  const handleQuickWater = () => {
-    addWaterIntake(250);
-  };
-
-  const handleQuickSleep = (hours: number) => {
-    addSleepTime(hours);
-  };
-
   const statusInfo = getStatusInfo();
-  const completedCount = Object.values(tasks).filter(Boolean).length;
-
-  const taskItems = [
-    {
-      key: 'workout',
-      icon: Dumbbell,
-      label: 'Treino',
-      detail: tasks.workout ? `${todayCalories} kcal queimadas` : 'Não treinou hoje',
-      done: tasks.workout,
-      action: () => handleNavigate('/treino'),
-      quickAction: null,
-    },
-    {
-      key: 'nutrition',
-      icon: Apple,
-      label: 'Nutrição',
-      detail: tasks.nutrition ? 'Receita concluída' : 'Nenhuma refeição registrada',
-      done: tasks.nutrition,
-      action: () => handleNavigate('/nutricao'),
-      quickAction: null,
-    },
-    {
-      key: 'hydration',
-      icon: Droplets,
-      label: 'Hidratação',
-      detail: `${(todayHydration / 1000).toFixed(1)}L / 2L`,
-      done: tasks.hydration,
-      action: null,
-      quickAction: { label: '+250ml', onClick: handleQuickWater },
-    },
-    {
-      key: 'sleep',
-      icon: Moon,
-      label: 'Sono',
-      detail: todaySleep > 0 ? `${todaySleep}h dormidas` : 'Não registrado',
-      done: tasks.sleep,
-      action: null,
-      quickAction: todaySleep === 0 ? { label: '+7h', onClick: () => handleQuickSleep(7) } : null,
-    },
-    {
-      key: 'mindset',
-      icon: Brain,
-      label: 'Mentalidade',
-      detail: tasks.mindset ? `${progress.mindset.completedChapters.length} capítulos` : 'Nenhuma leitura',
-      done: tasks.mindset,
-      action: () => handleNavigate('/mentalidade'),
-      quickAction: null,
-    },
-  ];
 
   if (!isOpen) return null;
 
@@ -170,16 +121,16 @@ const QuickLogModal = ({ isOpen, onClose }: QuickLogModalProps) => {
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-md bg-card rounded-t-3xl border-t border-border overflow-hidden"
+          className="w-full max-w-md bg-card rounded-t-3xl border-t border-border overflow-hidden max-h-[85vh] flex flex-col"
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-border">
+          <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
             <div>
               <h2 className="font-display text-xl font-bold text-foreground">
                 Progresso de Hoje
               </h2>
               <p className="text-sm text-muted-foreground">
-                Registre suas atividades
+                Marque suas atividades
               </p>
             </div>
             <motion.button
@@ -193,88 +144,40 @@ const QuickLogModal = ({ isOpen, onClose }: QuickLogModalProps) => {
           </div>
 
           {/* Status Badge */}
-          <div className="px-4 py-3">
+          <div className="px-4 py-3 flex-shrink-0">
             <div className={`flex items-center justify-between p-3 rounded-xl ${statusInfo.bg} border ${statusInfo.border}`}>
               <span className={`font-semibold ${statusInfo.color}`}>
                 Status: {statusInfo.label}
               </span>
               <span className={`text-sm ${statusInfo.color}`}>
-                {completedCount}/5 tarefas
+                {completedTasks}/{totalTasks} tarefas
               </span>
             </div>
           </div>
 
-          {/* Task List */}
-          <div className="px-4 pb-4 space-y-2">
-            {taskItems.map((task) => {
-              const Icon = task.icon;
-              return (
-                <motion.div
-                  key={task.key}
-                  whileHover={{ scale: 1.01 }}
-                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
-                    task.done 
-                      ? 'bg-emerald-500/10 border-emerald-500/30' 
-                      : 'bg-muted/50 border-border'
-                  }`}
-                >
-                  {/* Status Icon */}
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    task.done ? 'bg-emerald-500' : 'bg-muted'
-                  }`}>
-                    {task.done ? (
-                      <Check size={16} className="text-white" />
-                    ) : (
-                      <Icon size={16} className="text-muted-foreground" />
-                    )}
-                  </div>
+          {/* Expandable Cards */}
+          <div className="px-4 pb-4 space-y-2 overflow-y-auto flex-1">
+            {/* Fixed tasks - always visible */}
+            <HydrationExpandCard isCompleted={hydrationCompleted} />
+            <SleepExpandCard isCompleted={sleepCompleted} />
+            <MindsetExpandCard isCompleted={mindsetCompleted} />
 
-                  {/* Info */}
-                  <div className="flex-1">
-                    <p className={`font-medium ${task.done ? 'text-emerald-400' : 'text-foreground'}`}>
-                      {task.label}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {task.detail}
-                    </p>
-                  </div>
+            {/* Nutrition - only if has active plan */}
+            {hasPlan && (
+              <MealsExpandCard isCompleted={mealsCompleted} />
+            )}
 
-                  {/* Actions */}
-                  {!task.done && task.quickAction && (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={task.quickAction.onClick}
-                      className="px-3 py-1.5 rounded-lg bg-coral/20 text-coral text-xs font-medium flex items-center gap-1"
-                    >
-                      <Plus size={12} />
-                      {task.quickAction.label}
-                    </motion.button>
-                  )}
-
-                  {!task.done && task.action && (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={task.action}
-                      className="w-8 h-8 rounded-full bg-muted flex items-center justify-center"
-                    >
-                      <ChevronRight size={16} className="text-muted-foreground" />
-                    </motion.button>
-                  )}
-
-                  {task.done && (
-                    <span className="text-xs text-emerald-400 font-medium">
-                      ✓ Feito
-                    </span>
-                  )}
-                </motion.div>
-              );
-            })}
+            {/* Workout - only if wants exercise */}
+            {wantsExercise && (
+              <WorkoutExpandCard 
+                isCompleted={workoutCompleted} 
+                onClose={onClose}
+              />
+            )}
           </div>
 
           {/* Bottom Padding for safe area */}
-          <div className="h-6" />
+          <div className="h-6 flex-shrink-0" />
         </motion.div>
       </motion.div>
     </AnimatePresence>

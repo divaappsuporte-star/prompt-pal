@@ -258,48 +258,26 @@ const ProfileModal = ({ isOpen, onClose, isOnboarding = false }: ProfileModalPro
                   Preferências
                 </h3>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm text-muted-foreground mb-1.5">
-                      Atividade Física
-                    </label>
-                    <Select
-                      value={formData.activity_level}
-                      onValueChange={(value) => handleChange("activity_level", value)}
-                    >
-                      <SelectTrigger className="bg-muted border-border">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="sedentario">Sedentário</SelectItem>
-                        <SelectItem value="leve">Leve</SelectItem>
-                        <SelectItem value="moderado">Moderado</SelectItem>
-                        <SelectItem value="ativo">Ativo</SelectItem>
-                        <SelectItem value="muito_ativo">Muito Ativo</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="block text-sm text-muted-foreground mb-1.5">
-                      Dieta Preferida
-                    </label>
-                    <Select
-                      value={formData.diet_preference}
-                      onValueChange={(value) => handleChange("diet_preference", value)}
-                    >
-                      <SelectTrigger className="bg-muted border-border">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="nenhuma">Nenhuma</SelectItem>
-                        <SelectItem value="carnivora">Carnívora</SelectItem>
-                        <SelectItem value="lowcarb">Low Carb</SelectItem>
-                        <SelectItem value="keto">Cetogênica</SelectItem>
-                        <SelectItem value="jejum">Jejum Intermitente</SelectItem>
-                        <SelectItem value="detox">Detox</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div>
+                  <label className="block text-sm text-muted-foreground mb-1.5">
+                    Dieta Preferida
+                  </label>
+                  <Select
+                    value={formData.diet_preference}
+                    onValueChange={(value) => handleChange("diet_preference", value)}
+                  >
+                    <SelectTrigger className="bg-muted border-border">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="nenhuma">Nenhuma</SelectItem>
+                      <SelectItem value="carnivora">Carnívora</SelectItem>
+                      <SelectItem value="lowcarb">Low Carb</SelectItem>
+                      <SelectItem value="keto">Cetogênica</SelectItem>
+                      <SelectItem value="jejum">Jejum Intermitente</SelectItem>
+                      <SelectItem value="detox">Detox</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
