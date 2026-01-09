@@ -28,6 +28,7 @@ import {
   Settings2
 } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
+import QuickLogModal from "@/components/modals/QuickLogModal";
 import RecipeCard from "@/components/RecipeCard";
 import { useProgress } from "@/hooks/useProgress";
 import { useActivePlan } from "@/hooks/useActivePlan";
@@ -64,10 +65,33 @@ const CarnivoreDiet = () => {
   const { activePlan, createPlan } = useActivePlan('carnivore');
   
   const [activeTab, setActiveTab] = useState("chapters");
+  const [navActiveTab, setNavActiveTab] = useState("nutricao");
+  const [showQuickLog, setShowQuickLog] = useState(false);
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
   const [targetKgLoss, setTargetKgLoss] = useState(5);
+
+  const handleTabChange = (tab: string) => {
+    setNavActiveTab(tab);
+    switch (tab) {
+      case "home":
+        navigate("/");
+        break;
+      case "treino":
+        navigate("/treino");
+        break;
+      case "nutricao":
+        navigate("/nutricao");
+        break;
+      case "mente":
+        navigate("/mentalidade");
+        break;
+      case "add":
+        setShowQuickLog(true);
+        break;
+    }
+  };
   
   // Load from localStorage
   const savedProgress = loadProgress();
@@ -865,7 +889,9 @@ const CarnivoreDiet = () => {
         )}
       </AnimatePresence>
 
-      <BottomNavigation activeTab="nutrition" onTabChange={() => {}} />
+      <BottomNavigation activeTab={navActiveTab} onTabChange={handleTabChange} />
+      
+      <QuickLogModal isOpen={showQuickLog} onClose={() => setShowQuickLog(false)} />
 
       {/* Goal Selection Modal */}
       <GoalSelectionModal

@@ -9,6 +9,7 @@ import {
   User2, 
   Heart, 
   Check,
+  CheckCircle2,
   Droplets,
   AlertTriangle
 } from "lucide-react";
@@ -339,15 +340,29 @@ const CreatePlan = () => {
 
             {/* Diet Selection */}
             <div className="mb-6">
-              <h2 className="font-display text-lg font-bold text-foreground mb-2">
-                Escolha seu Protocolo Principal
-              </h2>
+              <div className="flex items-center gap-2 mb-2">
+                <h2 className="font-display text-lg font-bold text-foreground">
+                  Escolha UMA Dieta
+                </h2>
+                <span className="px-2 py-0.5 text-xs font-bold bg-primary/20 text-primary rounded-full">
+                  OBRIGATÓRIO
+                </span>
+              </div>
               <p className="text-sm text-muted-foreground mb-4">
                 {hasMultipleDiets 
-                  ? "Você tem acesso a múltiplos protocolos! Escolha o principal para o seu plano de 21 dias."
-                  : "Selecione a dieta base do seu plano de 21 dias."
+                  ? "Você tem acesso a múltiplos protocolos! Selecione apenas UM como base do seu plano de 21 dias."
+                  : "Selecione UMA dieta que será a base do seu plano personalizado de 21 dias."
                 }
               </p>
+              
+              {selectedDiet && (
+                <div className="mb-4 p-3 rounded-xl bg-primary/10 border border-primary/30 flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />
+                  <span className="text-sm text-primary font-medium">
+                    1 protocolo selecionado: {DIET_INFO[selectedDiet].name}
+                  </span>
+                </div>
+              )}
               
               <DietSelector 
                 selectedDiet={selectedDiet}
