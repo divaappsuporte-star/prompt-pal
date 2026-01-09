@@ -309,7 +309,6 @@ const Index = () => {
       <BottomNavigation 
         activeTab={activeTab} 
         onTabChange={handleTabChange}
-        showTraining={wantsExercise}
       />
 
       {/* Modals */}
