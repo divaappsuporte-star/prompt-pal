@@ -115,6 +115,35 @@ export const useAdminUsers = () => {
     return { error };
   };
 
+  const createUser = async (email: string, password: string, fullName: string) => {
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-create-user`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.session?.access_token}`,
+          },
+          body: JSON.stringify({ email, password, fullName }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return { error: new Error(result.error || "Failed to create user") };
+      }
+
+      await fetchUsers();
+      return { error: null, data: result };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
 
@@ -141,6 +170,7 @@ export const useAdminUsers = () => {
     suspendUser,
     grantDietAccess,
     revokeDietAccess,
+    createUser,
     refetch: fetchUsers,
   };
 };
