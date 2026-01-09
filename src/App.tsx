@@ -23,6 +23,7 @@ import IntermittentFasting from "./pages/IntermittentFasting";
 import DetoxJuices from "./pages/DetoxJuices";
 import FoodEducation from "./pages/FoodEducation";
 import NotFound from "./pages/NotFound";
+import Vendas from "./pages/Vendas";
 
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
@@ -46,6 +47,7 @@ const App = () => (
         <AuthProvider>
           <RealtimeProvider>
             <Routes>
+              <Route path="/vendas" element={<Vendas />} />
               <Route path="/auth" element={<Auth />} />
               <Route
                 path="/"
