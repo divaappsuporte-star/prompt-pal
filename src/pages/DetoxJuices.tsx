@@ -4,6 +4,8 @@ import { ArrowLeft, Leaf, BookOpen, ChefHat, Lock, CheckCircle2, X, Flame, Dropl
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RecipeCard from "@/components/RecipeCard";
+import BottomNavigation from "@/components/BottomNavigation";
+import QuickLogModal from "@/components/modals/QuickLogModal";
 import { useProgress } from "@/hooks/useProgress";
 import { loadProgress, completeOnboardingStep } from "@/services/progressService";
 
@@ -12,6 +14,29 @@ const DetoxJuices = () => {
   const { completeNutrition } = useProgress();
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<number | null>(null);
+  const [navActiveTab, setNavActiveTab] = useState("nutricao");
+  const [showQuickLog, setShowQuickLog] = useState(false);
+
+  const handleTabChange = (tab: string) => {
+    setNavActiveTab(tab);
+    switch (tab) {
+      case "home":
+        navigate("/");
+        break;
+      case "treino":
+        navigate("/treino");
+        break;
+      case "nutricao":
+        navigate("/nutricao");
+        break;
+      case "mente":
+        navigate("/mentalidade");
+        break;
+      case "add":
+        setShowQuickLog(true);
+        break;
+    }
+  };
   
   // Load from localStorage
   const savedProgress = loadProgress();
@@ -665,6 +690,10 @@ const DetoxJuices = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <BottomNavigation activeTab={navActiveTab} onTabChange={handleTabChange} />
+      
+      <QuickLogModal isOpen={showQuickLog} onClose={() => setShowQuickLog(false)} />
     </div>
   );
 };
