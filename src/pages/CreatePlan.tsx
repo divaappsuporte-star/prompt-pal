@@ -9,19 +9,26 @@ import {
   User2, 
   Heart, 
   Check,
-  CheckCircle2,
-  Droplets,
-  AlertTriangle
+  AlertTriangle,
+  Lock,
+  Info
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePersonalPlan } from "@/hooks/usePersonalPlan";
 import { useDietAccess } from "@/hooks/useDietAccess";
 import { DietType, DIET_INFO, HealthCondition, HEALTH_CONDITION_LABELS } from "@/types/diet";
-import DietSelector from "@/components/plan/DietSelector";
 import DietLoadingOverlay from "@/components/diet/DietLoadingOverlay";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
+import { 
+  Beef, 
+  Flame, 
+  Leaf, 
+  Zap,
+  Droplets,
+  Clock,
+  LucideIcon 
+} from "lucide-react";
 
 type Step = 'health' | 'diet' | 'extras' | 'goal';
 
@@ -33,11 +40,21 @@ const HEALTH_CONDITIONS: HealthCondition[] = [
   'celiaquia'
 ];
 
+// Icons for diet cards
+const DIET_ICONS: Record<DietType, LucideIcon> = {
+  carnivore: Beef,
+  keto: Flame,
+  lowcarb: Leaf,
+  metabolic: Zap,
+  detox: Droplets,
+  fasting: Clock,
+};
+
 const CreatePlan = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const { createPlan, hasPlan, isLoading } = usePersonalPlan();
-  const { hasDietAccess, unlockedDiets } = useDietAccess();
+  const { hasDietAccess, mainDiets } = useDietAccess();
   
   const [step, setStep] = useState<Step>('health');
   const [selectedConditions, setSelectedConditions] = useState<HealthCondition[]>([]);
@@ -48,11 +65,6 @@ const CreatePlan = () => {
   const [showLoading, setShowLoading] = useState(false);
 
   const hasDetoxAccess = hasDietAccess('detox');
-  
-  // Check if user has multiple diet options (excluding detox which is an add-on)
-  const mainDiets: DietType[] = ['carnivore', 'keto', 'lowcarb', 'metabolic', 'fasting'];
-  const unlockedMainDiets = mainDiets.filter(d => hasDietAccess(d));
-  const hasMultipleDiets = unlockedMainDiets.length > 1;
 
   // Redirect if user already has a plan
   useEffect(() => {
@@ -94,7 +106,6 @@ const CreatePlan = () => {
   };
 
   const handleHealthContinue = () => {
-    // TODO: Save health conditions to database
     setStep('diet');
   };
 
@@ -104,7 +115,6 @@ const CreatePlan = () => {
 
   const handleDietContinue = () => {
     if (selectedDiet) {
-      // If user has detox access, show extras step
       if (hasDetoxAccess) {
         setStep('extras');
       } else {
@@ -338,37 +348,112 @@ const CreatePlan = () => {
               </div>
             </div>
 
+            {/* Diet Selection Warning */}
+            <div className="mb-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-amber-500 mb-1">
+                    Escolha com sabedoria!
+                  </p>
+                  <p className="text-xs text-amber-500/80">
+                    Você só consegue criar o plano de 21 dias com <strong>1 dieta</strong>. 
+                    Após selecionar, as outras ficarão bloqueadas.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Diet Selection */}
             <div className="mb-6">
-              <div className="flex items-center gap-2 mb-2">
-                <h2 className="font-display text-lg font-bold text-foreground">
-                  Escolha UMA Dieta
-                </h2>
-                <span className="px-2 py-0.5 text-xs font-bold bg-primary/20 text-primary rounded-full">
-                  OBRIGATÓRIO
-                </span>
+              <h2 className="font-display text-lg font-bold text-foreground mb-4">
+                Escolha sua Dieta Base
+              </h2>
+              
+              <div className="grid grid-cols-2 gap-3">
+                {mainDiets.map((dietKey, index) => {
+                  const diet = DIET_INFO[dietKey];
+                  const isSelected = selectedDiet === dietKey;
+                  const Icon = DIET_ICONS[dietKey];
+                  const isLocked = selectedDiet !== null && selectedDiet !== dietKey;
+
+                  return (
+                    <motion.button
+                      key={dietKey}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      whileHover={{ scale: isLocked ? 1 : 1.02 }}
+                      whileTap={{ scale: isLocked ? 1 : 0.98 }}
+                      onClick={() => !isLocked && handleDietSelect(dietKey)}
+                      disabled={isLocked}
+                      className={`
+                        relative aspect-square rounded-2xl p-4 text-left transition-all
+                        flex flex-col justify-between
+                        ${isSelected 
+                          ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' 
+                          : ''
+                        }
+                        ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                      `}
+                      style={{
+                        background: `linear-gradient(135deg, ${diet.color}15, ${diet.color}05)`,
+                        borderColor: `${diet.color}30`,
+                        borderWidth: '1px',
+                        borderStyle: 'solid',
+                      }}
+                    >
+                      {/* Selected check */}
+                      {isSelected && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center z-20"
+                        >
+                          <Check className="w-4 h-4 text-primary-foreground" />
+                        </motion.div>
+                      )}
+
+                      {/* Locked overlay */}
+                      {isLocked && (
+                        <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] flex items-center justify-center rounded-2xl z-10">
+                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                            <Lock className="w-4 h-4 text-muted-foreground" />
+                          </div>
+                        </div>
+                      )}
+
+                      <div 
+                        className="w-10 h-10 rounded-xl flex items-center justify-center"
+                        style={{ backgroundColor: `${diet.color}20` }}
+                      >
+                        <Icon className="w-5 h-5" style={{ color: diet.color }} />
+                      </div>
+
+                      <div>
+                        <h4 className="font-display font-bold text-sm text-foreground">
+                          {diet.name}
+                        </h4>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                          {diet.description}
+                        </p>
+                      </div>
+                    </motion.button>
+                  );
+                })}
               </div>
-              <p className="text-sm text-muted-foreground mb-4">
-                {hasMultipleDiets 
-                  ? "Você tem acesso a múltiplos protocolos! Selecione apenas UM como base do seu plano de 21 dias."
-                  : "Selecione UMA dieta que será a base do seu plano personalizado de 21 dias."
-                }
-              </p>
-              
+
+              {/* Reset selection button */}
               {selectedDiet && (
-                <div className="mb-4 p-3 rounded-xl bg-primary/10 border border-primary/30 flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />
-                  <span className="text-sm text-primary font-medium">
-                    1 protocolo selecionado: {DIET_INFO[selectedDiet].name}
-                  </span>
-                </div>
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  onClick={() => setSelectedDiet(null)}
+                  className="w-full mt-4 p-3 rounded-xl border border-muted text-sm text-muted-foreground hover:bg-muted/50 transition-colors"
+                >
+                  Alterar seleção
+                </motion.button>
               )}
-              
-              <DietSelector 
-                selectedDiet={selectedDiet}
-                onSelect={handleDietSelect}
-                excludeDetox={true}
-              />
             </div>
 
             <Button
