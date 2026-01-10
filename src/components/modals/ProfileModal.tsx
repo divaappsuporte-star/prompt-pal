@@ -32,7 +32,6 @@ const ProfileModal = ({ isOpen, onClose, isOnboarding = false }: ProfileModalPro
     weight_kg: "",
     goal_weight_kg: "",
     activity_level: "",
-    diet_preference: "",
     water_goal_ml: "2000",
     sleep_goal_hours: "8",
     show_name: true,
@@ -49,7 +48,6 @@ const ProfileModal = ({ isOpen, onClose, isOnboarding = false }: ProfileModalPro
         weight_kg: profile.weight_kg?.toString() || "",
         goal_weight_kg: profile.goal_weight_kg?.toString() || "",
         activity_level: profile.activity_level || "",
-        diet_preference: profile.diet_preference || "",
         water_goal_ml: profile.water_goal_ml?.toString() || "2000",
         sleep_goal_hours: profile.sleep_goal_hours?.toString() || "8",
         show_name: profile.show_name ?? true,
@@ -81,7 +79,6 @@ const ProfileModal = ({ isOpen, onClose, isOnboarding = false }: ProfileModalPro
       weight_kg: formData.weight_kg ? parseFloat(formData.weight_kg) : null,
       goal_weight_kg: formData.goal_weight_kg ? parseFloat(formData.goal_weight_kg) : null,
       activity_level: formData.activity_level || null,
-      diet_preference: formData.diet_preference || null,
       water_goal_ml: parseInt(formData.water_goal_ml) || 2000,
       sleep_goal_hours: parseInt(formData.sleep_goal_hours) || 8,
       show_name: formData.show_name,
@@ -257,28 +254,6 @@ const ProfileModal = ({ isOpen, onClose, isOnboarding = false }: ProfileModalPro
                   <Target className="w-4 h-4" />
                   Preferências
                 </h3>
-
-                <div>
-                  <label className="block text-sm text-muted-foreground mb-1.5">
-                    Dieta Preferida
-                  </label>
-                  <Select
-                    value={formData.diet_preference}
-                    onValueChange={(value) => handleChange("diet_preference", value)}
-                  >
-                    <SelectTrigger className="bg-muted border-border">
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="nenhuma">Nenhuma</SelectItem>
-                      <SelectItem value="carnivora">Carnívora</SelectItem>
-                      <SelectItem value="lowcarb">Low Carb</SelectItem>
-                      <SelectItem value="keto">Cetogênica</SelectItem>
-                      <SelectItem value="jejum">Jejum Intermitente</SelectItem>
-                      <SelectItem value="detox">Detox</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>

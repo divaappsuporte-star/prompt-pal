@@ -4,44 +4,26 @@ import { useNavigate } from "react-router-dom";
 import { Brain, Dumbbell, User, ChevronRight, Sparkles, Shield, BookOpen } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDietAccess, useUserRole } from "@/hooks/useDietAccess";
-import { useActivePlan } from "@/hooks/useActivePlan";
-import { useAllActivePlans } from "@/hooks/useAllActivePlans";
 import { DietType, DIET_INFO } from "@/types/diet";
 import BottomNavigation from "@/components/BottomNavigation";
 import Logo from "@/components/Logo";
 import DietCard from "@/components/diet/DietCard";
 import BodyStatusCard from "@/components/diet/BodyStatusCard";
-import GoalSelectionModal from "@/components/diet/GoalSelectionModal";
-import DietLoadingOverlay from "@/components/diet/DietLoadingOverlay";
 import QuickLogModal from "@/components/modals/QuickLogModal";
 import ProfileModal from "@/components/modals/ProfileModal";
-import PurchaseModal from "@/components/modals/PurchaseModal";
 import MyPlanCard from "@/components/plan/MyPlanCard";
-import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const Index = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const { hasDietAccess, isLoading: accessLoading } = useDietAccess();
+  const { isDietLocked, canViewDiet, selectedDiet, bonusDiets } = useDietAccess();
   const { isSuperAdmin } = useUserRole();
-  const { hasActivePlan, getActivePlan } = useAllActivePlans();
   
   const [activeTab, setActiveTab] = useState("home");
   const [showQuickLog, setShowQuickLog] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [isOnboarding, setIsOnboarding] = useState(false);
-  
-  // Diet selection state
-  const [selectedDiet, setSelectedDiet] = useState<DietType | null>(null);
-  const [showGoalModal, setShowGoalModal] = useState(false);
-  const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
-  const [targetKgLoss, setTargetKgLoss] = useState(5);
-  
-  // Purchase modal state
-  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
-  const [purchaseDiet, setPurchaseDiet] = useState<DietType | null>(null);
-
-  const { createPlan } = useActivePlan(selectedDiet || undefined);
 
   const wantsExercise = (profile as any)?.wants_exercise ?? true;
 
@@ -84,43 +66,25 @@ const Index = () => {
   };
 
   const handleDietClick = (dietKey: DietType) => {
-    const hasAccess = hasDietAccess(dietKey);
+    const isLocked = isDietLocked(dietKey);
+    const canView = canViewDiet(dietKey);
     
-    if (hasAccess) {
-      // Navigate directly to diet page (educational content)
-      const dietInfo = DIET_INFO[dietKey];
-      navigate(dietInfo.route);
-    } else {
-      // Open purchase modal for locked diet
-      setPurchaseDiet(dietKey);
-      setShowPurchaseModal(true);
+    if (isLocked && !canView) {
+      // Show message that they need to create a plan first
+      toast.info("Crie seu plano de 21 dias para desbloquear este protocolo", {
+        description: "Acesse 'Meu Plano' para escolher sua dieta base",
+        duration: 4000,
+      });
+      return;
     }
+    
+    // Can view this diet - navigate
+    const dietInfo = DIET_INFO[dietKey];
+    navigate(dietInfo.route);
   };
 
-  const handleGoalConfirm = async (kgLoss: number) => {
-    setTargetKgLoss(kgLoss);
-    setShowGoalModal(false);
-    setShowLoadingOverlay(true);
-  };
-
-  const handleLoadingComplete = async () => {
-    if (selectedDiet) {
-      try {
-        await createPlan.mutateAsync({ targetWeightLoss: targetKgLoss });
-        setShowLoadingOverlay(false);
-        // Navigate to diet page
-        const dietInfo = DIET_INFO[selectedDiet];
-        navigate(dietInfo.route);
-      } catch (error) {
-        console.error("Error creating plan:", error);
-        setShowLoadingOverlay(false);
-      }
-    }
-  };
-
-  // Diet list in order
+  // Diet list in order: main diets first, then bonus
   const dietList: DietType[] = ['carnivore', 'keto', 'lowcarb', 'metabolic', 'detox', 'fasting'];
-
 
   return (
     <div className="min-h-screen pb-24">
@@ -199,14 +163,14 @@ const Index = () => {
         <div className="grid grid-cols-2 gap-3">
           {dietList.map((dietKey, index) => {
             const diet = DIET_INFO[dietKey];
-            const hasAccess = hasDietAccess(dietKey);
+            const isLocked = isDietLocked(dietKey);
             
             return (
               <DietCard
                 key={dietKey}
                 diet={diet}
-                isLocked={!hasAccess}
-                hasActivePlan={false}
+                isLocked={isLocked}
+                hasActivePlan={selectedDiet === dietKey}
                 progress={0}
                 onClick={() => handleDietClick(dietKey)}
                 onUnlockClick={() => handleDietClick(dietKey)}
@@ -317,39 +281,6 @@ const Index = () => {
         isOpen={showProfile} 
         onClose={handleProfileClose}
         isOnboarding={isOnboarding}
-      />
-      
-      {/* Goal Selection Modal */}
-      {selectedDiet && (
-        <GoalSelectionModal
-          isOpen={showGoalModal}
-          onClose={() => {
-            setShowGoalModal(false);
-            setSelectedDiet(null);
-          }}
-          onConfirm={handleGoalConfirm}
-          diet={DIET_INFO[selectedDiet]}
-          isLoading={createPlan.isPending}
-        />
-      )}
-
-      {/* Loading Overlay */}
-      <DietLoadingOverlay
-        isOpen={showLoadingOverlay}
-        diet={selectedDiet ? DIET_INFO[selectedDiet] : null}
-        targetKgLoss={targetKgLoss}
-        onComplete={handleLoadingComplete}
-      />
-
-      {/* Purchase Modal */}
-      <PurchaseModal
-        isOpen={showPurchaseModal}
-        onClose={() => {
-          setShowPurchaseModal(false);
-          setPurchaseDiet(null);
-        }}
-        diet={purchaseDiet ? DIET_INFO[purchaseDiet] : null}
-        dietKey={purchaseDiet}
       />
     </div>
   );
