@@ -24,7 +24,6 @@ const SalesModal = ({ isOpen, onClose, dietKey }: SalesModalProps) => {
 
   const benefits = [
     "Cardápio Personalizado",
-    "Lista de Compras Inteligente",
     "Acesso Vitalício ao Protocolo",
     "Suporte Exclusivo via App"
   ];
@@ -92,7 +91,7 @@ const SalesModal = ({ isOpen, onClose, dietKey }: SalesModalProps) => {
               </Button>
               
               <p className="text-center text-[10px] text-muted-foreground mt-4">
-                Pagamento seguro via Kiwify • Acesso imediato após aprovação
+                Pagamento seguro via Kirvano • Acesso imediato após aprovação
               </p>
             </div>
           </motion.div>
