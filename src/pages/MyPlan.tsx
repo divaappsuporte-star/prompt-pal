@@ -92,6 +92,16 @@ const MyPlan = () => {
 
   const progressDiet = personalPlan ? getProgressDiet(personalPlan.diet_type) : 'lowcarb';
 
+  const getMealStatus = (mealTime: string) => {
+    const now = new Date();
+    const [hours, minutes] = mealTime.split(':').map(Number);
+    const mealDate = new Date();
+    mealDate.setHours(hours, minutes, 0);
+
+    if (now > mealDate) return 'past';
+    return 'future';
+  };
+
   const handleMealComplete = (mealType: 'breakfast' | 'lunch' | 'dinner') => {
     if (!personalPlan || !dailyPlan) return;
     
@@ -270,16 +280,18 @@ const MyPlan = () => {
           
           <div className="space-y-3">
             {!hasFastingIntegrated ? (
-              <MealExpandCard
-                type="breakfast"
-                label="Café da Manhã"
-                time="07:00"
-                meal={dailyPlan?.breakfast || null}
-                feedback={dailyPlan?.meal_feedbacks?.breakfast || null}
-                completed={breakfastCompleted}
-                onComplete={() => handleMealComplete('breakfast')}
-                isLoading={mealsLoading}
-              />
+              <div className={getMealStatus("09:00") === 'past' && !breakfastCompleted ? "opacity-50 grayscale-[0.5]" : ""}>
+                <MealExpandCard
+                  type="breakfast"
+                  label="Café da Manhã"
+                  time="07:00"
+                  meal={dailyPlan?.breakfast || null}
+                  feedback={dailyPlan?.meal_feedbacks?.breakfast || null}
+                  completed={breakfastCompleted}
+                  onComplete={() => handleMealComplete('breakfast')}
+                  isLoading={mealsLoading}
+                />
+              </div>
             ) : (
               <motion.div 
                 initial={{ opacity: 0 }}
@@ -293,26 +305,30 @@ const MyPlan = () => {
                 </div>
               </motion.div>
             )}
-            <MealExpandCard
-              type="lunch"
-              label="Almoço"
-              time="12:00"
-              meal={dailyPlan?.lunch || null}
-              feedback={dailyPlan?.meal_feedbacks?.lunch || null}
-              completed={lunchCompleted}
-              onComplete={() => handleMealComplete('lunch')}
-              isLoading={mealsLoading}
-            />
-            <MealExpandCard
-              type="dinner"
-              label="Jantar"
-              time="19:00"
-              meal={dailyPlan?.dinner || null}
-              feedback={dailyPlan?.meal_feedbacks?.dinner || null}
-              completed={dinnerCompleted}
-              onComplete={() => handleMealComplete('dinner')}
-              isLoading={mealsLoading}
-            />
+            <div className={getMealStatus("14:00") === 'past' && !lunchCompleted ? "opacity-50 grayscale-[0.5]" : ""}>
+              <MealExpandCard
+                type="lunch"
+                label="Almoço"
+                time="12:00"
+                meal={dailyPlan?.lunch || null}
+                feedback={dailyPlan?.meal_feedbacks?.lunch || null}
+                completed={lunchCompleted}
+                onComplete={() => handleMealComplete('lunch')}
+                isLoading={mealsLoading}
+              />
+            </div>
+            <div className={getMealStatus("21:00") === 'past' && !dinnerCompleted ? "opacity-50 grayscale-[0.5]" : ""}>
+              <MealExpandCard
+                type="dinner"
+                label="Jantar"
+                time="19:00"
+                meal={dailyPlan?.dinner || null}
+                feedback={dailyPlan?.meal_feedbacks?.dinner || null}
+                completed={dinnerCompleted}
+                onComplete={() => handleMealComplete('dinner')}
+                isLoading={mealsLoading}
+              />
+            </div>
           </div>
         </motion.div>
 
