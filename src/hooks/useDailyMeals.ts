@@ -80,34 +80,47 @@ export const useDailyMeals = (
       }
 
       if (!data) {
-        // Fallback para receitas locais se não encontrar no banco
-        const fallback = FALLBACK_MEALS[dietType] || FALLBACK_MEALS['lowcarb'];
+        // Cérebro 2.0: Seleção inteligente baseada no dia e tipo de dieta
+        const dietPool = FALLBACK_MEALS[dietType] || FALLBACK_MEALS['lowcarb'];
+        
+        // Função para selecionar receita baseada no dia (ciclo rotativo)
+        const selectMeal = (meals: any[], day: number) => {
+          if (!Array.isArray(meals)) return meals;
+          return meals[(day - 1) % meals.length];
+        };
+
+        const breakfast = selectMeal(dietPool.breakfast, dayNumber);
+        const lunch = selectMeal(dietPool.lunch, dayNumber);
+        const dinner = selectMeal(dietPool.dinner, dayNumber);
+
         return {
-          id: 'fallback',
+          id: `fallback-${dietType}-${dayNumber}`,
           diet_type: dietType,
           target_kg_loss: targetKgLoss,
           day_number: dayNumber,
-          phase: "Adaptação",
-          breakfast: fallback.breakfast,
-          lunch: fallback.lunch,
-          dinner: fallback.dinner,
+          phase: dayNumber <= 7 ? "Adaptação" : dayNumber <= 14 ? "Otimização" : "Aceleração",
+          breakfast,
+          lunch,
+          dinner,
           snacks: null,
-          total_calories: fallback.breakfast.calories + fallback.lunch.calories + fallback.dinner.calories,
+          total_calories: breakfast.calories + lunch.calories + dinner.calories,
           macros: {
-            protein: fallback.breakfast.protein + fallback.lunch.protein + fallback.dinner.protein,
-            fat: fallback.breakfast.fat + fallback.lunch.fat + fallback.dinner.fat,
-            carbs: fallback.breakfast.carbs + fallback.lunch.carbs + fallback.dinner.carbs,
+            protein: breakfast.protein + lunch.protein + dinner.protein,
+            fat: breakfast.fat + lunch.fat + dinner.fat,
+            carbs: breakfast.carbs + lunch.carbs + dinner.carbs,
           },
           daily_deficit: 500,
-          cumulative_loss: 0,
+          cumulative_loss: (dayNumber * 0.2).toFixed(1),
           body_explanation: {
-            title: "Início da Jornada",
-            description: "Seu corpo está começando a se adaptar à nova distribuição de macros. Mantenha a constância!"
+            title: dayNumber <= 7 ? "Fase de Adaptação" : "Queima Ativa",
+            description: dayNumber <= 7 
+              ? "Seu corpo está aprendendo a usar gordura como fonte primária de energia." 
+              : "A lipólise está em ritmo acelerado. Você está queimando gordura estocada agora."
           },
           meal_feedbacks: {
-            breakfast: "Ótimo começo de dia!",
-            lunch: "Refeição nutritiva e saciante.",
-            dinner: "Finalizando o dia com leveza."
+            breakfast: "Energia estável para começar o dia.",
+            lunch: "Foco total na saciedade e nutrição.",
+            dinner: "Reparação celular e queima noturna."
           }
         } as DailyMealPlan;
       }
