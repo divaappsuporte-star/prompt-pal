@@ -15,7 +15,6 @@ import Treino from "./pages/Treino";
 import Complemento from "./pages/Complemento";
 import CreatePlan from "./pages/CreatePlan";
 import MyPlan from "./pages/MyPlan";
-
 import CarnivoreDiet from "./pages/CarnivoreDiet";
 import LowCarbDiet from "./pages/LowCarbDiet";
 import KetoDiet from "./pages/KetoDiet";
@@ -24,9 +23,9 @@ import DetoxJuices from "./pages/DetoxJuices";
 import FoodEducation from "./pages/FoodEducation";
 import NotFound from "./pages/NotFound";
 import Vendas from "./pages/Vendas";
-
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/Users";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,146 +37,158 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <RealtimeProvider>
-            <Routes>
-              <Route path="/vendas" element={<Vendas />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <Index />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/criar-plano"
-                element={
-                  <ProtectedRoute>
-                    <CreatePlan />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/meu-plano"
-                element={
-                  <ProtectedRoute>
-                    <MyPlan />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/nutricao"
-                element={
-                  <ProtectedRoute>
-                    <Nutrition />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/mentalidade"
-                element={
-                  <ProtectedRoute>
-                    <Mindset />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/treino"
-                element={
-                  <ProtectedRoute>
-                    <Treino />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dieta-carnivora"
-                element={
-                  <ProtectedRoute>
-                    <CarnivoreDiet />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dieta-lowcarb"
-                element={
-                  <ProtectedRoute>
-                    <LowCarbDiet />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dieta-cetogenica"
-                element={
-                  <ProtectedRoute>
-                    <KetoDiet />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/jejum-intermitente"
-                element={
-                  <ProtectedRoute>
-                    <IntermittentFasting />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/sucos-detox"
-                element={
-                  <ProtectedRoute>
-                    <DetoxJuices />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/complemento"
-                element={
-                  <ProtectedRoute>
-                    <Complemento />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/educacao-alimentar"
-                element={
-                  <ProtectedRoute>
-                    <FoodEducation />
-                  </ProtectedRoute>
-                }
-              />
-              {/* Admin Routes */}
-              <Route
-                path="/admin"
-                element={
-                  <AdminProtectedRoute>
-                    <AdminDashboard />
-                  </AdminProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/users"
-                element={
-                  <AdminProtectedRoute>
-                    <AdminUsers />
-                  </AdminProtectedRoute>
-                }
-              />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </RealtimeProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  useEffect(() => {
+    // Limpeza de cache para garantir sincronia com a versão estável restaurada
+    const hasReset = localStorage.getItem('master_reset_v2');
+    if (!hasReset) {
+      localStorage.clear();
+      localStorage.setItem('master_reset_v2', 'true');
+      window.location.reload();
+    }
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <RealtimeProvider>
+              <Routes>
+                <Route path="/vendas" element={<Vendas />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedRoute>
+                      <Index />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/criar-plano"
+                  element={
+                    <ProtectedRoute>
+                      <CreatePlan />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/meu-plano"
+                  element={
+                    <ProtectedRoute>
+                      <MyPlan />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/nutricao"
+                  element={
+                    <ProtectedRoute>
+                      <Nutrition />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/mentalidade"
+                  element={
+                    <ProtectedRoute>
+                      <Mindset />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/treino"
+                  element={
+                    <ProtectedRoute>
+                      <Treino />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dieta-carnivora"
+                  element={
+                    <ProtectedRoute>
+                      <CarnivoreDiet />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dieta-lowcarb"
+                  element={
+                    <ProtectedRoute>
+                      <LowCarbDiet />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dieta-cetogenica"
+                  element={
+                    <ProtectedRoute>
+                      <KetoDiet />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/jejum-intermitente"
+                  element={
+                    <ProtectedRoute>
+                      <IntermittentFasting />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/sucos-detox"
+                  element={
+                    <ProtectedRoute>
+                      <DetoxJuices />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/complemento"
+                  element={
+                    <ProtectedRoute>
+                      <Complemento />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/educacao-alimentar"
+                  element={
+                    <ProtectedRoute>
+                      <FoodEducation />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Admin Routes */}
+                <Route
+                  path="/admin"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminDashboard />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/users"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminUsers />
+                    </AdminProtectedRoute>
+                  }
+                />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </RealtimeProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
