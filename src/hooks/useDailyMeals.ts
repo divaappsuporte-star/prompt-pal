@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DietType } from "@/types/diet";
+import { FALLBACK_MEALS } from "@/data/fallbackRecipes";
 
 interface Meal {
   name: string;
@@ -78,7 +79,38 @@ export const useDailyMeals = (
         return null;
       }
 
-      if (!data) return null;
+      if (!data) {
+        // Fallback para receitas locais se não encontrar no banco
+        const fallback = FALLBACK_MEALS[dietType] || FALLBACK_MEALS['lowcarb'];
+        return {
+          id: 'fallback',
+          diet_type: dietType,
+          target_kg_loss: targetKgLoss,
+          day_number: dayNumber,
+          phase: "Adaptação",
+          breakfast: fallback.breakfast,
+          lunch: fallback.lunch,
+          dinner: fallback.dinner,
+          snacks: null,
+          total_calories: fallback.breakfast.calories + fallback.lunch.calories + fallback.dinner.calories,
+          macros: {
+            protein: fallback.breakfast.protein + fallback.lunch.protein + fallback.dinner.protein,
+            fat: fallback.breakfast.fat + fallback.lunch.fat + fallback.dinner.fat,
+            carbs: fallback.breakfast.carbs + fallback.lunch.carbs + fallback.dinner.carbs,
+          },
+          daily_deficit: 500,
+          cumulative_loss: 0,
+          body_explanation: {
+            title: "Início da Jornada",
+            description: "Seu corpo está começando a se adaptar à nova distribuição de macros. Mantenha a constância!"
+          },
+          meal_feedbacks: {
+            breakfast: "Ótimo começo de dia!",
+            lunch: "Refeição nutritiva e saciante.",
+            dinner: "Finalizando o dia com leveza."
+          }
+        } as DailyMealPlan;
+      }
 
       return {
         ...data,
