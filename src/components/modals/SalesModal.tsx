@@ -15,12 +15,12 @@ const SalesModal = ({ isOpen, onClose, dietKey }: SalesModalProps) => {
   const diet = DIET_INFO[dietKey];
 
   const checkoutLinks: Record<string, string> = {
-    keto: "https://pay.kiwify.com.br/6Xp9z7Q", // Link fornecido pelo usuário
-    metabolic: "https://pay.kiwify.com.br/6Xp9z7Q",
-    fasting: "https://pay.kiwify.com.br/6Xp9z7Q",
+    keto: "https://pay.kirvano.com/7ed7bef7-1073-40a5-b8f5-44876b60022e",
+    metabolic: "https://pay.kirvano.com/7ed7bef7-1073-40a5-b8f5-44876b60022e",
+    fasting: "https://pay.kirvano.com/7ed7bef7-1073-40a5-b8f5-44876b60022e",
   };
 
-  const checkoutUrl = checkoutLinks[dietKey] || "https://pay.kiwify.com.br/6Xp9z7Q";
+  const checkoutUrl = checkoutLinks[dietKey] || "https://pay.kirvano.com/7ed7bef7-1073-40a5-b8f5-44876b60022e";
 
   const benefits = [
     "Cardápio Personalizado",
