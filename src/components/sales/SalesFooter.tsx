@@ -34,7 +34,7 @@ const SalesFooter = ({ onCtaClick }: SalesFooterProps) => {
             className="bg-coral hover:bg-coral/90 text-white font-display text-lg px-10 py-7 rounded-full shadow-lg shadow-coral/25 group"
           >
             <Zap className="w-5 h-5 mr-2" />
-            COMEÇAR AGORA POR R$47
+            COMEÇAR AGORA POR R$37
             <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
           </Button>
 
