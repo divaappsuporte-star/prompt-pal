@@ -77,7 +77,7 @@ const PricingSection = ({ onCtaClick }: PricingSectionProps) => {
             <div className="mb-6">
               <span className="text-muted-foreground line-through text-lg">De R$297</span>
               <div className="flex items-center justify-center gap-2">
-                <span className="text-5xl md:text-6xl font-display font-bold text-coral">R$47</span>
+                <span className="text-5xl md:text-6xl font-display font-bold text-coral">R$37</span>
               </div>
               <p className="text-sm text-muted-foreground mt-1">pagamento único – acesso vitalício</p>
             </div>

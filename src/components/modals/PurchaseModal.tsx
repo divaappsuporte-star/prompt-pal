@@ -6,13 +6,15 @@ import { motion } from "framer-motion";
 
 // Links de checkout para cada dieta
 // TODO: Substituir pelos links reais de pagamento
+// Links de checkout para cada dieta na Kirvano
+// Substitua os links abaixo pelos seus links reais da Kirvano
 const CHECKOUT_LINKS: Record<DietType, string> = {
-  carnivore: 'https://pay.hotmart.com/carnivore',
-  keto: 'https://pay.hotmart.com/keto',
-  lowcarb: 'https://pay.hotmart.com/lowcarb',
-  metabolic: 'https://pay.hotmart.com/metabolic',
-  detox: 'https://pay.hotmart.com/detox',
-  fasting: 'https://pay.hotmart.com/fasting',
+  carnivore: 'https://kirvano.com/seu-link-carnivora',
+  keto: 'https://kirvano.com/seu-link-cetogenica',
+  lowcarb: 'https://kirvano.com/seu-link-lowcarb',
+  metabolic: 'https://kirvano.com/seu-link-metabolica',
+  detox: 'https://kirvano.com/seu-link-detox',
+  fasting: 'https://kirvano.com/seu-link-jejum',
 };
 
 interface PurchaseModalProps {

@@ -17,7 +17,8 @@ const Vendas = () => {
   const navigate = useNavigate();
 
   const handleCtaClick = () => {
-    navigate("/auth");
+    // Redireciona para o checkout principal da Kirvano (R$ 37)
+    window.open('https://pay.kirvano.com/65c427dc-23be-4a8e-8124-aab00eb6f589', '_blank');
   };
 
   return (
