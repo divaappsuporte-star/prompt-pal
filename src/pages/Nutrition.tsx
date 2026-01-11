@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Filter, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Filter, AlertTriangle, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useDietAccess } from "@/hooks/useDietAccess";
+import PurchaseModal from "@/components/modals/PurchaseModal";
+import { DietType } from "@/types/diet";
 import MedicalFilters from "@/components/nutrition/MedicalFilters";
 import MacroSummary from "@/components/nutrition/MacroSummary";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -70,6 +73,8 @@ const Nutrition = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("nutricao");
   const [showQuickLog, setShowQuickLog] = useState(false);
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const { canViewDiet } = useDietAccess();
   
   // Load saved preferences from localStorage
   const [filterAcknowledged, setFilterAcknowledged] = useState(() => {
@@ -334,27 +339,43 @@ const Nutrition = () => {
               animate={{ opacity: 1, y: 0 }}
               className="mt-6"
             >
-              <div 
-                onClick={() => navigate(currentPlan.route)}
-                className={`glass-card rounded-2xl p-6 cursor-pointer transition-all ${getColorClasses(currentPlan.color).border}`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${getColorClasses(currentPlan.color).bg}`}>
-                    <span className="text-3xl">{currentPlan.emoji}</span>
+              {(() => {
+                const dietKey = currentDietKey === "cetogenica" ? "keto" : 
+                               currentDietKey === "carnivora" ? "carnivore" : 
+                               currentDietKey === "jejum" ? "fasting" : 
+                               currentDietKey;
+                const isLocked = !canViewDiet(dietKey as DietType);
+                
+                return (
+                  <div 
+                    onClick={() => isLocked ? setShowPurchaseModal(true) : navigate(currentPlan.route)}
+                    className={`glass-card rounded-2xl p-6 cursor-pointer transition-all relative overflow-hidden ${getColorClasses(currentPlan.color).border} ${isLocked ? 'opacity-80 grayscale-[0.5]' : ''}`}
+                  >
+                    {isLocked && (
+                      <div className="absolute top-3 right-3 bg-coral/10 p-1.5 rounded-full">
+                        <Lock className="w-4 h-4 text-coral" />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-4">
+                      <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${getColorClasses(currentPlan.color).bg}`}>
+                        <span className="text-3xl">{currentPlan.emoji}</span>
+                      </div>
+                      <div className="flex-1">
+                        <h2 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+                          {currentPlan.name}
+                          {isLocked && <span className="text-[10px] bg-coral/20 text-coral px-2 py-0.5 rounded-full uppercase tracking-wider">Bloqueado</span>}
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                          {currentPlan.description}
+                        </p>
+                        <p className={`text-xs mt-1 ${isLocked ? 'text-coral font-medium' : getColorClasses(currentPlan.color).text}`}>
+                          {isLocked ? "Toque para desbloquear esta dieta →" : "Toque para acessar o conteúdo completo →"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h2 className="font-display text-lg font-bold text-foreground">
-                      {currentPlan.name}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      {currentPlan.description}
-                    </p>
-                    <p className={`text-xs mt-1 ${getColorClasses(currentPlan.color).text}`}>
-                      Toque para acessar o conteúdo completo →
-                    </p>
-                  </div>
-                </div>
-              </div>
+                );
+              })()}
             </motion.div>
           )}
         </Tabs>
@@ -362,6 +383,7 @@ const Nutrition = () => {
       {/* Bottom Navigation */}
       <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
       <QuickLogModal isOpen={showQuickLog} onClose={() => setShowQuickLog(false)} />
+      <PurchaseModal isOpen={showPurchaseModal} onClose={() => setShowPurchaseModal(false)} />
     </div>
   );
 };
