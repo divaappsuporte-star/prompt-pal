@@ -625,7 +625,7 @@ const CreatePlan = () => {
                 </div>
               </div>
 
-              {/* Warning for aggressive goals & Fasting Integration */}
+              {/* Fasting Integration for aggressive goals */}
               {targetKgLoss > 7 && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
