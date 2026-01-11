@@ -40,10 +40,10 @@ const queryClient = new QueryClient({
 const App = () => {
   useEffect(() => {
     // Limpeza de cache para garantir sincronia com a versão estável restaurada
-    const hasReset = localStorage.getItem('master_reset_v2');
+    const hasReset = localStorage.getItem('master_reset_v3');
     if (!hasReset) {
       localStorage.clear();
-      localStorage.setItem('master_reset_v2', 'true');
+      localStorage.setItem('master_reset_v3', 'true');
       window.location.reload();
     }
   }, []);
