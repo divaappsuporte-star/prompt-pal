@@ -10,9 +10,9 @@ import { motion } from "framer-motion";
 // Substitua os links abaixo pelos seus links reais da Kirvano
 const CHECKOUT_LINKS: Record<DietType, string> = {
   carnivore: 'https://kirvano.com/seu-link-carnivora',
-  keto: 'https://kirvano.com/seu-link-cetogenica',
+  keto: 'https://pay.kirvano.com/7ed7bef7-1073-40a5-b8f5-44876b60022e',
   lowcarb: 'https://kirvano.com/seu-link-lowcarb',
-  metabolic: 'https://kirvano.com/seu-link-metabolica',
+  metabolic: 'https://pay.kirvano.com/65c427dc-23be-4a8e-8124-aab00eb6f589',
   detox: 'https://kirvano.com/seu-link-detox',
   fasting: 'https://kirvano.com/seu-link-jejum',
 };
