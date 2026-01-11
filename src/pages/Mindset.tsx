@@ -42,10 +42,14 @@ const Mindset = () => {
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [showQuickLog, setShowQuickLog] = useState(false);
   
-  // Load from localStorage
+  // Track chapter progress from localStorage
   const savedProgress = loadProgress();
-  const [completedChapters, setCompletedChapters] = useState<number[]>(savedProgress.mindset.completedChapters);
-  const [unlockedChapters, setUnlockedChapters] = useState<number[]>(savedProgress.mindset.unlockedChapters);
+  const [unlockedChapters, setUnlockedChapters] = useState<number[]>(
+    savedProgress?.mindset?.unlockedChapters || [1]
+  );
+  const [completedChapters, setCompletedChapters] = useState<number[]>(
+    savedProgress?.mindset?.completedChapters || []
+  );
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);

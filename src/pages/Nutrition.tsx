@@ -383,7 +383,7 @@ const Nutrition = () => {
       {/* Bottom Navigation */}
       <BottomNavigation activeTab={activeTab} onTabChange={handleTabChange} />
       <QuickLogModal isOpen={showQuickLog} onClose={() => setShowQuickLog(false)} />
-      <PurchaseModal isOpen={showPurchaseModal} onClose={() => setShowPurchaseModal(false)} />
+      <PurchaseModal isOpen={showPurchaseModal} onClose={() => setShowPurchaseModal(false)} diet={null} dietKey={null} />
     </div>
   );
 };
