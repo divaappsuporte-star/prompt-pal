@@ -66,10 +66,12 @@ export const usePersonalPlan = () => {
       dietType, 
       targetWeightLoss,
       includeDetox = false,
+      includeFasting = false,
     }: { 
       dietType: DietType; 
       targetWeightLoss: number;
       includeDetox?: boolean;
+      includeFasting?: boolean;
     }) => {
       if (!user?.id || !profile) {
         throw new Error('User not authenticated');
@@ -90,6 +92,15 @@ export const usePersonalPlan = () => {
       if (includeDetox) {
         initialModules.push({
           type: 'detox',
+          added_at: new Date().toISOString(),
+          is_primary: false,
+        });
+      }
+
+      // Add fasting module if selected
+      if (includeFasting) {
+        initialModules.push({
+          type: 'fasting',
           added_at: new Date().toISOString(),
           is_primary: false,
         });

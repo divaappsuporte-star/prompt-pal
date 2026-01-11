@@ -40,8 +40,9 @@ const MyPlan = () => {
   // Track detox locally (not in progressService yet)
   const [detoxCompleted, setDetoxCompleted] = useState(false);
 
-  // Check if detox is integrated
+  // Check if detox or fasting is integrated
   const hasDetoxIntegrated = integratedModules.some(m => m.type === 'detox');
+  const hasFastingIntegrated = integratedModules.some(m => m.type === 'fasting');
   
   // Get detox recipe based on current day
   const detoxRecipe = DETOX_RECIPES[(personalPlan?.current_day || 1) % DETOX_RECIPES.length];
@@ -268,16 +269,30 @@ const MyPlan = () => {
           </h2>
           
           <div className="space-y-3">
-            <MealExpandCard
-              type="breakfast"
-              label="Café da Manhã"
-              time="07:00"
-              meal={dailyPlan?.breakfast || null}
-              feedback={dailyPlan?.meal_feedbacks?.breakfast || null}
-              completed={breakfastCompleted}
-              onComplete={() => handleMealComplete('breakfast')}
-              isLoading={mealsLoading}
-            />
+            {!hasFastingIntegrated ? (
+              <MealExpandCard
+                type="breakfast"
+                label="Café da Manhã"
+                time="07:00"
+                meal={dailyPlan?.breakfast || null}
+                feedback={dailyPlan?.meal_feedbacks?.breakfast || null}
+                completed={breakfastCompleted}
+                onComplete={() => handleMealComplete('breakfast')}
+                isLoading={mealsLoading}
+              />
+            ) : (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="p-4 rounded-2xl bg-muted/30 border border-dashed border-muted-foreground/20 flex items-center gap-3"
+              >
+                <Clock className="w-5 h-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-bold text-muted-foreground">Janela de Jejum Ativa</p>
+                  <p className="text-xs text-muted-foreground/70">Café da manhã substituído por jejum metabólico.</p>
+                </div>
+              </motion.div>
+            )}
             <MealExpandCard
               type="lunch"
               label="Almoço"

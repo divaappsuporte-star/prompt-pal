@@ -20,7 +20,7 @@ const DIET_ICONS: Record<DietType, LucideIcon> = {
 interface GoalSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (targetKgLoss: number) => void;
+  onConfirm: (targetKgLoss: number, includeFasting?: boolean) => void;
   diet: DietInfo;
   isLoading?: boolean;
 }
@@ -34,6 +34,7 @@ const GoalSelectionModal = ({
 }: GoalSelectionModalProps) => {
   const { profile } = useAuth();
   const [targetKgLoss, setTargetKgLoss] = useState(5);
+  const [includeFasting, setIncludeFasting] = useState(false);
 
   // Calculate BMR using Mifflin-St Jeor equation
   const calculateBMR = () => {
@@ -93,7 +94,7 @@ const GoalSelectionModal = ({
   }, [profile, targetKgLoss]);
 
   const handleConfirm = () => {
-    onConfirm(targetKgLoss);
+    onConfirm(targetKgLoss, includeFasting);
   };
 
   return (
@@ -165,7 +166,10 @@ const GoalSelectionModal = ({
 
                 <Slider
                   value={[targetKgLoss]}
-                  onValueChange={(value) => setTargetKgLoss(value[0])}
+                  onValueChange={(value) => {
+                    setTargetKgLoss(value[0]);
+                    if (value[0] <= 7) setIncludeFasting(false);
+                  }}
                   min={1}
                   max={15}
                   step={1}
@@ -222,33 +226,57 @@ const GoalSelectionModal = ({
                     </div>
                   </div>
 
-                  {/* Warnings */}
-                  {calculations.isAggressive && (
+                  {/* Warnings & Fasting Integration */}
+                  {targetKgLoss > 7 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="rounded-2xl p-5 bg-coral/10 border border-coral/20 space-y-4"
+                    >
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="w-6 h-6 text-coral flex-shrink-0 mt-1" />
+                        <div>
+                          <p className="font-display font-bold text-coral">Meta Muito Agressiva!</p>
+                          <p className="text-sm text-muted-foreground leading-relaxed mt-1">
+                            Sua meta é bem agressiva. Para funcionar, você precisa do <span className="font-bold text-foreground">Jejum Intermitente diário</span> no seu plano.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <button
+                        onClick={() => setIncludeFasting(!includeFasting)}
+                        className={cn(
+                          "w-full p-4 rounded-xl border-2 transition-all flex items-center justify-between group",
+                          includeFasting 
+                            ? "bg-coral border-coral text-white" 
+                            : "bg-card border-coral/30 text-foreground hover:border-coral"
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "w-6 h-6 rounded-full border-2 flex items-center justify-center",
+                            includeFasting ? "border-white" : "border-coral"
+                          )}>
+                            {includeFasting && <div className="w-3 h-3 bg-white rounded-full" />}
+                          </div>
+                          <span className="font-bold">Adicionar Jejum ao Plano</span>
+                        </div>
+                        <Clock className={cn("w-5 h-5", includeFasting ? "text-white" : "text-coral")} />
+                      </button>
+                    </motion.div>
+                  )}
+
+                  {calculations.isAggressive && targetKgLoss <= 7 && (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className={cn(
-                        "rounded-xl p-4 flex items-start gap-3",
-                        calculations.isExtreme 
-                          ? "bg-destructive/20 border border-destructive/30" 
-                          : "bg-gold/20 border border-gold/30"
-                      )}
+                      className="bg-gold/20 border border-gold/30 rounded-xl p-4 flex items-start gap-3"
                     >
-                      <AlertTriangle className={cn(
-                        "w-5 h-5 flex-shrink-0 mt-0.5",
-                        calculations.isExtreme ? "text-destructive" : "text-gold"
-                      )} />
+                      <AlertTriangle className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className={cn(
-                          "font-medium text-sm",
-                          calculations.isExtreme ? "text-destructive" : "text-gold"
-                        )}>
-                          {calculations.isExtreme ? "Meta Muito Agressiva" : "Meta Agressiva"}
-                        </p>
+                        <p className="font-medium text-sm text-gold">Meta Agressiva</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {calculations.isExtreme 
-                            ? "Esta meta requer acompanhamento médico. Considere uma meta mais moderada para resultados sustentáveis."
-                            : "Esta meta exige disciplina rigorosa. Siga o plano à risca para resultados."}
+                          Esta meta exige disciplina rigorosa. Siga o plano à risca para resultados.
                         </p>
                       </div>
                     </motion.div>

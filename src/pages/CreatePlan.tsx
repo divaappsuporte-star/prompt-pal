@@ -61,6 +61,7 @@ const CreatePlan = () => {
   const [noConditions, setNoConditions] = useState(false);
   const [selectedDiet, setSelectedDiet] = useState<DietType | null>(null);
   const [includeDetox, setIncludeDetox] = useState(false);
+  const [includeFasting, setIncludeFasting] = useState(false);
   const [targetKgLoss, setTargetKgLoss] = useState(5);
   const [showLoading, setShowLoading] = useState(false);
 
@@ -140,6 +141,7 @@ const CreatePlan = () => {
           dietType: selectedDiet,
           targetWeightLoss: targetKgLoss,
           includeDetox,
+          includeFasting,
         });
         setShowLoading(false);
         navigate("/meu-plano");
@@ -623,17 +625,41 @@ const CreatePlan = () => {
                 </div>
               </div>
 
-              {/* Warning for aggressive goals */}
+              {/* Warning for aggressive goals & Fasting Integration */}
               {targetKgLoss > 7 && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-start gap-2"
+                  className="rounded-2xl p-5 bg-coral/10 border border-coral/20 space-y-4 mt-4"
                 >
-                  <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-amber-500">
-                    Meta agressiva. Recomendamos acompanhamento profissional para perdas acima de 7kg em 21 dias.
-                  </p>
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-6 h-6 text-coral flex-shrink-0 mt-1" />
+                    <div>
+                      <p className="font-display font-bold text-coral">Meta Muito Agressiva!</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed mt-1">
+                        Sua meta é bem agressiva. Para funcionar, você precisa do <span className="font-bold text-foreground">Jejum Intermitente diário</span> no seu plano.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={() => setIncludeFasting(!includeFasting)}
+                    className={`w-full p-4 rounded-xl border-2 transition-all flex items-center justify-between group ${
+                      includeFasting 
+                        ? "bg-coral border-coral text-white" 
+                        : "bg-card border-coral/30 text-foreground hover:border-coral"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                        includeFasting ? "border-white" : "border-coral"
+                      }`}>
+                        {includeFasting && <div className="w-3 h-3 bg-white rounded-full" />}
+                      </div>
+                      <span className="font-bold">Adicionar Jejum ao Plano</span>
+                    </div>
+                    <Clock className={`w-5 h-5 ${includeFasting ? "text-white" : "text-coral"}`} />
+                  </button>
                 </motion.div>
               )}
             </div>
