@@ -12,6 +12,7 @@ import BodyStatusCard from "@/components/diet/BodyStatusCard";
 import QuickLogModal from "@/components/modals/QuickLogModal";
 import ProfileModal from "@/components/modals/ProfileModal";
 import MyPlanCard from "@/components/plan/MyPlanCard";
+import SalesModal from "@/components/modals/SalesModal";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -24,6 +25,8 @@ const Index = () => {
   const [showQuickLog, setShowQuickLog] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [isOnboarding, setIsOnboarding] = useState(false);
+  const [showSalesModal, setShowSalesModal] = useState(false);
+  const [selectedLockedDiet, setSelectedLockedDiet] = useState<DietType | null>(null);
 
   const wantsExercise = (profile as any)?.wants_exercise ?? true;
 
@@ -70,11 +73,8 @@ const Index = () => {
     const canView = canViewDiet(dietKey);
     
     if (isLocked && !canView) {
-      // Show message that they need to create a plan first
-      toast.info("Crie seu plano de 21 dias para desbloquear este protocolo", {
-        description: "Acesse 'Meu Plano' para escolher sua dieta base",
-        duration: 4000,
-      });
+      setSelectedLockedDiet(dietKey);
+      setShowSalesModal(true);
       return;
     }
     
@@ -281,6 +281,11 @@ const Index = () => {
         isOpen={showProfile} 
         onClose={handleProfileClose}
         isOnboarding={isOnboarding}
+      />
+      <SalesModal
+        isOpen={showSalesModal}
+        onClose={() => setShowSalesModal(false)}
+        dietKey={selectedLockedDiet}
       />
     </div>
   );
