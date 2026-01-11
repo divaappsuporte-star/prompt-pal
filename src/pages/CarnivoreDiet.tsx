@@ -750,7 +750,7 @@ const CarnivoreDiet = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-background/95 z-50 overflow-y-auto"
+            className="fixed inset-0 bg-background/95 z-[60] overflow-y-auto"
           >
             <motion.div
               initial={{ opacity: 0, y: 50 }}

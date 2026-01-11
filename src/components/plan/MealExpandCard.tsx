@@ -10,9 +10,11 @@ import {
   Utensils,
   Coffee,
   UtensilsCrossed,
-  Moon
+  Moon,
+  RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface Meal {
   name: string;
@@ -35,6 +37,7 @@ interface MealExpandCardProps {
   completed: boolean;
   onComplete: () => void;
   isLoading?: boolean;
+  dietType?: string;
 }
 
 const MEAL_CONFIG = {
@@ -47,14 +50,81 @@ const MealExpandCard = ({
   type,
   label,
   time,
-  meal,
+  meal: initialMeal,
   feedback,
   completed,
   onComplete,
   isLoading = false,
+  dietType = 'lowcarb',
 }: MealExpandCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isSwapping, setIsSwapping] = useState(false);
+  const [meal, setMeal] = useState(initialMeal);
+  const [swapReason, setSwapReason] = useState<string | null>(null);
   const config = MEAL_CONFIG[type];
+
+  const handleSwapRecipe = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (isSwapping || !meal || completed) return;
+    
+    setIsSwapping(true);
+    setSwapReason(null);
+    
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/swap-recipe`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            currentRecipe: {
+              name: meal.name,
+              calories: meal.calories,
+              protein: meal.protein,
+              fat: meal.fat,
+              carbs: meal.carbs,
+            },
+            dietType: dietType,
+            mealType: type,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Erro ao trocar receita");
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.recipe) {
+        setMeal({
+          name: data.recipe.name,
+          description: meal.description,
+          calories: data.recipe.calories,
+          protein: data.recipe.protein,
+          fat: data.recipe.fat,
+          carbs: data.recipe.carbs,
+          prep_time: meal.prep_time,
+          ingredients: data.recipe.instructions.split('.').filter((s: string) => s.trim()),
+          instructions: [data.recipe.instructions],
+        });
+        setSwapReason(data.recipe.reason || null);
+        toast.success("Receita trocada!", {
+          description: data.recipe.name,
+        });
+      }
+    } catch (error) {
+      console.error("Swap recipe error:", error);
+      toast.error(error instanceof Error ? error.message : "Erro ao trocar receita");
+    } finally {
+      setIsSwapping(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -198,6 +268,14 @@ const MealExpandCard = ({
                 </ol>
               </div>
 
+              {/* Swap Reason */}
+              {swapReason && (
+                <div className="bg-primary/10 rounded-lg p-3 border border-primary/20">
+                  <p className="text-xs font-medium text-primary mb-1">💡 Por que essa troca?</p>
+                  <p className="text-sm text-muted-foreground">{swapReason}</p>
+                </div>
+              )}
+
               {/* Feedback */}
               {feedback && (
                 <div className="bg-primary/5 rounded-lg p-3 border border-primary/20">
@@ -207,25 +285,41 @@ const MealExpandCard = ({
                 </div>
               )}
 
-              {/* Complete Button */}
-              {!completed && (
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onComplete();
-                  }}
-                  className="w-full"
-                >
-                  <Utensils className="w-4 h-4 mr-2" />
-                  Marcar como Concluída
-                </Button>
-              )}
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                {/* Swap Recipe Button */}
+                {!completed && (
+                  <Button
+                    variant="outline"
+                    onClick={handleSwapRecipe}
+                    disabled={isSwapping}
+                    className="flex-1"
+                  >
+                    <RefreshCw className={`w-4 h-4 mr-2 ${isSwapping ? 'animate-spin' : ''}`} />
+                    {isSwapping ? "Trocando..." : "Trocar Receita"}
+                  </Button>
+                )}
 
-              {completed && (
-                <div className="text-center text-sm text-primary font-medium">
-                  ✓ Refeição concluída
-                </div>
-              )}
+                {/* Complete Button */}
+                {!completed && (
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onComplete();
+                    }}
+                    className="flex-1"
+                  >
+                    <Utensils className="w-4 h-4 mr-2" />
+                    Concluir
+                  </Button>
+                )}
+
+                {completed && (
+                  <div className="w-full text-center text-sm text-primary font-medium py-2">
+                    ✓ Refeição concluída
+                  </div>
+                )}
+              </div>
             </div>
           </motion.div>
         )}
