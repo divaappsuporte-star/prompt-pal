@@ -2,3 +2,12 @@ project_id = "emnkzfoznxzvpiiamulp"
 
 [functions.admin-create-user]
 verify_jwt = false
+
+[functions.swap-recipe]
+verify_jwt = false
+
+[functions.kirvano-webhook]
+verify_jwt = false
+
+[functions.keep-alive]
+verify_jwt = false
