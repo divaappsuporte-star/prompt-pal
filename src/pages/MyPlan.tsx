@@ -11,7 +11,9 @@ import {
   Sparkles,
   Droplets,
   Moon as MoonIcon,
-  Leaf
+  Leaf,
+  Clock,
+  Lock
 } from "lucide-react";
 import { usePersonalPlan } from "@/hooks/usePersonalPlan";
 import { useDailyMeals } from "@/hooks/useDailyMeals";
