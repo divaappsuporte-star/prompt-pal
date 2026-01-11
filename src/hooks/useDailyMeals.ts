@@ -51,7 +51,7 @@ interface DailyMealPlan {
     carbs: number;
   };
   daily_deficit: number;
-  cumulative_loss: number | null;
+  cumulative_loss: number | string | null;
   body_explanation: BodyExplanation;
   meal_feedbacks: MealFeedbacks;
 }
@@ -64,26 +64,24 @@ export const useDailyMeals = (
   const { data: dailyPlan, isLoading, error } = useQuery({
     queryKey: ['daily-meal-plan', dietType, targetKgLoss, dayNumber],
     queryFn: async () => {
-      if (!dietType || !targetKgLoss || !dayNumber) return null;
+      if (!dietType || !dayNumber) return null;
 
-      const { data, error } = await supabase
-        .from('diet_meal_plans')
-        .select('*')
-        .eq('diet_type', dietType)
-        .eq('target_kg_loss', targetKgLoss)
-        .eq('day_number', dayNumber)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error fetching daily meal plan:', error);
-        return null;
+      let data = null;
+      if (targetKgLoss) {
+        const { data: dbData, error: dbError } = await supabase
+          .from('diet_meal_plans')
+          .select('*')
+          .eq('diet_type', dietType)
+          .eq('target_kg_loss', targetKgLoss)
+          .eq('day_number', dayNumber)
+          .maybeSingle();
+        
+        if (!dbError) data = dbData;
       }
 
       if (!data) {
-        // Cérebro 2.0: Seleção inteligente baseada no dia e tipo de dieta
         const dietPool = FALLBACK_MEALS[dietType] || FALLBACK_MEALS['lowcarb'];
         
-        // Função para selecionar receita baseada no dia (ciclo rotativo)
         const selectMeal = (meals: any[], day: number) => {
           if (!Array.isArray(meals)) return meals;
           return meals[(day - 1) % meals.length];
@@ -96,7 +94,7 @@ export const useDailyMeals = (
         return {
           id: `fallback-${dietType}-${dayNumber}`,
           diet_type: dietType,
-          target_kg_loss: targetKgLoss,
+          target_kg_loss: targetKgLoss || 5,
           day_number: dayNumber,
           phase: dayNumber <= 7 ? "Adaptação" : dayNumber <= 14 ? "Otimização" : "Aceleração",
           breakfast,
@@ -136,7 +134,7 @@ export const useDailyMeals = (
         meal_feedbacks: data.meal_feedbacks as unknown as MealFeedbacks,
       } as DailyMealPlan;
     },
-    enabled: !!dietType && !!targetKgLoss && !!dayNumber,
+    enabled: !!dietType && !!dayNumber,
   });
 
   return {
