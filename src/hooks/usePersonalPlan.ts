@@ -106,6 +106,22 @@ export const usePersonalPlan = () => {
         });
       }
 
+      // First, create diet access entry so the diet becomes available
+      const { error: accessError } = await supabase
+        .from('user_diet_access')
+        .upsert({
+          user_id: user.id,
+          diet_type: dietType,
+          granted_by: 'plan_creation',
+        }, {
+          onConflict: 'user_id,diet_type',
+        });
+
+      if (accessError) {
+        console.error('Error creating diet access:', accessError);
+        // Don't throw - continue with plan creation
+      }
+
       const { data, error } = await supabase
         .from('user_active_plans')
         .insert({
