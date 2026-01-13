@@ -163,47 +163,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    // Listen for profile changes (e.g., suspension status)
-    const profileChannel = supabase
-      .channel('public:profiles')
-      .on('postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user?.id}` },
-        payload => {
-          if (payload.new.is_suspended) {
-            supabase.auth.signOut();
-            setUser(null);
-            setSession(null);
-            setProfile(null);
-            setIsAdmin(false);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-      profileChannel.unsubscribe();
-    };
-
+    return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    // First, check if the user is suspended before attempting to sign in
-    const { data: profileData, error: profileError } = await supabase
-      .from("profiles")
-      .select("is_suspended")
-      .eq("email", email)
-      .single();
-
-    if (profileError && profileError.code !== 'PGRST116') { // PGRST116 means no rows found
-      console.error("Error checking suspension status:", profileError);
-      return { error: new Error("Erro ao verificar status do usuário.") };
-    }
-
-    if (profileData?.is_suspended) {
-      return { error: new Error("Sua conta foi suspensa. Entre em contato com o suporte.") };
-    }
-
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -213,22 +176,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Simplified email-only login using default password
   const signInWithEmail = async (email: string) => {
-    // First, check if the user is suspended before attempting to sign in
-    const { data: profileData, error: profileError } = await supabase
-      .from("profiles")
-      .select("is_suspended")
-      .eq("email", email)
-      .single();
-
-    if (profileError && profileError.code !== 'PGRST116') { // PGRST116 means no rows found
-      console.error("Error checking suspension status:", profileError);
-      return { error: new Error("Erro ao verificar status do usuário.") };
-    }
-
-    if (profileData?.is_suspended) {
-      return { error: new Error("Sua conta foi suspensa. Entre em contato com o suporte.") };
-    }
-
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password: DEFAULT_PASSWORD,
