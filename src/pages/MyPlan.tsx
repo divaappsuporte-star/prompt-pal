@@ -13,7 +13,10 @@ import {
   Moon as MoonIcon,
   Leaf,
   Clock,
-  Lock
+  Lock,
+  Eye,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { usePersonalPlan } from "@/hooks/usePersonalPlan";
 import { useDailyMeals } from "@/hooks/useDailyMeals";
@@ -41,6 +44,7 @@ const MyPlan = () => {
   
   // Track detox locally (not in progressService yet)
   const [detoxCompleted, setDetoxCompleted] = useState(false);
+  const [showTomorrowPreview, setShowTomorrowPreview] = useState(false);
 
   // Check if detox or fasting is integrated
   const hasDetoxIntegrated = integratedModules.some(m => m.type === 'detox');
@@ -61,6 +65,21 @@ const MyPlan = () => {
     personalPlan?.target_weight_loss,
     personalPlan?.current_day
   );
+
+  // Fetch tomorrow's meals for preview
+  const nextDay = personalPlan?.current_day ? Math.min(personalPlan.current_day + 1, 21) : 1;
+  const { dailyPlan: tomorrowPlan, isLoading: tomorrowLoading } = useDailyMeals(
+    personalPlan?.diet_type,
+    personalPlan?.target_weight_loss,
+    nextDay
+  );
+
+  // Check if it's past midnight to enable today's meal completion
+  const canCompleteMeals = () => {
+    // Meals can always be completed on the current day
+    // The restriction is that tomorrow's preview is view-only
+    return true;
+  };
 
   // Redirect if no plan exists
   useEffect(() => {
@@ -352,6 +371,94 @@ const MyPlan = () => {
               completed={detoxCompleted}
               onComplete={handleDetoxComplete}
             />
+          </motion.div>
+        )}
+
+        {/* Tomorrow's Preview Section */}
+        {personalPlan.current_day < 21 && tomorrowPlan && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.27 }}
+          >
+            <button
+              onClick={() => setShowTomorrowPreview(!showTomorrowPreview)}
+              className="w-full flex items-center justify-between mb-3"
+            >
+              <h2 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+                <Eye className="w-5 h-5 text-muted-foreground" />
+                Preview do Dia {nextDay}
+              </h2>
+              {showTomorrowPreview ? (
+                <ChevronUp className="w-5 h-5 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+              )}
+            </button>
+
+            {showTomorrowPreview && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-3"
+              >
+                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-2 mb-3">
+                  <Lock className="w-4 h-4 text-amber-500" />
+                  <p className="text-xs text-amber-500">
+                    Apenas visualização. Libera à meia-noite.
+                  </p>
+                </div>
+
+                {/* Tomorrow's Breakfast */}
+                {!hasFastingIntegrated && tomorrowPlan.breakfast && (
+                  <div className="opacity-60 pointer-events-none">
+                    <MealExpandCard
+                      type="breakfast"
+                      label="Café da Manhã"
+                      time="07:00"
+                      meal={tomorrowPlan.breakfast}
+                      feedback={null}
+                      completed={false}
+                      onComplete={() => {}}
+                      isLoading={tomorrowLoading}
+                    />
+                  </div>
+                )}
+
+                {/* Tomorrow's Lunch */}
+                {tomorrowPlan.lunch && (
+                  <div className="opacity-60 pointer-events-none">
+                    <MealExpandCard
+                      type="lunch"
+                      label="Almoço"
+                      time="12:00"
+                      meal={tomorrowPlan.lunch}
+                      feedback={null}
+                      completed={false}
+                      onComplete={() => {}}
+                      isLoading={tomorrowLoading}
+                    />
+                  </div>
+                )}
+
+                {/* Tomorrow's Dinner */}
+                {tomorrowPlan.dinner && (
+                  <div className="opacity-60 pointer-events-none">
+                    <MealExpandCard
+                      type="dinner"
+                      label="Jantar"
+                      time="19:00"
+                      meal={tomorrowPlan.dinner}
+                      feedback={null}
+                      completed={false}
+                      onComplete={() => {}}
+                      isLoading={tomorrowLoading}
+                    />
+                  </div>
+                )}
+              </motion.div>
+            )}
           </motion.div>
         )}
 
