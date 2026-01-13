@@ -113,14 +113,29 @@ const MyPlan = () => {
 
   const progressDiet = personalPlan ? getProgressDiet(personalPlan.diet_type) : 'lowcarb';
 
-  const getMealStatus = (mealTime: string) => {
-    const now = new Date();
-    const [hours, minutes] = mealTime.split(':').map(Number);
-    const mealDate = new Date();
-    mealDate.setHours(hours, minutes, 0);
+  // Define meal time ranges for availability
+  const MEAL_TIMES = {
+    breakfast: { start: 0, end: 10 },  // Café disponível até 10h
+    lunch: { start: 10, end: 15 },     // Almoço disponível das 10h às 15h
+    dinner: { start: 15, end: 24 },    // Jantar disponível das 15h em diante
+  };
 
-    if (now > mealDate) return 'past';
-    return 'future';
+  // Check if a meal is currently available based on time of day
+  const isMealAvailable = (mealType: 'breakfast' | 'lunch' | 'dinner') => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const times = MEAL_TIMES[mealType];
+    
+    // Meal is available if we're within its time window OR after its window (can still complete late)
+    return currentHour >= times.start;
+  };
+
+  // Check if a meal window has completely passed (for visual dimming of uncompleted past meals)
+  const isMealWindowPassed = (mealType: 'breakfast' | 'lunch' | 'dinner') => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const times = MEAL_TIMES[mealType];
+    return currentHour >= times.end;
   };
 
   const handleMealComplete = (mealType: 'breakfast' | 'lunch' | 'dinner') => {
@@ -301,7 +316,7 @@ const MyPlan = () => {
           
           <div className="space-y-3">
             {!hasFastingIntegrated ? (
-              <div className={getMealStatus("09:00") === 'past' && !breakfastCompleted ? "opacity-50 grayscale-[0.5]" : ""}>
+              <div className={!isMealAvailable('breakfast') ? "opacity-40 pointer-events-none" : isMealWindowPassed('breakfast') && !breakfastCompleted ? "opacity-60" : ""}>
                 <MealExpandCard
                   type="breakfast"
                   label="Café da Manhã"
@@ -326,7 +341,7 @@ const MyPlan = () => {
                 </div>
               </motion.div>
             )}
-            <div className={getMealStatus("14:00") === 'past' && !lunchCompleted ? "opacity-50 grayscale-[0.5]" : ""}>
+            <div className={!isMealAvailable('lunch') ? "opacity-40 pointer-events-none" : isMealWindowPassed('lunch') && !lunchCompleted ? "opacity-60" : ""}>
               <MealExpandCard
                 type="lunch"
                 label="Almoço"
@@ -338,7 +353,7 @@ const MyPlan = () => {
                 isLoading={mealsLoading}
               />
             </div>
-            <div className={getMealStatus("21:00") === 'past' && !dinnerCompleted ? "opacity-50 grayscale-[0.5]" : ""}>
+            <div className={!isMealAvailable('dinner') ? "opacity-40 pointer-events-none" : isMealWindowPassed('dinner') && !dinnerCompleted ? "opacity-60" : ""}>
               <MealExpandCard
                 type="dinner"
                 label="Jantar"
