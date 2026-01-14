@@ -90,13 +90,18 @@ export const useAdminUsers = () => {
   const grantDietAccess = async (userId: string, dietType: string) => {
     const { error } = await supabase
       .from("user_diet_access")
-      .insert({
+      .upsert({
         user_id: userId,
         diet_type: dietType as "carnivore" | "detox" | "fasting" | "keto" | "lowcarb" | "metabolic",
         granted_by: "admin",
+        granted_at: new Date().toISOString(),
+      }, {
+        onConflict: 'user_id,diet_type',
       });
 
-    if (!error) {
+    if (error) {
+      console.error("Error granting diet access:", error);
+    } else {
       await fetchUsers();
     }
     return { error };
