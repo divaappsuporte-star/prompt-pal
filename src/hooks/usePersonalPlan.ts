@@ -132,6 +132,7 @@ export const usePersonalPlan = () => {
           target_weight: targetWeight,
           current_day: 1,
           status: 'active',
+          started_at: new Date().toISOString(),
           completed_meals: [],
           daily_feedbacks: [],
           integrated_modules: initialModules as unknown as any,
