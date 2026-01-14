@@ -120,18 +120,44 @@ const MyPlan = () => {
     dinner: { start: 15, end: 24 },    // Jantar disponível das 15h em diante
   };
 
+  // Check if it's the first day of the plan (created today)
+  const isFirstDayOfPlan = () => {
+    if (!personalPlan?.started_at) return personalPlan?.current_day === 1;
+    const startedDate = new Date(personalPlan.started_at);
+    const today = new Date();
+    return (
+      startedDate.getDate() === today.getDate() &&
+      startedDate.getMonth() === today.getMonth() &&
+      startedDate.getFullYear() === today.getFullYear()
+    );
+  };
+
   // Check if a meal is currently available based on time of day
   const isMealAvailable = (mealType: 'breakfast' | 'lunch' | 'dinner') => {
     const now = new Date();
     const currentHour = now.getHours();
-    const times = MEAL_TIMES[mealType];
     
-    // Meal is available if we're within its time window OR after its window (can still complete late)
+    // On first day: make meals available based on current hour
+    // If past breakfast (10h), breakfast + lunch + dinner available
+    // If past lunch (15h), all available
+    // This ensures new users always have at least one meal available
+    if (isFirstDayOfPlan()) {
+      // All meals are available from their start time onwards
+      // So if it's 23h, all meals should be unlocked
+      const times = MEAL_TIMES[mealType];
+      return currentHour >= times.start;
+    }
+    
+    // For subsequent days: standard availability
+    const times = MEAL_TIMES[mealType];
     return currentHour >= times.start;
   };
 
   // Check if a meal window has completely passed (for visual dimming of uncompleted past meals)
   const isMealWindowPassed = (mealType: 'breakfast' | 'lunch' | 'dinner') => {
+    // On first day, don't dim any meals - user just started
+    if (isFirstDayOfPlan()) return false;
+    
     const now = new Date();
     const currentHour = now.getHours();
     const times = MEAL_TIMES[mealType];
