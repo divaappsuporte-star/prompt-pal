@@ -113,39 +113,15 @@ const MyPlan = () => {
 
   const progressDiet = personalPlan ? getProgressDiet(personalPlan.diet_type) : 'lowcarb';
 
-  // Define meal time ranges for availability
-  const MEAL_TIMES = {
-    breakfast: { start: 0, end: 10 },  // Café disponível até 10h
-    lunch: { start: 10, end: 15 },     // Almoço disponível das 10h às 15h
-    dinner: { start: 15, end: 24 },    // Jantar disponível das 15h em diante
+  // All meals are always available - no time restrictions
+  // Users can complete any meal at any time during their plan day
+  const isMealAvailable = (_mealType: 'breakfast' | 'lunch' | 'dinner') => {
+    return true;
   };
 
-  // Check if it's the first day of the plan (day 1)
-  const isFirstDayOfPlan = personalPlan?.current_day === 1;
-
-  // Check if a meal is currently available based on time of day
-  const isMealAvailable = (mealType: 'breakfast' | 'lunch' | 'dinner') => {
-    // On day 1: ALL meals are always available so user can start immediately
-    if (isFirstDayOfPlan) {
-      return true;
-    }
-    
-    // For subsequent days: standard availability based on time
-    const now = new Date();
-    const currentHour = now.getHours();
-    const times = MEAL_TIMES[mealType];
-    return currentHour >= times.start;
-  };
-
-  // Check if a meal window has completely passed (for visual dimming of uncompleted past meals)
-  const isMealWindowPassed = (mealType: 'breakfast' | 'lunch' | 'dinner') => {
-    // On day 1, don't dim any meals - user just started
-    if (isFirstDayOfPlan) return false;
-    
-    const now = new Date();
-    const currentHour = now.getHours();
-    const times = MEAL_TIMES[mealType];
-    return currentHour >= times.end;
+  // Never dim meals - they're always accessible
+  const isMealWindowPassed = (_mealType: 'breakfast' | 'lunch' | 'dinner') => {
+    return false;
   };
 
   const handleMealComplete = (mealType: 'breakfast' | 'lunch' | 'dinner') => {
